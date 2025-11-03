@@ -10,8 +10,8 @@ export default function App() {
     <AppProvider>
       <ThemeProvider>
         <RouterProvider router={router} />
-        <ToastContainer position="top-right" autoClose={3000} />
       </ThemeProvider>
+      <ToastContainer position="top-right" autoClose={3000} />
     </AppProvider>
   );
 }
