@@ -7,6 +7,7 @@ import {
   Gem,
   X,
 } from "lucide-react";
+import Logo from "@/assets/PlutoEvent_Logo.png";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -41,9 +42,10 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
-        {/* Logo placeholder */}
         <div className="flex items-center justify-between p-5 border-b border-white/10">
-          <div className="text-xl font-bold tracking-wide">[LOGO]</div>
+          <div className="flex items-center space-x-2">
+            <img src={Logo} alt="Logo" className="h-12 w-auto" />
+          </div>
           <button className="md:hidden" onClick={toggleSidebar}>
             <X size={24} />
           </button>

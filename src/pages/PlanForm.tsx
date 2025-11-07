@@ -1,11 +1,17 @@
 import React, { useEffect, useState, useContext } from "react";
 import { PlusCircle, MinusCircle } from "lucide-react";
 import { toast } from "react-toastify";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AppContext } from "@/context/AppContext";
-import { PlanCreate, type PlanPayload } from "@/lib/api/Plans";
+import {
+  PlanCreate,
+  PlanUpdate,
+  PlanGet,
+  type PlanPayload,
+} from "@/lib/api/Plans";
 
 const PlanForm: React.FC = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const { user } = useContext(AppContext);
 
@@ -19,14 +25,50 @@ const PlanForm: React.FC = () => {
 
   const [errors, setErrors] = useState<Record<string, string | string[]>>({});
   const [loading, setLoading] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [planId, setPlanId] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("Current user:", user);
-    const planType = location.search.replace("?", "");
-    if (planType) {
-      setPlanData((prev) => ({ ...prev, type: planType }));
+    console.log("User from context:", user);
+
+    const searchParams = new URLSearchParams(location.search);
+    const id = searchParams.get("id");
+    const typeParam = searchParams.get("type");
+
+    const fallbackType =
+      !typeParam && location.search.startsWith("?")
+        ? location.search.replace("?", "").trim()
+        : typeParam;
+
+    if (id) {
+      setEditing(true);
+      setPlanId(id);
+      fetchPlanData(id);
+    } else if (fallbackType) {
+      setPlanData((prev) => ({ ...prev, type: fallbackType }));
     }
   }, [location.search]);
+
+  const fetchPlanData = async (id: string) => {
+    try {
+      setLoading(true);
+      const data = await PlanGet(id);
+      if (!data) throw new Error("No plan found");
+
+      setPlanData({
+        type: data.type || "",
+        name: data.name || "",
+        features: data.features?.length ? data.features : [""],
+        priceNaira: data.priceNaira || 0,
+        priceUsd: data.priceUsd || 0,
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load plan details.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFeatureChange = (index: number, value: string) => {
     const updated = [...planData.features];
@@ -69,49 +111,55 @@ const PlanForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) {
-      toast.error("❌ Please fix all errors before submitting.");
+      toast.error("Please fix all errors before submitting.");
       return;
     }
 
     setLoading(true);
-
     const payload = {
       ...planData,
       features: planData.features.map((f) => f.trim()),
     };
 
     try {
-      const result = await PlanCreate(payload);
-      toast.success("✅ Plan created successfully!");
-      console.log("Created plan:", result);
-      console.log(payload);
+      if (editing && planId) {
+        await PlanUpdate(planId, payload);
+        toast.success("Plan updated successfully!");
+        navigate(`/view-plans?id=${planId}`);
+      } else {
+        console.log("Creating plan with payload:", payload);
+        const result = await PlanCreate(payload);
+        toast.success("Plan created successfully!");
+        navigate(`/view-plans?id=${result?.id}`);
+      }
 
-      // reset form but preserve type
-      setPlanData({
-        type: planData.type,
-        name: "",
-        features: [""],
-        priceNaira: 0,
-        priceUsd: 0,
-      });
-      setErrors({});
+      setTimeout(() => {
+        setErrors({});
+        if (!editing) {
+          setPlanData({
+            type: planData.type,
+            name: "",
+            features: [""],
+            priceNaira: 0,
+            priceUsd: 0,
+          });
+        }
+      }, 1000);
     } catch (error) {
-      console.log(payload);
       console.error(error);
-      toast.error("❌ Failed to create plan. Please try again.");
+      toast.error("Operation failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const canRemove = planData.features.length > 1; // always enabled once ≥2 features
+  const canRemove = planData.features.length > 1;
 
-  // ---------------------------
-  // UI
-  // ---------------------------
   return (
     <div className="p-8 w-full min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
-      <h2 className="text-lg font-semibold mb-6">Plans</h2>
+      <h2 className="text-lg font-semibold mb-6">
+        {editing ? "Edit Plan" : "Create Plan"}
+      </h2>
 
       <form
         onSubmit={handleSubmit}
@@ -260,7 +308,13 @@ const PlanForm: React.FC = () => {
               loading ? "bg-blue-400" : "bg-blue-600 hover:bg-blue-700"
             }`}
           >
-            {loading ? "Creating..." : "Create Plan"}
+            {loading
+              ? editing
+                ? "Updating..."
+                : "Creating..."
+              : editing
+              ? "Update Plan"
+              : "Create Plan"}
           </button>
         </div>
       </form>
