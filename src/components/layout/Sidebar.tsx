@@ -15,8 +15,8 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { name: "Dashboard", path: "/", icon: LayoutDashboard },
-  { name: "Client Management", path: "/clients", icon: Users },
+  { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+  { name: "Client Management", path: "/client-management", icon: Users },
   { name: "Payment History", path: "/payments", icon: CreditCard },
   {
     name: "Analytics and Insight",

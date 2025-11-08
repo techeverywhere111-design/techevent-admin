@@ -6,6 +6,8 @@ import AnalyticsAndInsights from "@/pages/AnalyticsAndInsight";
 import Plans from "@/pages/Plans";
 import PlanForm from "@/pages/PlanForm";
 import ViewPlans from "@/pages/ViewPlans";
+import ClientManagement from "@/pages/ClientManagement";
+import ClientProfile from "@/pages/ClientProfile";
 
 export const router = createBrowserRouter([
   {
@@ -24,6 +26,8 @@ export const router = createBrowserRouter([
       { path: "plans", element: <Plans /> },
       { path: "plan-creation", element: <PlanForm /> },
       { path: "view-plans", element: <ViewPlans /> },
+      { path: "client-management", element: <ClientManagement /> },
+      { path: "client-profile", element: <ClientProfile /> },
     ],
   },
 ]);
