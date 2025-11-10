@@ -155,7 +155,6 @@ export default function AnalyticsAndInsights(): JSX.Element {
         />
       </div>
 
-      {/* Line Chart */}
       <LineChartCard
         title="Subscription Payment Flow"
         data={lineData}

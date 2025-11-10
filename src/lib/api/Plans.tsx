@@ -34,7 +34,6 @@ export const PlanUpdate = async (
   payload: PlanPayload
 ): Promise<PlanResponse> => {
   const body = { id, ...payload };
-
   const { data } = await api.put<PlanResponse>("/api/v1/plans", body);
   return data;
 };

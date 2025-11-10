@@ -16,7 +16,7 @@ export default function ViewPlans() {
   useEffect(() => {
     const fetchPlan = async () => {
       if (!id) {
-        setError("No plan ID provided in URL.");
+        setError("No plan ID found.");
         setLoading(false);
         return;
       }
@@ -25,6 +25,7 @@ export default function ViewPlans() {
         setLoading(true);
         const data = await PlanGet(id);
         setPlan(data);
+        console.log("Fetched plan:", data);
       } catch (err) {
         console.error("Failed to fetch plan:", err);
         setError("Failed to load plan. Please try again.");
@@ -74,8 +75,14 @@ export default function ViewPlans() {
         icon={getIcon(plan.type)}
         type={plan.type}
         title={plan.name}
-        priceNaira={plan.priceNaira.toLocaleString()}
-        priceUSD={plan.priceUsd.toFixed(2)}
+        priceNaira={plan.priceNaira.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}
+        priceUSD={plan.priceUsd.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}
         features={plan.features}
         buttonText="Edit Plan"
         navigateTo={`/plan-creation?id=${plan.id}`}

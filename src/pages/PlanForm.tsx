@@ -30,6 +30,7 @@ const PlanForm: React.FC = () => {
 
   useEffect(() => {
     console.log("User from context:", user);
+    console.log(planData);
 
     const searchParams = new URLSearchParams(location.search);
     const id = searchParams.get("id");
@@ -80,10 +81,9 @@ const PlanForm: React.FC = () => {
     setPlanData((prev) => ({ ...prev, features: [...prev.features, ""] }));
   };
 
-  const removeFeature = () => {
+  const removeSingleFeature = (index: number) => {
     if (planData.features.length > 1) {
-      const updated = [...planData.features];
-      updated.pop();
+      const updated = planData.features.filter((_, i) => i !== index);
       setPlanData((prev) => ({ ...prev, features: updated }));
     }
   };
@@ -123,6 +123,7 @@ const PlanForm: React.FC = () => {
 
     try {
       if (editing && planId) {
+        console.log(payload);
         await PlanUpdate(planId, payload);
         toast.success("Plan updated successfully!");
         navigate(`/view-plans?id=${planId}`);
@@ -203,19 +204,39 @@ const PlanForm: React.FC = () => {
             <div className="space-y-3">
               {planData.features.map((feature, index) => (
                 <div key={index}>
-                  <input
-                    type="text"
-                    placeholder={`Feature ${index + 1}`}
-                    value={feature}
-                    onChange={(e) => handleFeatureChange(index, e.target.value)}
-                    className={`w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-md focus:outline-none ${
-                      errors.features && (errors.features as string[])[index]
-                        ? "border border-red-500"
-                        : ""
-                    }`}
-                  />
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      placeholder={`Feature ${index + 1}`}
+                      value={feature}
+                      onChange={(e) =>
+                        handleFeatureChange(index, e.target.value)
+                      }
+                      className={`flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-md focus:outline-none ${
+                        errors.features && (errors.features as string[])[index]
+                          ? "border border-red-500"
+                          : ""
+                      }`}
+                    />
+
+                    {planData.features.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeSingleFeature(index)}
+                        disabled={!canRemove}
+                        className={`flex items-center text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-600 text-sm ${
+                          canRemove
+                            ? "hover:underline"
+                            : "opacity-50 cursor-not-allowed"
+                        }`}
+                      >
+                        <MinusCircle className="w-4 h-4 mr-1" />
+                      </button>
+                    )}
+                  </div>
+
                   {errors.features && (errors.features as string[])[index] && (
-                    <p className="text-red-500 text-xs mt-1">
+                    <p className="text-red-500 text-xs mt-1 ml-1">
                       {(errors.features as string[])[index]}
                     </p>
                   )}
@@ -233,22 +254,6 @@ const PlanForm: React.FC = () => {
                 <PlusCircle className="w-4 h-4 mr-1" />
                 Add Feature
               </button>
-
-              {planData.features.length > 1 && (
-                <button
-                  type="button"
-                  onClick={removeFeature}
-                  disabled={!canRemove}
-                  className={`flex items-center text-red-600 dark:text-red-400 text-sm ${
-                    canRemove
-                      ? "hover:underline"
-                      : "opacity-50 cursor-not-allowed"
-                  }`}
-                >
-                  <MinusCircle className="w-4 h-4 mr-1" />
-                  Remove Feature
-                </button>
-              )}
             </div>
           </div>
         </div>
