@@ -238,7 +238,7 @@ const ClientManagement: React.FC = () => {
     {
       key: "name",
       label: "Name",
-      render: (value, row: Client) => (
+      render: (value, _row: Client) => (
         <div className="flex items-center gap-3">
           <div
             className={`w-8 h-8 rounded-full ${getAvatarColor(

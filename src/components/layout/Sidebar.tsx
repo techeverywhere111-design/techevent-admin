@@ -5,6 +5,8 @@ import {
   CreditCard,
   BarChart2,
   Gem,
+  Calendar1,
+  ShieldUser,
   X,
 } from "lucide-react";
 import Logo from "@/assets/PlutoEvent_Logo.png";
@@ -17,6 +19,7 @@ interface SidebarProps {
 const navItems = [
   { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { name: "Client Management", path: "/client-management", icon: Users },
+  { name: "Event Management", path: "/event-management", icon: Calendar1 },
   { name: "Payment History", path: "/payments", icon: CreditCard },
   {
     name: "Analytics and Insight",
@@ -24,6 +27,7 @@ const navItems = [
     icon: BarChart2,
   },
   { name: "Plans", path: "/plans", icon: Gem },
+  { name: "Admin Management", path: "/admin-management", icon: ShieldUser },
 ];
 
 export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {

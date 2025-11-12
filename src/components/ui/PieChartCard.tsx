@@ -2,12 +2,7 @@ import React from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import type { PieLabelRenderProps } from "recharts";
 import SkeletonLoader from "./SkeletonLoader";
-
-export interface ChartData {
-  name: string;
-  value: number;
-  [key: string]: string | number;
-}
+import { type ChartData } from "@/types/chart";
 
 interface PieChartCardProps {
   title: string;

@@ -4,15 +4,11 @@ import PieChartCard from "@/components/ui/PieChartCard";
 import BarChartCard from "@/components/ui/BarChartCard";
 import LineChartCard from "@/components/ui/LineChartCard";
 import DonutChartCard from "@/components/ui/DonutChartCard";
+import { type ChartData } from "@/types/chart";
 
 interface Stat {
   title: string;
   value: string | number;
-}
-
-interface ChartData {
-  name: string;
-  value: number;
 }
 
 interface LineData {
@@ -21,7 +17,7 @@ interface LineData {
   lastYear: number;
 }
 
-export default function AnalyticsAndInsights(): JSX.Element {
+export default function AnalyticsAndInsights() {
   const [loading, setLoading] = useState<boolean>(true);
 
   const barColors1: string[] = ["#0F3D74", "#0065FF", "#CADDF5ED"];

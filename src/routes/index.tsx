@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import Login from "@/features/auth/pages/Login";
+import Signup from "@/features/auth/pages/Signup";
 import Layout from "@/components/layout/Layout";
 import Dashboard from "@/pages/Dashboard";
 import AnalyticsAndInsights from "@/pages/AnalyticsAndInsight";
@@ -8,16 +9,24 @@ import PlanForm from "@/pages/PlanForm";
 import ViewPlans from "@/pages/ViewPlans";
 import ClientManagement from "@/pages/ClientManagement";
 import ClientProfile from "@/pages/ClientProfile";
+import { PrivateRoute } from "@/components/PrivateRoute";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <Login />,
   },
-
+  {
+    path: "/signup",
+    element: <Signup />,
+  },
   {
     path: "/",
-    element: <Layout />,
+    element: (
+      <PrivateRoute>
+        <Layout />
+      </PrivateRoute>
+    ),
     children: [
       { path: "dashboard", element: <Dashboard /> },
       { path: "clients", element: <Plans /> },

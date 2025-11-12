@@ -10,12 +10,12 @@ import {
   Label,
   Cell,
 } from "recharts";
+import { type ChartData } from "@/types/chart";
 import SkeletonLoader from "@/components/ui/SkeletonLoader";
 
-// ---- Type Definitions ---- //
 interface BarChartCardProps {
   title: string;
-  data: Array<Record<string, number | string>>;
+  data: ChartData[];
   xKey: string;
   barKey: string;
   loading: boolean;
