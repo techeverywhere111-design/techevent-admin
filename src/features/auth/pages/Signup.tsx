@@ -140,8 +140,8 @@ const Signup: React.FC = () => {
       </div>
 
       {/* Right Panel */}
-      <div className="flex w-1/2 justify-center items-center bg-white">
-        <div className="w-full max-w-sm px-6">
+      <div className="flex w-full md:w-1/2 justify-center items-center bg-white">
+        <div className="w-full max-w-md px-6">
           <h2 className="text-2xl font-semibold text-center mb-2">
             Create Admin Account
           </h2>

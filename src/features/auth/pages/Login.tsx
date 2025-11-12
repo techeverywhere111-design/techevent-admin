@@ -91,7 +91,7 @@ const Login: React.FC = () => {
 
       {/* Right Panel */}
       <div className="flex w-full md:w-1/2 justify-center items-center bg-white p-6">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-sm">
           <h2 className="text-2xl font-semibold text-center mb-2">
             Admin Sign In
           </h2>
@@ -152,6 +152,15 @@ const Login: React.FC = () => {
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
+            <p className="text-sm text-center text-gray-600 mt-2">
+              Don&apos; have an account?{" "}
+              <a
+                href="/signup"
+                className="text-sky-600 hover:underline font-medium"
+              >
+                Sign Up
+              </a>
+            </p>
           </form>
         </div>
       </div>
