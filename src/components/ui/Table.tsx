@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
-import { Search, Download } from "lucide-react";
 
 export interface Column {
   key: string;
@@ -12,29 +11,16 @@ export interface TableProps {
   columns: Column[];
   data: any[];
   itemsPerPage?: number;
-  onSearch?: (searchTerm: string) => void;
-  onExport?: () => void;
   renderActions?: (row: any) => React.ReactNode;
-  searchPlaceholder?: string;
 }
 
 const Table: React.FC<TableProps> = ({
   columns,
   data,
   itemsPerPage = 10,
-  onSearch,
-  onExport,
   renderActions,
-  searchPlaceholder = "Search",
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
-    onSearch?.(value);
-  };
 
   const totalPages = Math.ceil(data.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -63,35 +49,6 @@ const Table: React.FC<TableProps> = ({
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-colors duration-300">
-      {/* Search & Export */}
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center gap-4">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder={searchPlaceholder}
-            value={searchTerm}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
-          />
-          <button
-            onClick={() => handleSearchChange(searchTerm)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-          >
-            <Search size={20} />
-          </button>
-        </div>
-
-        {onExport && (
-          <button
-            onClick={onExport}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition"
-          >
-            <Download size={18} />
-            Export
-          </button>
-        )}
-      </div>
-
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">

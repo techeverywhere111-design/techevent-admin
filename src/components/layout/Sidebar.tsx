@@ -8,7 +8,10 @@ import {
   Calendar1,
   ShieldUser,
   X,
+  ChevronRight,
+  ChevronDown,
 } from "lucide-react";
+import { useState } from "react";
 import Logo from "@/assets/PlutoEvent_Logo.png";
 
 interface SidebarProps {
@@ -16,10 +19,21 @@ interface SidebarProps {
   toggleSidebar: () => void;
 }
 
-const navItems = [
+interface NavItem {
+  name: string;
+  path?: string;
+  icon: any;
+  subItems?: { name: string; path: string }[];
+}
+
+const navItems: NavItem[] = [
   { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { name: "Client Management", path: "/client-management", icon: Users },
-  { name: "Event Management", path: "/event-management", icon: Calendar1 },
+  {
+    name: "Event Management",
+    icon: Calendar1,
+    subItems: [{ name: "Category 1", path: "/client-management" }],
+  },
   { name: "Payment History", path: "/payments", icon: CreditCard },
   {
     name: "Analytics and Insight",
@@ -31,6 +45,18 @@ const navItems = [
 ];
 
 export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
+  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
+    {}
+  );
+
+  const toggleDropdown = (name: string) => {
+    setOpenDropdowns((prev) => ({
+      ...prev,
+      // Toggle the clicked dropdown, close others
+      [name]: !prev[name],
+    }));
+  };
+
   return (
     <>
       {/* Overlay for mobile */}
@@ -46,6 +72,7 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
+        {/* Logo */}
         <div className="flex items-center justify-between p-5 border-b border-white/10">
           <div className="flex items-center space-x-2">
             <img src={Logo} alt="Logo" className="h-12 w-auto" />
@@ -57,23 +84,80 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 mt-6 space-y-1">
-          {navItems.map(({ name, path, icon: Icon }) => (
-            <NavLink
-              key={name}
-              to={path}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-6 py-3 text-sm transition-colors ${
-                  isActive
-                    ? "bg-blue-600 text-white"
-                    : "text-gray-300 hover:bg-blue-800 hover:text-white"
-                }`
-              }
-              onClick={toggleSidebar}
-            >
-              <Icon size={18} />
-              {name}
-            </NavLink>
-          ))}
+          {navItems.map(({ name, path, icon: Icon, subItems }) => {
+            // Determine if any sub-item is active
+            const isSubItemActive = subItems?.some(
+              (sub) => sub.path === window.location.pathname
+            );
+
+            if (subItems) {
+              const isDropdownOpen = openDropdowns[name];
+
+              return (
+                <div key={name}>
+                  <button
+                    onClick={() => toggleDropdown(name)}
+                    className={`flex items-center justify-between gap-3 w-full px-6 py-3 text-sm transition-colors ${
+                      isSubItemActive
+                        ? "bg-blue-600 text-white" // highlight only if a sub-item is active
+                        : "text-gray-300 hover:bg-blue-800 hover:text-white"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon size={18} />
+                      {name}
+                    </div>
+                    {isDropdownOpen ? (
+                      <ChevronDown size={16} />
+                    ) : (
+                      <ChevronRight size={16} />
+                    )}
+                  </button>
+
+                  <div
+                    className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
+                      isDropdownOpen ? "max-h-60" : "max-h-0"
+                    }`}
+                  >
+                    {subItems.map((sub) => (
+                      <NavLink
+                        key={sub.name}
+                        to={sub.path}
+                        className={({ isActive }) =>
+                          `flex items-center gap-3 pl-12 py-2 text-sm transition-colors ${
+                            isActive
+                              ? "bg-blue-500 text-white"
+                              : "text-gray-300 hover:bg-blue-700 hover:text-white"
+                          }`
+                        }
+                        onClick={toggleSidebar}
+                      >
+                        {sub.name}
+                      </NavLink>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <NavLink
+                key={name}
+                to={path!}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-6 py-3 text-sm transition-colors ${
+                    isActive
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-300 hover:bg-blue-800 hover:text-white"
+                  }`
+                }
+                onClick={toggleSidebar}
+              >
+                <Icon size={18} />
+                {name}
+              </NavLink>
+            );
+          })}
         </nav>
       </aside>
     </>
