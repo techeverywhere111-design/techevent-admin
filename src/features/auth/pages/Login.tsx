@@ -83,9 +83,13 @@ const Login: React.FC = () => {
 
       <div className="flex w-full md:w-1/2 justify-center items-start md:items-center bg-white p-6 md:p-12">
         <div className="w-full max-w-xs sm:max-w-sm">
-          <div className="flex flex-col items-center mb-6 md:hidden animate-fadeIn">
-            <img src={Logo} alt="Logo" className="h-20 w-auto mb-2" />
-            <p className="text-gray-500 italic text-sm tracking-wide text-center">
+          <div className="flex flex-col items-center mb-6 md:hidden">
+            <img
+              src={Logo}
+              alt="Logo"
+              className="h-20 w-auto mb-2 animate-fadeInLogo"
+            />
+            <p className="text-gray-500 italic text-sm tracking-wide text-center animate-fadeInTagline">
               Manage. Monitor. Control.
             </p>
           </div>
@@ -116,7 +120,6 @@ const Login: React.FC = () => {
               )}
             </div>
 
-            {/* Password */}
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700">
                 Password
