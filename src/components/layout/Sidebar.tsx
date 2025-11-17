@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -32,7 +33,7 @@ const navItems: NavItem[] = [
   {
     name: "Event Management",
     icon: Calendar1,
-    subItems: [{ name: "Category 1", path: "/client-management" }],
+    subItems: [{ name: "Category", path: "/event-category" }],
   },
   { name: "Payment History", path: "/payments", icon: CreditCard },
   {
@@ -52,7 +53,6 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
   const toggleDropdown = (name: string) => {
     setOpenDropdowns((prev) => ({
       ...prev,
-      // Toggle the clicked dropdown, close others
       [name]: !prev[name],
     }));
   };
@@ -97,9 +97,9 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
                 <div key={name}>
                   <button
                     onClick={() => toggleDropdown(name)}
-                    className={`flex items-center justify-between gap-3 w-full px-6 py-3 text-sm transition-colors ${
+                    className={`flex items-center justify-between gap-3 w-full px-6 py-3 text-sm transition- rounded-lg ${
                       isSubItemActive
-                        ? "bg-blue-600 text-white" // highlight only if a sub-item is active
+                        ? "bg-blue-600 text-white"
                         : "text-gray-300 hover:bg-blue-800 hover:text-white"
                     }`}
                   >
@@ -124,9 +124,9 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
                         key={sub.name}
                         to={sub.path}
                         className={({ isActive }) =>
-                          `flex items-center gap-3 pl-12 py-2 text-sm transition-colors ${
+                          `flex items-center gap-3 pl-12 py-2 text-sm transition-colors rounded-lg ${
                             isActive
-                              ? "bg-blue-500 text-white"
+                              ? "bg-[#081A30] text-[#237BE6] "
                               : "text-gray-300 hover:bg-blue-700 hover:text-white"
                           }`
                         }
@@ -145,7 +145,7 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
                 key={name}
                 to={path!}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-6 py-3 text-sm transition-colors ${
+                  `flex items-center gap-3 px-6 py-3 text-sm transition-colors rounded-lg ${
                     isActive
                       ? "bg-blue-600 text-white"
                       : "text-gray-300 hover:bg-blue-800 hover:text-white"

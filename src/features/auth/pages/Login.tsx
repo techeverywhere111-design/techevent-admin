@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -71,16 +72,7 @@ const Login: React.FC = () => {
 
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden">
-      {/* Left Panel */}
-      <div
-        className="relative w-full md:w-1/2 flex flex-col justify-center items-center text-white bg-[#0B1739] p-6 md:p-0"
-        style={{
-          clipPath:
-            window.innerWidth >= 768
-              ? "polygon(70% 100%, 0% 100%, 0 0, 85% 0 )"
-              : "none",
-        }}
-      >
+      <div className="hidden md:flex relative w-1/2 flex-col justify-center items-center text-white bg-[#0B1739] clip-path-custom">
         <div className="text-center space-y-2">
           <img src={Logo} alt="Logo" className="h-20 w-auto mx-auto" />
           <p className="text-gray-300 italic text-sm tracking-wide">
@@ -89,17 +81,23 @@ const Login: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Panel */}
-      <div className="flex w-full md:w-1/2 justify-center items-center bg-white p-6">
-        <div className="w-full max-w-sm">
-          <h2 className="text-2xl font-semibold text-center mb-2">
+      <div className="flex w-full md:w-1/2 justify-center items-start md:items-center bg-white p-6 md:p-12">
+        <div className="w-full max-w-xs sm:max-w-sm">
+          <div className="flex flex-col items-center mb-6 md:hidden animate-fadeIn">
+            <img src={Logo} alt="Logo" className="h-20 w-auto mb-2" />
+            <p className="text-gray-500 italic text-sm tracking-wide text-center">
+              Manage. Monitor. Control.
+            </p>
+          </div>
+
+          <h2 className="text-xl sm:text-2xl font-semibold text-center mb-2">
             Admin Sign In
           </h2>
-          <p className="text-center text-gray-500 mb-6 text-sm">
+          <p className="text-center text-gray-500 mb-4 sm:mb-6 text-sm">
             Sign in to keep everything running smoothly.
           </p>
 
-          <form className="space-y-10" onSubmit={handleSubmit}>
+          <form className="space-y-6 sm:space-y-10" onSubmit={handleSubmit}>
             {/* Email */}
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700">
@@ -152,8 +150,9 @@ const Login: React.FC = () => {
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
+
             <p className="text-sm text-center text-gray-600 mt-2">
-              Don&apos; have an account?{" "}
+              Don&apos;t have an account?{" "}
               <a
                 href="/signup"
                 className="text-sky-600 hover:underline font-medium"

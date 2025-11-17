@@ -10,6 +10,7 @@ import ViewPlans from "@/pages/ViewPlans";
 import ClientManagement from "@/pages/ClientManagement";
 import ClientProfile from "@/pages/ClientProfile";
 import { PrivateRoute } from "@/components/PrivateRoute";
+import EventCategory from "@/pages/EventCategory";
 
 export const router = createBrowserRouter([
   {
@@ -37,6 +38,7 @@ export const router = createBrowserRouter([
       { path: "view-plans", element: <ViewPlans /> },
       { path: "client-management", element: <ClientManagement /> },
       { path: "client-profile", element: <ClientProfile /> },
+      { path: "event-category", element: <EventCategory /> },
     ],
   },
 ]);

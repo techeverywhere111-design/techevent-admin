@@ -43,6 +43,7 @@ export const AdminUserLogin = async (
     "/api/v1/admin-users/login",
     payload
   );
+  console.log("Login response data:", data);
   return data;
 };
 

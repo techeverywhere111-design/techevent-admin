@@ -5,3 +5,23 @@
 .clip-slant {
   clip-path: polygon(0 0, 85% 0, 75% 100%, 0% 100%);
 }
+@layer utilities {
+  .clip-path-custom {
+    clip-path: polygon(70% 100%, 0% 100%, 0 0, 85% 0);
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.8s ease-in forwards;
+  }
+}

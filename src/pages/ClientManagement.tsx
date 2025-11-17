@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
 import { MoreVertical, User, Search, Download } from "lucide-react";
+// import { GetClients } from "@/lib/api/ClientManagement"; // <-- uncomment when API ready
 
 interface Client {
   id: string;
@@ -35,13 +36,7 @@ const defaultClients: Client[] = [
     planType: "Personal",
     dateJoined: "21-07-2023",
   },
-  {
-    id: "3",
-    name: "John Smith",
-    email: "johnsmith@gmail.com",
-    planType: "Personal",
-    dateJoined: "21-07-2023",
-  },
+
   {
     id: "4",
     name: "Jane Doe",
@@ -1417,12 +1412,39 @@ const defaultClients: Client[] = [
 ];
 
 const ClientManagement: React.FC = () => {
-  const [clients] = useState<Client[]>(defaultClients);
-  const [filteredClients, setFilteredClients] =
-    useState<Client[]>(defaultClients);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [filteredClients, setFilteredClients] = useState<Client[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Simulated fetch
+  const fetchClients = async (page = 0, size = 10) => {
+    try {
+      setLoading(true);
+      // const response = await GetClients(page, size);
+      // setClients(response.content || []);
+      // setFilteredClients(response.content || []);
+      // setTotalPages(response.totalPages || 1);
+      // For now, simulate dummy data:
+      setTimeout(() => {
+        setClients(defaultClients);
+        setFilteredClients(defaultClients);
+        setTotalPages(1);
+        setLoading(false);
+      }, 800);
+    } catch (err) {
+      console.error("Error fetching clients:", err);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchClients(currentPage, 10);
+  }, [currentPage]);
 
   const getAvatarColor = (name: string) => {
     const colors = [
@@ -1436,19 +1458,8 @@ const ClientManagement: React.FC = () => {
     return colors[index];
   };
 
-  const handleSearch = () => {
-    const filtered = clients.filter(
-      (c) =>
-        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.planType.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredClients(filtered);
-  };
-
   const handleSearchInputChange = (value: string) => {
     setSearchTerm(value);
-    // Optional: Search as you type
     const filtered = clients.filter(
       (c) =>
         c.name.toLowerCase().includes(value.toLowerCase()) ||
@@ -1465,6 +1476,16 @@ const ClientManagement: React.FC = () => {
   const toggleMenu = (id: string) => {
     setOpenMenuId(openMenuId === id ? null : id);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest(".menu-container")) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleViewProfile = (client: Client) =>
     navigate(`/client-profile?${client.id}`);
@@ -1504,54 +1525,34 @@ const ClientManagement: React.FC = () => {
       key: "dateJoined",
       label: "Date Joined",
       render: (v) => (
-        <span className="text-gray-600 dark:text-gray-300">{v}</span>
+        <span className="text-gray-600 dark:text-gray-300">
+          {new Date(v).toLocaleDateString()}
+        </span>
       ),
     },
   ];
 
   const renderActions = (row: Client) => (
-    <div className="relative">
+    <>
       <button
-        onClick={() => toggleMenu(row.id)}
-        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+        onClick={() => handleViewProfile(row)}
+        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
       >
-        <MoreVertical size={20} className="text-gray-600 dark:text-gray-300" />
+        View Profile
       </button>
-
-      {openMenuId === row.id && (
-        <div className="absolute right-0 top-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-10 w-48">
-          <button
-            onClick={() => {
-              handleViewProfile(row);
-              setOpenMenuId(null);
-            }}
-            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            View Profile
-          </button>
-
-          <button
-            onClick={() => {
-              handlePaymentHistory(row);
-              setOpenMenuId(null);
-            }}
-            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            Payment History
-          </button>
-
-          <button
-            onClick={() => {
-              handleAuditLogs(row);
-              setOpenMenuId(null);
-            }}
-            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            Audit Logs
-          </button>
-        </div>
-      )}
-    </div>
+      <button
+        onClick={() => handlePaymentHistory(row)}
+        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+      >
+        Payment History
+      </button>
+      <button
+        onClick={() => handleAuditLogs(row)}
+        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+      >
+        Audit Logs
+      </button>
+    </>
   );
 
   return (
@@ -1563,7 +1564,7 @@ const ClientManagement: React.FC = () => {
           </h1>
         </div>
 
-        {/* Search & Export Section */}
+        {/* Search & Export */}
         <div className="mb-6 flex justify-between items-center gap-4">
           <div className="flex gap-2">
             <input
@@ -1571,10 +1572,10 @@ const ClientManagement: React.FC = () => {
               placeholder="Search clients..."
               value={searchTerm}
               onChange={(e) => handleSearchInputChange(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
             />
             <button
-              onClick={handleSearch}
+              onClick={() => handleSearchInputChange(searchTerm)}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               <Search size={20} />
@@ -1595,6 +1596,8 @@ const ClientManagement: React.FC = () => {
           data={filteredClients}
           itemsPerPage={10}
           renderActions={renderActions}
+          onPageChange={(page) => setCurrentPage(page - 1)}
+          loading={loading}
         />
       </div>
     </div>
