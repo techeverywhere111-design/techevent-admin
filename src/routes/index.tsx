@@ -6,6 +6,7 @@ import Dashboard from "@/pages/Dashboard";
 import AnalyticsAndInsights from "@/pages/AnalyticsAndInsight";
 import Plans from "@/pages/Plans";
 import PlanForm from "@/pages/PlanForm";
+import PaymentHistory from "@/pages/PaymentHistory";
 
 export const router = createBrowserRouter([
   {
@@ -14,7 +15,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "", element: <Dashboard /> },
       { path: "clients", element: <Plans /> },
-      { path: "payments", element: <Plans /> },
+      { path: "payments", element: <PaymentHistory /> },
       { path: "analytics-and-insight", element: <AnalyticsAndInsights /> },
       { path: "plans", element: <Plans /> },
       { path: "plan-creation", element: <PlanForm /> },
