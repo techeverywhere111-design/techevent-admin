@@ -1,11 +1,17 @@
 import React, { useEffect, useState, useContext } from "react";
 import { PlusCircle, MinusCircle } from "lucide-react";
 import { toast } from "react-toastify";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AppContext } from "@/context/AppContext";
-import { PlanCreate, type PlanPayload } from "@/lib/api/Plans";
+import {
+  PlanCreate,
+  PlanUpdate,
+  PlanGet,
+  type PlanPayload,
+} from "@/lib/api/Plans";
 
 const PlanForm: React.FC = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const { user } = useContext(AppContext);
 
@@ -19,14 +25,51 @@ const PlanForm: React.FC = () => {
 
   const [errors, setErrors] = useState<Record<string, string | string[]>>({});
   const [loading, setLoading] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [planId, setPlanId] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("Current user:", user);
-    const planType = location.search.replace("?", "");
-    if (planType) {
-      setPlanData((prev) => ({ ...prev, type: planType }));
+    console.log("User from context:", user);
+    console.log(planData);
+
+    const searchParams = new URLSearchParams(location.search);
+    const id = searchParams.get("id");
+    const typeParam = searchParams.get("type");
+
+    const fallbackType =
+      !typeParam && location.search.startsWith("?")
+        ? location.search.replace("?", "").trim()
+        : typeParam;
+
+    if (id) {
+      setEditing(true);
+      setPlanId(id);
+      fetchPlanData(id);
+    } else if (fallbackType) {
+      setPlanData((prev) => ({ ...prev, type: fallbackType }));
     }
   }, [location.search]);
+
+  const fetchPlanData = async (id: string) => {
+    try {
+      setLoading(true);
+      const data = await PlanGet(id);
+      if (!data) throw new Error("No plan found");
+
+      setPlanData({
+        type: data.type || "",
+        name: data.name || "",
+        features: data.features?.length ? data.features : [""],
+        priceNaira: data.priceNaira || 0,
+        priceUsd: data.priceUsd || 0,
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load plan details.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFeatureChange = (index: number, value: string) => {
     const updated = [...planData.features];
@@ -38,10 +81,9 @@ const PlanForm: React.FC = () => {
     setPlanData((prev) => ({ ...prev, features: [...prev.features, ""] }));
   };
 
-  const removeFeature = () => {
+  const removeSingleFeature = (index: number) => {
     if (planData.features.length > 1) {
-      const updated = [...planData.features];
-      updated.pop();
+      const updated = planData.features.filter((_, i) => i !== index);
       setPlanData((prev) => ({ ...prev, features: updated }));
     }
   };
@@ -69,49 +111,56 @@ const PlanForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) {
-      toast.error("❌ Please fix all errors before submitting.");
+      toast.error("Please fix all errors before submitting.");
       return;
     }
 
     setLoading(true);
-
     const payload = {
       ...planData,
       features: planData.features.map((f) => f.trim()),
     };
 
     try {
-      const result = await PlanCreate(payload);
-      toast.success("✅ Plan created successfully!");
-      console.log("Created plan:", result);
-      console.log(payload);
+      if (editing && planId) {
+        console.log(payload);
+        await PlanUpdate(planId, payload);
+        toast.success("Plan updated successfully!");
+        navigate(`/view-plans?id=${planId}`);
+      } else {
+        console.log("Creating plan with payload:", payload);
+        const result = await PlanCreate(payload);
+        toast.success("Plan created successfully!");
+        navigate(`/view-plans?id=${result?.id}`);
+      }
 
-      // reset form but preserve type
-      setPlanData({
-        type: planData.type,
-        name: "",
-        features: [""],
-        priceNaira: 0,
-        priceUsd: 0,
-      });
-      setErrors({});
+      setTimeout(() => {
+        setErrors({});
+        if (!editing) {
+          setPlanData({
+            type: planData.type,
+            name: "",
+            features: [""],
+            priceNaira: 0,
+            priceUsd: 0,
+          });
+        }
+      }, 1000);
     } catch (error) {
-      console.log(payload);
       console.error(error);
-      toast.error("❌ Failed to create plan. Please try again.");
+      toast.error("Operation failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const canRemove = planData.features.length > 1; // always enabled once ≥2 features
+  const canRemove = planData.features.length > 1;
 
-  // ---------------------------
-  // UI
-  // ---------------------------
   return (
     <div className="p-8 w-full min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
-      <h2 className="text-lg font-semibold mb-6">Plans</h2>
+      <h2 className="text-lg font-semibold mb-6">
+        {editing ? "Edit Plan" : "Create Plan"}
+      </h2>
 
       <form
         onSubmit={handleSubmit}
@@ -155,19 +204,39 @@ const PlanForm: React.FC = () => {
             <div className="space-y-3">
               {planData.features.map((feature, index) => (
                 <div key={index}>
-                  <input
-                    type="text"
-                    placeholder={`Feature ${index + 1}`}
-                    value={feature}
-                    onChange={(e) => handleFeatureChange(index, e.target.value)}
-                    className={`w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-md focus:outline-none ${
-                      errors.features && (errors.features as string[])[index]
-                        ? "border border-red-500"
-                        : ""
-                    }`}
-                  />
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      placeholder={`Feature ${index + 1}`}
+                      value={feature}
+                      onChange={(e) =>
+                        handleFeatureChange(index, e.target.value)
+                      }
+                      className={`flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-md focus:outline-none ${
+                        errors.features && (errors.features as string[])[index]
+                          ? "border border-red-500"
+                          : ""
+                      }`}
+                    />
+
+                    {planData.features.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeSingleFeature(index)}
+                        disabled={!canRemove}
+                        className={`flex items-center text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-600 text-sm ${
+                          canRemove
+                            ? "hover:underline"
+                            : "opacity-50 cursor-not-allowed"
+                        }`}
+                      >
+                        <MinusCircle className="w-4 h-4 mr-1" />
+                      </button>
+                    )}
+                  </div>
+
                   {errors.features && (errors.features as string[])[index] && (
-                    <p className="text-red-500 text-xs mt-1">
+                    <p className="text-red-500 text-xs mt-1 ml-1">
                       {(errors.features as string[])[index]}
                     </p>
                   )}
@@ -185,22 +254,6 @@ const PlanForm: React.FC = () => {
                 <PlusCircle className="w-4 h-4 mr-1" />
                 Add Feature
               </button>
-
-              {planData.features.length > 1 && (
-                <button
-                  type="button"
-                  onClick={removeFeature}
-                  disabled={!canRemove}
-                  className={`flex items-center text-red-600 dark:text-red-400 text-sm ${
-                    canRemove
-                      ? "hover:underline"
-                      : "opacity-50 cursor-not-allowed"
-                  }`}
-                >
-                  <MinusCircle className="w-4 h-4 mr-1" />
-                  Remove Feature
-                </button>
-              )}
             </div>
           </div>
         </div>
@@ -260,7 +313,13 @@ const PlanForm: React.FC = () => {
               loading ? "bg-blue-400" : "bg-blue-600 hover:bg-blue-700"
             }`}
           >
-            {loading ? "Creating..." : "Create Plan"}
+            {loading
+              ? editing
+                ? "Updating..."
+                : "Creating..."
+              : editing
+              ? "Update Plan"
+              : "Create Plan"}
           </button>
         </div>
       </form>

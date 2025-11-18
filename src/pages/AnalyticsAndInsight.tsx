@@ -4,15 +4,11 @@ import PieChartCard from "@/components/ui/PieChartCard";
 import BarChartCard from "@/components/ui/BarChartCard";
 import LineChartCard from "@/components/ui/LineChartCard";
 import DonutChartCard from "@/components/ui/DonutChartCard";
+import { type ChartData } from "@/types/chart";
 
 interface Stat {
   title: string;
   value: string | number;
-}
-
-interface ChartData {
-  name: string;
-  value: number;
 }
 
 interface LineData {
@@ -21,7 +17,7 @@ interface LineData {
   lastYear: number;
 }
 
-export default function AnalyticsAndInsights(): JSX.Element {
+export default function AnalyticsAndInsights() {
   const [loading, setLoading] = useState<boolean>(true);
 
   const barColors1: string[] = ["#0F3D74", "#0065FF", "#CADDF5ED"];
@@ -87,9 +83,12 @@ export default function AnalyticsAndInsights(): JSX.Element {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 md:p-8 text-gray-800 dark:text-gray-100 transition-colors duration-300">
-      <div className="flex justify-end text-sm text-gray-600 mb-2">Log out</div>
-      <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-6 md:p-8 text-gray-800 dark:text-gray-100 transition-colors duration-300">
+      <div className="flex justify-end text-sm text-gray-600 dark:text-gray-400 mb-2">
+        Log out
+      </div>
+
+      <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-6">
         Analytics and Insight
       </h2>
 
@@ -105,7 +104,6 @@ export default function AnalyticsAndInsights(): JSX.Element {
         ))}
       </div>
 
-      {/* Pie & Donut Charts */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <PieChartCard
           title="Free vs Paid Accounts"
@@ -153,7 +151,6 @@ export default function AnalyticsAndInsights(): JSX.Element {
         />
       </div>
 
-      {/* Line Chart */}
       <LineChartCard
         title="Subscription Payment Flow"
         data={lineData}

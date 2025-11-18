@@ -2,12 +2,7 @@ import React from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import type { PieLabelRenderProps } from "recharts";
 import SkeletonLoader from "./SkeletonLoader";
-
-export interface ChartData {
-  name: string;
-  value: number;
-  [key: string]: string | number;
-}
+import { type ChartData } from "@/types/chart";
 
 interface DonutChartCardProps {
   title: string;
@@ -69,8 +64,10 @@ const DonutChartCard: React.FC<DonutChartCardProps> = ({
   height = 200,
 }) => {
   return (
-    <div className="bg-white shadow rounded-lg p-4 border border-gray-200 flex flex-col">
-      <h3 className="text-sm font-medium text-gray-700 mb-3">{title}</h3>
+    <div className="bg-white dark:bg-[#0B1120] shadow rounded-lg p-4 border border-gray-200 dark:border-gray-700 flex flex-col transition-colors duration-300">
+      <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+        {title}
+      </h3>
 
       {loading ? (
         <SkeletonLoader height="h-48" />
@@ -112,7 +109,9 @@ const DonutChartCard: React.FC<DonutChartCardProps> = ({
                   className="inline-block w-3 h-2 rounded-sm"
                   style={{ backgroundColor: colors[index % colors.length] }}
                 ></span>
-                <span className="text-gray-600">{entry.name}</span>
+                <span className="text-gray-600 dark:text-gray-400">
+                  {entry.name}
+                </span>
               </div>
             ))}
           </div>

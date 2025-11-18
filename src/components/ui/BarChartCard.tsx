@@ -10,12 +10,12 @@ import {
   Label,
   Cell,
 } from "recharts";
+import { type ChartData } from "@/types/chart";
 import SkeletonLoader from "@/components/ui/SkeletonLoader";
 
-// ---- Type Definitions ---- //
 interface BarChartCardProps {
   title: string;
-  data: Array<Record<string, number | string>>;
+  data: ChartData[];
   xKey: string;
   barKey: string;
   loading: boolean;
@@ -39,8 +39,10 @@ const BarChartCard: React.FC<BarChartCardProps> = ({
   chartType = "",
 }) => {
   return (
-    <div className="bg-white shadow rounded-lg p-4 border border-gray-200">
-      <h3 className="text-sm font-bold text-gray-700 mb-3">{title}</h3>
+    <div className="bg-white dark:bg-[#0B1120] shadow rounded-lg p-4 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
+      <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
+        {title}
+      </h3>
 
       {loading ? (
         <SkeletonLoader height="h-[200px] sm:h-[250px] lg:h-[300px]" />
@@ -52,8 +54,12 @@ const BarChartCard: React.FC<BarChartCardProps> = ({
               barSize={barSize}
               margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
             >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey={xKey}>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                strokeOpacity={0.2}
+                stroke="#6b7280"
+              />
+              <XAxis dataKey={xKey} tick={{ fill: "#6b7280" }} stroke="#6b7280">
                 {xAxisLabel && (
                   <Label
                     value={xAxisLabel}
@@ -61,13 +67,14 @@ const BarChartCard: React.FC<BarChartCardProps> = ({
                     position="insideBottom"
                     style={{
                       textAnchor: "middle",
-                      fill: "#6b7280",
+                      fill: "#9ca3af",
                       fontSize: 12,
                     }}
                   />
                 )}
               </XAxis>
-              <YAxis>
+
+              <YAxis tick={{ fill: "#6b7280" }} stroke="#6b7280">
                 {yAxisLabel && (
                   <Label
                     value={yAxisLabel}
@@ -75,15 +82,23 @@ const BarChartCard: React.FC<BarChartCardProps> = ({
                     position="insideLeft"
                     style={{
                       textAnchor: "middle",
-                      fill: "#000000",
+                      fill: "#9ca3af",
                       fontSize: 12,
-                      fontWeight: 1000,
+                      fontWeight: 600,
                     }}
                   />
                 )}
               </YAxis>
 
-              <Tooltip />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#1f2937",
+                  border: "1px solid #374151",
+                  color: "#f3f4f6",
+                }}
+                itemStyle={{ color: "#f3f4f6" }}
+                cursor={{ fill: "rgba(255,255,255,0.05)" }}
+              />
 
               <Bar dataKey={barKey} radius={[6, 6, 0, 0]}>
                 {data.map((_, index) => (
@@ -98,7 +113,7 @@ const BarChartCard: React.FC<BarChartCardProps> = ({
 
           {chartType && (
             <div className="flex justify-center mt-2">
-              <span className="text-xs sm:text-sm font-bold text-gray-950">
+              <span className="text-xs sm:text-sm font-bold text-gray-950 dark:text-gray-200">
                 {chartType}
               </span>
             </div>
