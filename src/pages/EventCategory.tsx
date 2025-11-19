@@ -40,8 +40,7 @@ const EventCategory: React.FC = () => {
       setLoading(true);
       const response = await GetEventCategories(pageNumber - 1, itemsPerPage);
       const items = response?.content || response?.data || [];
-      console.log("Fetched categories:", items);
-      console.log("Fetched response:", response);
+
       setCategories(items);
       setTotalCount(response?.totalElements || response?.total || items.length);
     } catch (err: any) {
@@ -67,7 +66,6 @@ const EventCategory: React.FC = () => {
   );
 
   const openCreateModal = () => {
-    console.log("Opening create modal");
     setModalMode("create");
     setSelectedCategory(null);
     setNewCategory({ name: "", description: "" });
@@ -76,9 +74,6 @@ const EventCategory: React.FC = () => {
   };
 
   const handleEditCategory = (category: EventCategory) => {
-    console.log("Edit button clicked for category:", category);
-    console.log("Current showModal state:", showModal);
-
     setModalMode("edit");
     setSelectedCategory(category);
     setNewCategory({
@@ -93,20 +88,6 @@ const EventCategory: React.FC = () => {
     setTimeout(() => {
       console.log("After timeout - showModal state:", showModal);
     }, 100);
-  };
-
-  const handleDeleteCategory = async (category: EventCategory) => {
-    try {
-      console.log("Delete button clicked for category:", category.id);
-      const response = await DeleteEventCategory(category.id);
-      console.log(response);
-      toast.success(response?.message || "Category deleted successfully");
-
-      await fetchCategories(page);
-    } catch (err: any) {
-      console.error("Error deleting category:", err);
-      toast.error("Failed to delete category");
-    }
   };
 
   const validateForm = () => {
@@ -200,7 +181,6 @@ const EventCategory: React.FC = () => {
   ];
 
   const renderActions = (row: EventCategory) => {
-    console.log("Rendering actions for row:", row.id);
     return (
       <>
         <button
@@ -227,12 +207,6 @@ const EventCategory: React.FC = () => {
       </>
     );
   };
-
-  useEffect(() => {
-    console.log("showModal state changed to:", showModal);
-    console.log("modalMode:", modalMode);
-    console.log("selectedCategory:", selectedCategory);
-  }, [showModal, modalMode, selectedCategory]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-8">
@@ -444,16 +418,27 @@ const EventCategory: React.FC = () => {
                   onClick={async () => {
                     if (!categoryToDelete) return;
                     try {
-                      await DeleteEventCategory(categoryToDelete.id);
-                      toast.success("Category deleted successfully");
+                      setLoading(true);
+                      const response = await DeleteEventCategory(
+                        categoryToDelete.id
+                      );
+                      console.log("Delete response:", response);
+                      toast.success(
+                        categoryToDelete?.name + " deleted successfully." ||
+                          response?.data?.message ||
+                          response?.message ||
+                          "Category deleted successfully"
+                      );
                       fetchCategories(page);
                     } catch (err) {
                       toast.error("Failed to delete category");
                     } finally {
+                      setLoading(false);
                       setShowDeleteModal(false);
                       setCategoryToDelete(null);
                     }
                   }}
+                  disabled={loading}
                   className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
                 >
                   Delete
