@@ -3,33 +3,16 @@ import { useState, useRef, useEffect } from "react";
 import ThemeToggle from "./ThemeToggle";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Users,
-  CreditCard,
-  BarChart2,
-  Gem,
-} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface NavbarProps {
   toggleSidebar: () => void;
 }
 
-const routes = [
-  { name: "Dashboard", path: "/", icon: LayoutDashboard },
-  { name: "Client Management", path: "/clients", icon: Users },
-  { name: "Payment History", path: "/payments", icon: CreditCard },
-  { name: "Analytics and Insight", path: "/analytics", icon: BarChart2 },
-  { name: "Plans", path: "/plans", icon: Gem },
-];
-
 export default function Navbar({ toggleSidebar }: NavbarProps) {
-  const location = useLocation();
   const { toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const currentRoute = routes.find((route) => route.path === location.pathname);
 
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -65,9 +48,6 @@ export default function Navbar({ toggleSidebar }: NavbarProps) {
         >
           <Menu size={22} />
         </button>
-        <h1 className="text-lg font-semibold">
-          {currentRoute ? currentRoute.name : "Page"}
-        </h1>
       </div>
 
       <div className="relative" ref={dropdownRef}>
