@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from "react";
+import { MoreVertical } from "lucide-react";
 
 export interface Column {
   key: string;
@@ -10,7 +11,7 @@ export interface Column {
 export interface TableProps {
   columns: Column[];
   data: any[];
-  totalCount?: number; // for server-side pagination
+  totalCount?: number;
   itemsPerPage?: number;
   renderActions?: (row: any) => React.ReactNode;
   onPageChange?: (page: number) => void;
@@ -22,16 +23,21 @@ const ActionDropdown: React.FC<{
   isOpen: boolean;
   toggle: () => void;
 }> = ({ children, isOpen, toggle }) => {
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
   const [positionAbove, setPositionAbove] = useState(false);
 
   useEffect(() => {
-    if (isOpen && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const dropdownHeight = 150; // estimate height of dropdown
+    if (isOpen && buttonRef.current && dropdownRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const dropdownHeight = 150; // Approximate dropdown height
+      const spaceBelow = window.innerHeight - buttonRect.bottom;
+      const spaceAbove = buttonRect.top;
 
-      setPositionAbove(spaceBelow < dropdownHeight + 10);
+      // Position above if not enough space below
+      setPositionAbove(
+        spaceBelow < dropdownHeight && spaceAbove > dropdownHeight
+      );
     }
   }, [isOpen]);
 
@@ -39,16 +45,28 @@ const ActionDropdown: React.FC<{
     <div className="relative inline-block">
       <div
         ref={buttonRef}
-        onClick={toggle}
-        className="cursor-pointer px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+        onClick={(e) => {
+          e.stopPropagation();
+          toggle();
+        }}
+        className="cursor-pointer px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-center"
       >
-        ⋮
+        <MoreVertical size={20} className="text-gray-600 dark:text-gray-300" />
       </div>
       {isOpen && (
         <div
-          className={`absolute right-0 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 ${
-            positionAbove ? "bottom-full mb-2" : "top-full mt-2"
+          ref={dropdownRef}
+          onMouseDown={(e) => e.stopPropagation()}
+          className={`fixed w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-[9999] ${
+            positionAbove ? "" : ""
           }`}
+          style={{
+            top: positionAbove
+              ? `${buttonRef.current!.getBoundingClientRect().top - 10}px`
+              : `${buttonRef.current!.getBoundingClientRect().bottom + 8}px`,
+            left: `${buttonRef.current!.getBoundingClientRect().right - 160}px`,
+            transform: positionAbove ? "translateY(-100%)" : "none",
+          }}
         >
           {children}
         </div>
@@ -113,7 +131,7 @@ const Table: React.FC<TableProps> = ({
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm relative transition-colors duration-300">
-      <div className="overflow-x-auto overflow-y-hidden relative">
+      <div className="overflow-x-auto overflow-y-visible relative">
         <table className="w-full">
           <thead className="bg-blue-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
             <tr>
