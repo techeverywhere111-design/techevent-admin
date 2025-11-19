@@ -36,3 +36,8 @@ export const UpdateEventCategory = async (
   const { data } = await api.put(`/api/v1/event-categories/${id}`, payload);
   return data;
 };
+
+export const DeleteEventCategory = async (id: string) => {
+  const { data } = await api.delete(`/api/v1/event-categories/${id}`);
+  return data;
+};

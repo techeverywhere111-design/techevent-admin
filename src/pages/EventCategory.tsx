@@ -7,6 +7,7 @@ import {
   CreateEventCategory,
   GetEventCategories,
   UpdateEventCategory,
+  DeleteEventCategory,
 } from "@/lib/api/EventManagement";
 import { toast } from "react-toastify";
 
@@ -29,6 +30,9 @@ const EventCategory: React.FC = () => {
   const [newCategory, setNewCategory] = useState({ name: "", description: "" });
   const [errors, setErrors] = useState({ name: "", description: "" });
   const [page, setPage] = useState(1);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] =
+    useState<EventCategory | null>(null);
   const itemsPerPage = 10;
 
   const fetchCategories = async (pageNumber: number = 1) => {
@@ -86,15 +90,23 @@ const EventCategory: React.FC = () => {
 
     console.log("showModal should now be true");
 
-    // Force a re-render check
     setTimeout(() => {
       console.log("After timeout - showModal state:", showModal);
     }, 100);
   };
 
-  const handleDeleteCategory = (category: EventCategory) => {
-    console.log("Delete clicked for:", category.name);
-    toast.info(`Delete "${category.name}" coming soon.`);
+  const handleDeleteCategory = async (category: EventCategory) => {
+    try {
+      console.log("Delete button clicked for category:", category.id);
+      const response = await DeleteEventCategory(category.id);
+      console.log(response);
+      toast.success(response?.message || "Category deleted successfully");
+
+      await fetchCategories(page);
+    } catch (err: any) {
+      console.error("Error deleting category:", err);
+      toast.error("Failed to delete category");
+    }
   };
 
   const validateForm = () => {
@@ -136,7 +148,6 @@ const EventCategory: React.FC = () => {
       setSelectedCategory(null);
       setErrors({ name: "", description: "" });
 
-      // Refresh the current page
       await fetchCategories(page);
     } catch (err: any) {
       console.error("Error saving category:", err);
@@ -204,12 +215,12 @@ const EventCategory: React.FC = () => {
         </button>
         <button
           onClick={(e) => {
-            console.log("Delete button onClick triggered");
             e.preventDefault();
             e.stopPropagation();
-            handleDeleteCategory(row);
+            setCategoryToDelete(row);
+            setShowDeleteModal(true);
           }}
-          className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
         >
           Delete
         </button>
@@ -217,7 +228,6 @@ const EventCategory: React.FC = () => {
     );
   };
 
-  // Debug: Log when showModal changes
   useEffect(() => {
     console.log("showModal state changed to:", showModal);
     console.log("modalMode:", modalMode);
@@ -379,6 +389,74 @@ const EventCategory: React.FC = () => {
                     : modalMode === "edit"
                     ? "Save"
                     : "Create"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {showDeleteModal && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowDeleteModal(false);
+          }}
+        >
+          <div
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={() => setShowDeleteModal(false)}
+          />
+
+          <div
+            className="relative w-full max-w-xl h-2/4 mx-4 rounded-lg overflow-hidden shadow-xl bg-white dark:bg-gray-800 z-[10001]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 bg-[#081A30] dark:bg-[#081A30]">
+              <h3 className="text-white font-semibold text-lg">
+                Delete Category?
+              </h3>
+              <button
+                className="text-white hover:text-gray-200 text-2xl leading-none"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="p-6 items-center justify-center h-full flex flex-col">
+              <p className="text-center text-gray-900 dark:text-gray-100 text-lg mb-6">
+                Are you sure you want to delete category{" "}
+                <span className="font-semibold">
+                  "{categoryToDelete?.name}"
+                </span>
+                ?
+              </p>
+
+              <div className="flex justify-center gap-4 mt-12">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="px-5 py-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={async () => {
+                    if (!categoryToDelete) return;
+                    try {
+                      await DeleteEventCategory(categoryToDelete.id);
+                      toast.success("Category deleted successfully");
+                      fetchCategories(page);
+                    } catch (err) {
+                      toast.error("Failed to delete category");
+                    } finally {
+                      setShowDeleteModal(false);
+                      setCategoryToDelete(null);
+                    }
+                  }}
+                  className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+                >
+                  Delete
                 </button>
               </div>
             </div>
