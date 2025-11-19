@@ -422,7 +422,6 @@ const EventCategory: React.FC = () => {
                       const response = await DeleteEventCategory(
                         categoryToDelete.id
                       );
-                      console.log("Delete response:", response);
                       toast.success(
                         categoryToDelete?.name + " deleted successfully." ||
                           response?.data?.message ||
