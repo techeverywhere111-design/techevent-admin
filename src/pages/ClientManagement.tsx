@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
-import { MoreVertical, User, Search, Download } from "lucide-react";
+import { User, Search, Download } from "lucide-react";
 // import { GetClients } from "@/lib/api/ClientManagement"; // <-- uncomment when API ready
 
 interface Client {
@@ -1423,6 +1423,8 @@ const ClientManagement: React.FC = () => {
 
   // Simulated fetch
   const fetchClients = async (page = 0, size = 10) => {
+    console.log("Fetching clients for page:", page);
+    console.log("Page size:", size);
     try {
       setLoading(true);
       // const response = await GetClients(page, size);
@@ -1443,6 +1445,8 @@ const ClientManagement: React.FC = () => {
   };
 
   useEffect(() => {
+    console.log(openMenuId);
+    console.log(totalPages);
     fetchClients(currentPage, 10);
   }, [currentPage]);
 
@@ -1471,10 +1475,6 @@ const ClientManagement: React.FC = () => {
 
   const handleExport = () => {
     console.log("Exporting clients...");
-  };
-
-  const toggleMenu = (id: string) => {
-    setOpenMenuId(openMenuId === id ? null : id);
   };
 
   useEffect(() => {
