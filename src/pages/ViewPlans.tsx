@@ -70,8 +70,10 @@ export default function ViewPlans() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#020617] flex flex-wrap justify-center items-start gap-10 p-10 transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#020617] flex flex-wrap justify-center items-start gap-10 p-10 -pt-10 transition-colors duration-300">
       <EditPlanCard
+        id={plan.id}
+        isActive={plan.isActive}
         icon={getIcon(plan.type)}
         type={plan.type}
         title={plan.name}

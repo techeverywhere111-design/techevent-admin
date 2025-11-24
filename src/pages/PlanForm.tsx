@@ -1,37 +1,74 @@
-import React, { useEffect, useState, useContext } from "react";
-import { PlusCircle, MinusCircle } from "lucide-react";
-import { toast } from "react-toastify";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { AppContext } from "@/context/AppContext";
-import {
-  PlanCreate,
-  PlanUpdate,
-  PlanGet,
-  type PlanPayload,
-} from "@/lib/api/Plans";
+import { toast } from "react-toastify";
+import { PlanCreate, PlanUpdate, PlanGet } from "@/lib/api/Plans";
 
-const PlanForm: React.FC = () => {
+type FeatureKeys = keyof typeof initialFeatures;
+
+type FeatureData = {
+  enabled: boolean;
+  errors?: Record<string, string>;
+  [key: string]: any;
+};
+
+const initialFeatures = {
+  meetingFeature: {
+    enabled: false,
+    numberAllowed: "",
+    canRecord: false,
+    numberOfParticipants: "",
+    errors: {} as Record<string, string>,
+  },
+  eventFeature: {
+    enabled: false,
+    numberAllowed: "",
+    errors: {} as Record<string, string>,
+  },
+  calendarFeature: {
+    enabled: false,
+    numberOfSynchronization: "",
+    numberOfAppointmentSlots: "",
+    errors: {} as Record<string, string>,
+  },
+  proposalFeature: {
+    enabled: false,
+    numberOfProposalsReceived: "",
+    canQueryProposalSearch: false,
+    errors: {} as Record<string, string>,
+  },
+  accountFeature: {
+    enabled: false,
+    numberOfInvites: "",
+    numberOfSessions: "",
+    errors: {} as Record<string, string>,
+  },
+  pollFeature: {
+    enabled: false,
+    numberOfPolls: "",
+    numberOfQuestionAndAnswerSessions: "",
+    errors: {} as Record<string, string>,
+  },
+};
+
+export default function CreatePlanRedesign() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useContext(AppContext);
 
-  const [planData, setPlanData] = useState<PlanPayload>({
-    type: "",
-    name: "",
-    features: [""],
-    priceNaira: 0,
-    priceUsd: 0,
-  });
-
-  const [errors, setErrors] = useState<Record<string, string | string[]>>({});
+  const [selectAll, setSelectAll] = useState(false);
+  const [features, setFeatures] =
+    useState<typeof initialFeatures>(initialFeatures);
+  const [planName, setPlanName] = useState("");
+  const [planType, setPlanType] = useState("");
+  const [priceNaira, setPriceNaira] = useState("");
+  const [priceUSD, setPriceUSD] = useState("");
+  const [priceErrors, setPriceErrors] = useState({ naira: "", usd: "" });
+  const [nameError, setNameError] = useState("");
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [planId, setPlanId] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("User from context:", user);
-    console.log(planData);
-
     const searchParams = new URLSearchParams(location.search);
     const id = searchParams.get("id");
     const typeParam = searchParams.get("type");
@@ -46,7 +83,7 @@ const PlanForm: React.FC = () => {
       setPlanId(id);
       fetchPlanData(id);
     } else if (fallbackType) {
-      setPlanData((prev) => ({ ...prev, type: fallbackType }));
+      setPlanType(fallbackType);
     }
   }, [location.search]);
 
@@ -54,15 +91,38 @@ const PlanForm: React.FC = () => {
     try {
       setLoading(true);
       const data = await PlanGet(id);
+
       if (!data) throw new Error("No plan found");
 
-      setPlanData({
-        type: data.type || "",
-        name: data.name || "",
-        features: data.features?.length ? data.features : [""],
-        priceNaira: data.priceNaira || 0,
-        priceUsd: data.priceUsd || 0,
-      });
+      setPlanType(data.type || "");
+      setPlanName(data.name || "");
+      setPriceNaira(data.priceNaira?.toString() || "");
+      setPriceUSD(data.priceUsd?.toString() || "");
+
+      if (data.features) {
+        const updatedFeatures = { ...initialFeatures };
+        Object.keys(data.features).forEach((key) => {
+          if (key in updatedFeatures) {
+            const featureKey = key as FeatureKeys;
+            const apiFeature = data.features[key] as Record<string, any>;
+            const feature = updatedFeatures[featureKey] as Record<string, any>;
+
+            feature.enabled = true;
+            Object.keys(apiFeature).forEach((field) => {
+              if (
+                field in feature &&
+                field !== "enabled" &&
+                field !== "errors"
+              ) {
+                const value = apiFeature[field];
+                feature[field] =
+                  typeof value === "number" ? value.toString() : value;
+              }
+            });
+          }
+        });
+        setFeatures(updatedFeatures);
+      }
     } catch (err) {
       console.error(err);
       toast.error("Failed to load plan details.");
@@ -71,81 +131,155 @@ const PlanForm: React.FC = () => {
     }
   };
 
-  const handleFeatureChange = (index: number, value: string) => {
-    const updated = [...planData.features];
-    updated[index] = value;
-    setPlanData((prev) => ({ ...prev, features: updated }));
+  const toggleSelectAll = () => {
+    const newVal = !selectAll;
+    setSelectAll(newVal);
+    const updated = { ...features };
+    (Object.keys(updated) as FeatureKeys[]).forEach((key) => {
+      updated[key].enabled = newVal;
+      if (!newVal) updated[key].errors = {};
+    });
+    setFeatures(updated);
   };
 
-  const addFeature = () => {
-    setPlanData((prev) => ({ ...prev, features: [...prev.features, ""] }));
+  const toggleFeature = (cat: FeatureKeys) => {
+    const updated = { ...features };
+    updated[cat].enabled = !updated[cat].enabled;
+    if (!updated[cat].enabled) updated[cat].errors = {};
+    setFeatures(updated);
   };
 
-  const removeSingleFeature = (index: number) => {
-    if (planData.features.length > 1) {
-      const updated = planData.features.filter((_, i) => i !== index);
-      setPlanData((prev) => ({ ...prev, features: updated }));
+  const updateField = (
+    cat: FeatureKeys,
+    field: string,
+    value: string | boolean
+  ) => {
+    const updated = { ...features };
+    const feature = updated[cat] as Record<string, any>;
+    feature[field] = value;
+
+    if (
+      updated[cat].enabled &&
+      typeof value === "string" &&
+      value.trim() === ""
+    ) {
+      if (!feature.errors) feature.errors = {};
+      feature.errors[field] = "This field is required";
+    } else {
+      if (feature.errors && feature.errors[field]) {
+        delete feature.errors[field];
+      }
     }
+
+    setFeatures(updated);
   };
 
-  const validate = () => {
-    const newErrors: Record<string, string | string[]> = {};
+  const validatePrice = () => {
+    const errors = { naira: "", usd: "" };
+    if (priceNaira.trim() === "") errors.naira = "Price is required";
+    if (priceUSD.trim() === "") errors.usd = "Price is required";
+    setPriceErrors(errors);
+    return errors.naira === "" && errors.usd === "";
+  };
 
-    if (!planData.name.trim()) newErrors.name = "Plan name is required.";
-    if (!planData.priceNaira || planData.priceNaira <= 0)
-      newErrors.priceNaira = "Enter a valid Naira price.";
-    if (!planData.priceUsd || planData.priceUsd <= 0)
-      newErrors.priceUsd = "Enter a valid USD price.";
-
-    const featureErrors: string[] = planData.features.map((f, i) =>
-      !f.trim() ? `Feature ${i + 1} is required.` : ""
-    );
-    if (featureErrors.some((err) => err !== "")) {
-      newErrors.features = featureErrors;
+  const validateName = () => {
+    if (planName.trim() === "") {
+      setNameError("Plan name is required");
+      return false;
     }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setNameError("");
+    return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) {
+  const validateFeatures = () => {
+    const updated = { ...features };
+    let hasErrors = false;
+
+    (Object.keys(updated) as FeatureKeys[]).forEach((key) => {
+      const feature = updated[key] as Record<string, any>;
+      if (feature.enabled) {
+        Object.keys(feature)
+          .filter((k) => k !== "enabled" && k !== "errors")
+          .forEach((field) => {
+            if (
+              typeof feature[field] === "string" &&
+              feature[field].trim() === ""
+            ) {
+              if (!feature.errors) feature.errors = {};
+              feature.errors[field] = "This field is required";
+              hasErrors = true;
+            }
+          });
+      }
+    });
+
+    setFeatures(updated);
+    return !hasErrors;
+  };
+
+  const buildPayload = () => {
+    const featuresPayload: any = {};
+
+    (Object.keys(features) as FeatureKeys[]).forEach((key) => {
+      const feature = features[key] as Record<string, any>;
+      if (feature.enabled) {
+        const featureData: any = {};
+        Object.keys(feature)
+          .filter((k) => k !== "enabled" && k !== "errors")
+          .forEach((field) => {
+            const value = feature[field];
+            if (typeof value === "string" && value.trim() !== "") {
+              featureData[field] = isNaN(Number(value)) ? value : Number(value);
+            } else if (typeof value === "boolean") {
+              featureData[field] = value;
+            }
+          });
+        featuresPayload[key] = featureData;
+      }
+    });
+
+    return {
+      type: planType,
+      name: planName.trim(),
+      features: featuresPayload,
+      priceNaira: Number(priceNaira),
+      priceUsd: Number(priceUSD),
+    };
+  };
+
+  const handleSubmit = async () => {
+    const nameValid = validateName();
+    const priceValid = validatePrice();
+    const featuresValid = validateFeatures();
+
+    if (!nameValid || !priceValid || !featuresValid) {
       toast.error("Please fix all errors before submitting.");
       return;
     }
 
     setLoading(true);
-    const payload = {
-      ...planData,
-      features: planData.features.map((f) => f.trim()),
-    };
+    const payload = buildPayload();
 
     try {
       if (editing && planId) {
-        console.log(payload);
+        console.log("Updating plan:", payload);
         await PlanUpdate(planId, payload);
         toast.success("Plan updated successfully!");
         navigate(`/view-plans?id=${planId}`);
       } else {
-        console.log("Creating plan with payload:", payload);
+        console.log("Creating plan:", payload);
         const result = await PlanCreate(payload);
+
         toast.success("Plan created successfully!");
+        setPlanName("");
+        setFeatures(initialFeatures);
+        setPriceNaira("");
+        setPriceUSD("");
+        setNameError("");
+        setPriceErrors({ naira: "", usd: "" });
+        setSelectAll(false);
         navigate(`/view-plans?id=${result?.id}`);
       }
-
-      setTimeout(() => {
-        setErrors({});
-        if (!editing) {
-          setPlanData({
-            type: planData.type,
-            name: "",
-            features: [""],
-            priceNaira: 0,
-            priceUsd: 0,
-          });
-        }
-      }, 1000);
     } catch (error) {
       console.error(error);
       toast.error("Operation failed. Please try again.");
@@ -154,177 +288,219 @@ const PlanForm: React.FC = () => {
     }
   };
 
-  const canRemove = planData.features.length > 1;
+  if (loading && editing) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-gray-600">Loading plan data...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-8 w-full min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
-      <h2 className="text-lg font-semibold mb-6">
-        {editing ? "Edit Plan" : "Create Plan"}
-      </h2>
+    <div className="min-h-screen bg-white p-8">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-xl font-semibold text-gray-800 mb-6">
+          {editing ? "Edit Plan" : "Create Plan"}
+        </h1>
 
-      <form
-        onSubmit={handleSubmit}
-        className="grid grid-cols-1 md:grid-cols-2 gap-12"
-      >
-        {/* Left Column */}
-        <div>
-          {/* Type */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">Type</label>
-            <input
-              type="text"
-              value={planData.type}
-              readOnly
-              className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-md focus:outline-none"
-            />
-          </div>
-
-          {/* Plan Name */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">Plan Name</label>
-            <input
-              type="text"
-              value={planData.name}
-              onChange={(e) =>
-                setPlanData((prev) => ({ ...prev, name: e.target.value }))
-              }
-              placeholder="Enter plan name"
-              className={`w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-md focus:outline-none ${
-                errors.name ? "border border-red-500" : ""
-              }`}
-            />
-            {errors.name && (
-              <p className="text-red-500 text-xs mt-1">{errors.name}</p>
-            )}
-          </div>
-
-          {/* Features */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Features</label>
-            <div className="space-y-3">
-              {planData.features.map((feature, index) => (
-                <div key={index}>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="text"
-                      placeholder={`Feature ${index + 1}`}
-                      value={feature}
-                      onChange={(e) =>
-                        handleFeatureChange(index, e.target.value)
-                      }
-                      className={`flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-md focus:outline-none ${
-                        errors.features && (errors.features as string[])[index]
-                          ? "border border-red-500"
-                          : ""
-                      }`}
-                    />
-
-                    {planData.features.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeSingleFeature(index)}
-                        disabled={!canRemove}
-                        className={`flex items-center text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-600 text-sm ${
-                          canRemove
-                            ? "hover:underline"
-                            : "opacity-50 cursor-not-allowed"
-                        }`}
-                      >
-                        <MinusCircle className="w-4 h-4 mr-1" />
-                      </button>
-                    )}
-                  </div>
-
-                  {errors.features && (errors.features as string[])[index] && (
-                    <p className="text-red-500 text-xs mt-1 ml-1">
-                      {(errors.features as string[])[index]}
-                    </p>
-                  )}
-                </div>
-              ))}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Type
+              </label>
+              <input
+                type="text"
+                value={planType}
+                readOnly
+                className="w-full bg-gray-100 rounded-lg p-3 text-sm outline-none text-gray-500"
+              />
             </div>
-
-            {/* Buttons */}
-            <div className="flex items-center gap-4 mt-4">
-              <button
-                type="button"
-                onClick={addFeature}
-                className="flex items-center text-blue-600 dark:text-blue-400 text-sm hover:underline"
-              >
-                <PlusCircle className="w-4 h-4 mr-1" />
-                Add Feature
-              </button>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Plan Name
+              </label>
+              <input
+                type="text"
+                placeholder="Enter plan name"
+                value={planName}
+                onChange={(e) => setPlanName(e.target.value)}
+                className={`w-full bg-gray-100 rounded-lg p-3 text-sm outline-none border ${
+                  nameError ? "border-red-500" : "border-gray-200"
+                }`}
+              />
+              {nameError && (
+                <p className="text-red-500 text-xs mt-1">{nameError}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Price (Naira)
+              </label>
+              <input
+                type="number"
+                placeholder=""
+                value={priceNaira}
+                onChange={(e) => setPriceNaira(e.target.value)}
+                className={`w-full bg-gray-100 rounded-lg p-3 text-sm outline-none border ${
+                  priceErrors.naira ? "border-red-500" : "border-gray-200"
+                }`}
+              />
+              {priceErrors.naira && (
+                <p className="text-red-500 text-xs mt-1">{priceErrors.naira}</p>
+              )}
             </div>
           </div>
-        </div>
-
-        {/* Right Column */}
-        <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Price (₦ Naira)
-            </label>
-            <input
-              type="number"
-              value={planData.priceNaira || ""}
-              onChange={(e) =>
-                setPlanData((prev) => ({
-                  ...prev,
-                  priceNaira: Number(e.target.value),
-                }))
-              }
-              placeholder="0.00"
-              className={`w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-md focus:outline-none ${
-                errors.priceNaira ? "border border-red-500" : ""
-              }`}
-            />
-            {errors.priceNaira && (
-              <p className="text-red-500 text-xs mt-1">{errors.priceNaira}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Price (US Dollar)
             </label>
             <input
               type="number"
-              value={planData.priceUsd || ""}
-              onChange={(e) =>
-                setPlanData((prev) => ({
-                  ...prev,
-                  priceUsd: Number(e.target.value),
-                }))
-              }
-              placeholder="0.00"
-              className={`w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-md focus:outline-none ${
-                errors.priceUsd ? "border border-red-500" : ""
+              placeholder=""
+              value={priceUSD}
+              onChange={(e) => setPriceUSD(e.target.value)}
+              className={`w-full bg-gray-100 rounded-lg p-3 text-sm outline-none border ${
+                priceErrors.usd ? "border-red-500" : "border-gray-200"
               }`}
             />
-            {errors.priceUsd && (
-              <p className="text-red-500 text-xs mt-1">{errors.priceUsd}</p>
+            {priceErrors.usd && (
+              <p className="text-red-500 text-xs mt-1">{priceErrors.usd}</p>
             )}
           </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full px-4 py-2 text-white rounded-md transition ${
-              loading ? "bg-blue-400" : "bg-blue-600 hover:bg-blue-700"
-            }`}
-          >
-            {loading
-              ? editing
-                ? "Updating..."
-                : "Creating..."
-              : editing
-              ? "Update Plan"
-              : "Create Plan"}
-          </button>
+          <div></div>
         </div>
-      </form>
+
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-md font-semibold text-gray-800">Features</h2>
+          <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <input
+              type="checkbox"
+              checked={selectAll}
+              onChange={toggleSelectAll}
+            />{" "}
+            Select all
+          </label>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          {Object.entries(features).map(([key, value]) => (
+            <FeatureCard
+              key={key}
+              title={key.replace(/Feature$/, "")}
+              enabled={value.enabled}
+              toggle={() => toggleFeature(key as FeatureKeys)}
+              fields={Object.keys(value)
+                .filter((k) => k !== "enabled" && k !== "errors")
+                .map((k) => ({
+                  label: k
+                    .replace(/([A-Z])/g, " $1")
+                    .replace(/^./, (str) => str.toUpperCase()),
+                  key: k,
+                  type:
+                    typeof (value as Record<string, any>)[k] === "boolean"
+                      ? "checkbox"
+                      : undefined,
+                }))}
+              data={value as FeatureData}
+              update={updateField}
+              cat={key as FeatureKeys}
+            />
+          ))}
+        </div>
+
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className={`mt-12 px-8 py-3 rounded-lg float-right transition-colors text-white ${
+            loading
+              ? "bg-blue-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
+        >
+          {loading
+            ? editing
+              ? "Updating..."
+              : "Creating..."
+            : editing
+            ? "Update"
+            : "Create"}
+        </button>
+      </div>
     </div>
   );
-};
+}
 
-export default PlanForm;
+type Field = { label: string; key: string; type?: "checkbox" };
+
+interface FeatureCardProps {
+  title: string;
+  enabled: boolean;
+  toggle: () => void;
+  fields: Field[];
+  data: FeatureData;
+  update: (cat: FeatureKeys, field: string, value: string | boolean) => void;
+  cat: FeatureKeys;
+}
+
+function FeatureCard({
+  title,
+  enabled,
+  toggle,
+  fields,
+  data,
+  update,
+  cat,
+}: FeatureCardProps) {
+  return (
+    <div className="border rounded-xl p-5 bg-gray-50">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold text-gray-700 capitalize">
+          {title}
+        </h3>
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={toggle}
+          className="cursor-pointer"
+        />
+      </div>
+      <div className="space-y-4">
+        {fields.map((f) => (
+          <div key={f.key}>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              {f.label}
+            </label>
+            {f.type === "checkbox" ? (
+              <input
+                type="checkbox"
+                disabled={!enabled}
+                checked={data[f.key]}
+                onChange={(e) => update(cat, f.key, e.target.checked)}
+                className="cursor-pointer disabled:cursor-not-allowed"
+              />
+            ) : (
+              <>
+                <input
+                  type="number"
+                  placeholder=""
+                  disabled={!enabled}
+                  value={data[f.key]}
+                  onChange={(e) => update(cat, f.key, e.target.value)}
+                  className={`w-full bg-white rounded-lg p-2 text-sm border ${
+                    data.errors?.[f.key] ? "border-red-500" : "border-gray-200"
+                  } disabled:bg-gray-100 disabled:cursor-not-allowed outline-none focus:border-blue-500`}
+                />
+                {data.errors?.[f.key] && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {data.errors[f.key]}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
