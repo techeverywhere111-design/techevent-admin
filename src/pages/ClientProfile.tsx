@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import ClientProfileCard from "@/components/ui/ClientProfileCard";
-import ClientChartCard from "@/components/ui/ClientChart";
+import ClientChartCard from "@/components/ui/ClientChartCard";
 
 const generateChartData = (
   days: number,

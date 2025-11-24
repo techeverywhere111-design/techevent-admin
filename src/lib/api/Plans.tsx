@@ -76,7 +76,6 @@ function humanizeKey(key: string): string {
   if (key.startsWith("can")) {
     const rest = key.replace(/^can/, "");
     const spaced = rest.replace(/([A-Z])/g, " $1").trim();
-    // boolean flags become "X Enabled"
     return `${spaced} Enabled`;
   }
 

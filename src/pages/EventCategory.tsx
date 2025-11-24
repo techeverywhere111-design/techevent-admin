@@ -8,8 +8,12 @@ import {
   GetEventCategories,
   UpdateEventCategory,
   DeleteEventCategory,
+  SearchEventCategory,
 } from "@/lib/api/EventManagement";
 import { toast } from "react-toastify";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { useDebounce } from "use-debounce";
 
 interface EventCategory {
   id: string;
@@ -23,6 +27,7 @@ const EventCategory: React.FC = () => {
   const [categories, setCategories] = useState<EventCategory[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 400);
   const [loading, setLoading] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [selectedCategory, setSelectedCategory] =
@@ -35,10 +40,15 @@ const EventCategory: React.FC = () => {
     useState<EventCategory | null>(null);
   const itemsPerPage = 10;
 
-  const fetchCategories = async (pageNumber: number = 1) => {
+  const fetchCategories = async (pageNumber: number = 1, query = "") => {
     try {
       setLoading(true);
-      const response = await GetEventCategories(pageNumber - 1, itemsPerPage);
+
+      // If there is a search query, use the search endpoint
+      const response = query
+        ? await SearchEventCategory(query, pageNumber - 1, itemsPerPage)
+        : await GetEventCategories(pageNumber - 1, itemsPerPage);
+
       const items = response?.content || response?.data || [];
 
       setCategories(items);
@@ -51,19 +61,28 @@ const EventCategory: React.FC = () => {
     }
   };
 
+  // Fetch whenever debounced search term or page changes
   useEffect(() => {
-    fetchCategories(page);
-  }, [page]);
+    // always reset to page 1 when search term changes
+    // if the page was changed by the user, fetching uses current page
+    // but if debouncedSearchTerm changed and page is not 1, reset to 1 first
+    if (debouncedSearchTerm) {
+      // when a new search occurs, start from page 1
+      if (page !== 1) setPage(1);
+      else fetchCategories(1, debouncedSearchTerm);
+    } else {
+      // no search term -> fetch normal listing for current page
+      fetchCategories(page, "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchTerm, page]);
 
   const handleSearchInputChange = (value: string) => {
     setSearchTerm(value);
   };
 
-  const filteredCategories = categories.filter(
-    (c) =>
-      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Remove local filtering — backend handles search. pass categories directly to Table.
+  // const filteredCategories = categories.filter(...);  // removed
 
   const openCreateModal = () => {
     setModalMode("create");
@@ -82,12 +101,6 @@ const EventCategory: React.FC = () => {
     });
     setErrors({ name: "", description: "" });
     setShowModal(true);
-
-    console.log("showModal should now be true");
-
-    setTimeout(() => {
-      console.log("After timeout - showModal state:", showModal);
-    }, 100);
   };
 
   const validateForm = () => {
@@ -129,7 +142,8 @@ const EventCategory: React.FC = () => {
       setSelectedCategory(null);
       setErrors({ name: "", description: "" });
 
-      await fetchCategories(page);
+      // refetch current view (respect search state)
+      fetchCategories(page, debouncedSearchTerm);
     } catch (err: any) {
       console.error("Error saving category:", err);
       const errorMessage =
@@ -143,11 +157,27 @@ const EventCategory: React.FC = () => {
   };
 
   const handleCloseModal = () => {
-    console.log("Closing modal");
     setShowModal(false);
     setNewCategory({ name: "", description: "" });
     setSelectedCategory(null);
     setErrors({ name: "", description: "" });
+  };
+
+  const handleExport = () => {
+    if (categories.length === 0) return;
+
+    const exportData = categories.map((c) => ({
+      Title: c.name,
+      Description: c.description,
+      "Date Created": new Date(c.createdOn).toLocaleString(),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "EventCategories");
+    const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([wbout], { type: "application/octet-stream" });
+    saveAs(blob, "Event_Categories.xlsx");
   };
 
   const columns: Column[] = [
@@ -217,8 +247,8 @@ const EventCategory: React.FC = () => {
           </h1>
         </div>
 
-        <div className="mb-6 flex justify-between items-center gap-4">
-          <div className="flex gap-2">
+        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+          <div className="flex gap-2 flex-1 sm:flex-initial">
             <input
               type="text"
               placeholder="Search categories..."
@@ -227,7 +257,10 @@ const EventCategory: React.FC = () => {
               className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
             />
             <button
-              onClick={() => handleSearchInputChange(searchTerm)}
+              onClick={() => {
+                // immediate search: set searchTerm to itself to trigger debounce effect immediately if needed
+                setSearchTerm((s) => s);
+              }}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               <Search size={20} />
@@ -243,7 +276,7 @@ const EventCategory: React.FC = () => {
               Add Category
             </button>
             <button
-              onClick={() => toast.info("Export coming soon")}
+              onClick={handleExport}
               className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-white rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition"
             >
               <Upload size={18} />
@@ -254,7 +287,7 @@ const EventCategory: React.FC = () => {
 
         <Table
           columns={columns}
-          data={filteredCategories}
+          data={categories}
           totalCount={totalCount}
           itemsPerPage={itemsPerPage}
           onPageChange={(p) => setPage(p)}
@@ -428,7 +461,8 @@ const EventCategory: React.FC = () => {
                           response?.message ||
                           "Category deleted successfully"
                       );
-                      fetchCategories(page);
+                      // refetch after delete (respect search state)
+                      fetchCategories(page, debouncedSearchTerm);
                     } catch (err) {
                       toast.error("Failed to delete category");
                     } finally {

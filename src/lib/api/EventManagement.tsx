@@ -41,3 +41,14 @@ export const DeleteEventCategory = async (id: string) => {
   const { data } = await api.delete(`/api/v1/event-categories/${id}`);
   return data;
 };
+
+export const SearchEventCategory = async (
+  text: string,
+  pageNo: number,
+  pageSize: number
+) => {
+  const { data } = await api.get(`/api/v1/event-categories/search`, {
+    params: { text, pageNo, pageSize },
+  });
+  return data;
+};

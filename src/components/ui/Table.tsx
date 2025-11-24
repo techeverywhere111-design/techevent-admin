@@ -130,15 +130,15 @@ const Table: React.FC<TableProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm relative transition-colors duration-300">
-      <div className="overflow-x-auto overflow-y-visible relative">
-        <table className="w-full">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm relative transition-colors duration-300 w-[80vw] md:w-full">
+      <div className="overflow-x-auto w-[80vw] md:w-full">
+        <table className="w-full table-auto" style={{ minWidth: "900px" }}>
           <thead className="bg-blue-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
             <tr>
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-200"
+                  className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap"
                 >
                   {column.label}
                 </th>
@@ -147,7 +147,7 @@ const Table: React.FC<TableProps> = ({
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700 relative">
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {loading ? (
               <tr>
                 <td
@@ -170,7 +170,7 @@ const Table: React.FC<TableProps> = ({
               currentData.map((row, rowIndex) => (
                 <tr
                   key={row.id ?? rowIndex}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700 transition relative"
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                 >
                   {columns.map((column) => (
                     <td
@@ -183,7 +183,7 @@ const Table: React.FC<TableProps> = ({
                     </td>
                   ))}
                   {renderActions && (
-                    <td className="px-6 py-4 text-right relative">
+                    <td className="px-6 py-4 text-right">
                       <ActionDropdown
                         isOpen={openMenuId === row.id}
                         toggle={() =>
@@ -199,36 +199,37 @@ const Table: React.FC<TableProps> = ({
             )}
           </tbody>
         </table>
-
-        {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-            <span className="text-sm text-blue-600 dark:text-blue-400">
-              Page {currentPage} of {totalPages}
-            </span>
-
-            <div className="flex gap-2">
-              {renderPagination().map((page, index) => (
-                <button
-                  key={index}
-                  onClick={() =>
-                    typeof page === "number" && handlePageChange(page)
-                  }
-                  disabled={page === "..."}
-                  className={`min-w-[40px] px-3 py-1 rounded text-sm transition ${
-                    page === currentPage
-                      ? "bg-blue-600 text-white"
-                      : page === "..."
-                      ? "text-gray-400 dark:text-gray-500 cursor-default bg-transparent"
-                      : "bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-gray-600"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Pagination - outside scroll container */}
+      {totalPages > 1 && (
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <span className="text-sm text-blue-600 dark:text-blue-400">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <div className="flex gap-2 flex-wrap justify-center">
+            {renderPagination().map((page, index) => (
+              <button
+                key={index}
+                onClick={() =>
+                  typeof page === "number" && handlePageChange(page)
+                }
+                disabled={page === "..."}
+                className={`min-w-[40px] px-3 py-1 rounded text-sm transition ${
+                  page === currentPage
+                    ? "bg-blue-600 text-white"
+                    : page === "..."
+                    ? "text-gray-400 dark:text-gray-500 cursor-default bg-transparent"
+                    : "bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-gray-600"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
