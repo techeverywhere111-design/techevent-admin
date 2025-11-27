@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
 import { User, Search, Download } from "lucide-react";
-import { getAccountUsers, searchAccountUsers } from "@/lib/api/UserEndPoint";
+import { GetAccountUsers, SearchAccountUsers } from "@/lib/api/UserEndPoint";
 import { useDebounce } from "use-debounce";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -32,8 +32,8 @@ const ClientManagement: React.FC = () => {
       setLoading(true);
 
       const response = searchText
-        ? await searchAccountUsers(searchText, pageNumber - 1, itemsPerPage)
-        : await getAccountUsers(pageNumber - 1, itemsPerPage);
+        ? await SearchAccountUsers(searchText, pageNumber - 1, itemsPerPage)
+        : await GetAccountUsers(pageNumber - 1, itemsPerPage);
 
       const mappedClients: Client[] = response.content.map((c) => {
         const displayName =

@@ -22,7 +22,7 @@ export interface AccountUsersResponse {
   content: AccountUser[];
 }
 
-export const getAccountUsers = async (
+export const GetAccountUsers = async (
   pageNo: number,
   pageSize: number
 ): Promise<AccountUsersResponse> => {
@@ -35,7 +35,7 @@ export const getAccountUsers = async (
   return data;
 };
 
-export const searchAccountUsers = async (
+export const SearchAccountUsers = async (
   text: string,
   pageNo: number,
   pageSize: number
@@ -43,6 +43,16 @@ export const searchAccountUsers = async (
   const { data } = await api.get<AccountUsersResponse>(
     "/api/v1/account-users/search",
     { params: { text, pageNo, pageSize } }
+  );
+  return data;
+};
+
+export const GetBulkAccountUsers = async (
+  ids: string[]
+): Promise<AccountUser[]> => {
+  const { data } = await api.post<AccountUser[]>(
+    "/api/v1/account-users/bulk-ids",
+    ids
   );
   return data;
 };

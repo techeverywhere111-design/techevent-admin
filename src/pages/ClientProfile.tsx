@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import ClientProfileCard from "@/components/ui/ClientProfileCard";
 import ClientChartCard from "@/components/ui/ClientChartCard";
+import { GetBulkAccountUsers, type AccountUser } from "@/lib/api/UserEndPoint";
+import { toast } from "react-toastify";
 
 const generateChartData = (
   days: number,
@@ -19,6 +22,12 @@ const generateChartData = (
 };
 
 const ClientProfile: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(true);
+  const [accountUser, setAccountUser] = useState<AccountUser | null>(null);
+
   const [paymentMonth, setPaymentMonth] = useState("Jan");
   const [paymentYear, setPaymentYear] = useState("2025");
   const [eventsMonth, setEventsMonth] = useState("Jan");
@@ -26,22 +35,85 @@ const ClientProfile: React.FC = () => {
   const [meetingsMonth, setMeetingsMonth] = useState("Jan");
   const [meetingsYear, setMeetingsYear] = useState("2025");
 
-  const profileData = {
-    firstName: "Jane",
-    lastName: "Doe",
-    email: "janedoe123@gmail.com",
-    planType: "Personal",
-    dateJoined: "20-09-2024",
-    profileImage:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop",
-  };
-
   const paymentData = generateChartData(30, "payment");
   const eventsData = generateChartData(30, "events");
   const meetingsData = generateChartData(30, "meetings");
 
+  const getUserId = (): string | null => {
+    const query = location.search;
+    if (query.startsWith("?") && query.length > 1) {
+      return query.substring(1);
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        setLoading(true);
+        const userId = getUserId();
+
+        if (!userId) {
+          toast.error("No user ID provided");
+          navigate("/client-management");
+          return;
+        }
+
+        const users = await GetBulkAccountUsers([userId]);
+        const user = users[0];
+
+        if (!user) {
+          toast.error("User not found");
+          navigate("/client-management");
+          return;
+        }
+
+        setAccountUser(user);
+      } catch (err) {
+        console.log("Error fetching account user:", err);
+        toast.error("Error fetching account user:");
+        navigate("/client-management");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [location, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!accountUser) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto">
+          <p className="text-center text-gray-600 dark:text-gray-300">
+            User not found
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const profileData = {
+    firstName: accountUser.firstName,
+    lastName: accountUser.lastName,
+    email: accountUser.email,
+    planType: "Personal",
+    dateJoined: accountUser.createdOn,
+    profileImage: accountUser.imageUrl,
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8 transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">
           Clients Management
@@ -49,7 +121,7 @@ const ClientProfile: React.FC = () => {
 
         <button
           className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mb-6"
-          onClick={() => window.history.back()}
+          onClick={() => navigate(-1)}
         >
           <ArrowLeft size={20} />
           <span className="text-sm font-medium">Profile</span>
