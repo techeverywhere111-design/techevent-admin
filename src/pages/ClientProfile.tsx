@@ -1,4 +1,3 @@
-// src/pages/ClientProfile.tsx
 import React, { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import ClientProfileCard from "@/components/ui/ClientProfileCard";

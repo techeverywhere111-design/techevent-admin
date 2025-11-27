@@ -15,6 +15,7 @@ export interface TableProps {
   itemsPerPage?: number;
   renderActions?: (row: any) => React.ReactNode;
   onPageChange?: (page: number) => void;
+  onPerPageChange?: (perPage: number) => void;
   loading?: boolean;
 }
 
@@ -82,17 +83,24 @@ const Table: React.FC<TableProps> = ({
   itemsPerPage = 10,
   renderActions,
   onPageChange,
+  onPerPageChange,
   loading = false,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [perPage, setPerPage] = useState(itemsPerPage);
+
+  // Update perPage when itemsPerPage prop changes
+  useEffect(() => {
+    setPerPage(itemsPerPage);
+  }, [itemsPerPage]);
 
   const totalPages = totalCount
-    ? Math.ceil(totalCount / itemsPerPage)
-    : Math.ceil(data.length / itemsPerPage);
+    ? Math.ceil(totalCount / perPage)
+    : Math.ceil(data.length / perPage);
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
+  const startIndex = (currentPage - 1) * perPage;
+  const endIndex = startIndex + perPage;
   const currentData = totalCount ? data : data.slice(startIndex, endIndex);
 
   // Close dropdown when clicking outside
@@ -107,6 +115,13 @@ const Table: React.FC<TableProps> = ({
       setCurrentPage(page);
       onPageChange?.(page);
     }
+  };
+
+  const handlePerPageChange = (newPerPage: number) => {
+    setPerPage(newPerPage);
+    setCurrentPage(1); // Reset to first page when changing items per page
+    onPerPageChange?.(newPerPage); // Call parent callback
+    onPageChange?.(1);
   };
 
   const renderPagination = () => {
@@ -127,6 +142,18 @@ const Table: React.FC<TableProps> = ({
       pages.push(totalPages);
     }
     return pages;
+  };
+
+  const getAvailablePerPageOptions = () => {
+    const options = [10, 20, 30, 50];
+
+    // Always show all options, but ensure current perPage is included
+    if (!options.includes(perPage)) {
+      options.push(perPage);
+      options.sort((a, b) => a - b);
+    }
+
+    return options;
   };
 
   return (
@@ -201,32 +228,50 @@ const Table: React.FC<TableProps> = ({
         </table>
       </div>
 
-      {/* Pagination - outside scroll container */}
-      {totalPages > 1 && (
+      {/* Always show footer if there is data and pagination/per-page controls are relevant */}
+      {data.length > 0 && (
         <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <span className="text-sm text-blue-600 dark:text-blue-400">
-            Page {currentPage} of {totalPages}
+          <span className="px-3 py-1 rounded text-sm bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300">
+            {currentPage} of {totalPages}
           </span>
 
           <div className="flex gap-2 flex-wrap justify-center">
-            {renderPagination().map((page, index) => (
-              <button
-                key={index}
-                onClick={() =>
-                  typeof page === "number" && handlePageChange(page)
-                }
-                disabled={page === "..."}
-                className={`min-w-[40px] px-3 py-1 rounded text-sm transition ${
-                  page === currentPage
-                    ? "bg-blue-600 text-white"
-                    : page === "..."
-                    ? "text-gray-400 dark:text-gray-500 cursor-default bg-transparent"
-                    : "bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-gray-600"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
+            {totalPages > 1 &&
+              renderPagination().map((page, index) => (
+                <button
+                  key={index}
+                  onClick={() =>
+                    typeof page === "number" && handlePageChange(page)
+                  }
+                  disabled={page === "..."}
+                  className={`min-w-[40px] px-3 py-1 rounded text-sm transition ${
+                    page === currentPage
+                      ? "bg-blue-600 text-white"
+                      : page === "..."
+                      ? "text-gray-400 dark:text-gray-500 cursor-default bg-transparent"
+                      : "bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-gray-600"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Per page:
+            </span>
+            <select
+              value={perPage}
+              onChange={(e) => handlePerPageChange(Number(e.target.value))}
+              className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {getAvailablePerPageOptions().map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       )}

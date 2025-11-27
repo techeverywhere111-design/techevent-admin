@@ -35,22 +35,25 @@ const EventCategory: React.FC = () => {
   const [newCategory, setNewCategory] = useState({ name: "", description: "" });
   const [errors, setErrors] = useState({ name: "", description: "" });
   const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [categoryToDelete, setCategoryToDelete] =
     useState<EventCategory | null>(null);
-  const itemsPerPage = 10;
 
-  const fetchCategories = async (pageNumber: number = 1, query = "") => {
+  const fetchCategories = async (
+    pageNumber: number = 1,
+    query = "",
+    perPage = itemsPerPage
+  ) => {
     try {
       setLoading(true);
 
-      // If there is a search query, use the search endpoint
       const response = query
-        ? await SearchEventCategory(query, pageNumber - 1, itemsPerPage)
-        : await GetEventCategories(pageNumber - 1, itemsPerPage);
+        ? await SearchEventCategory(query, pageNumber - 1, perPage)
+        : await GetEventCategories(pageNumber - 1, perPage);
 
       const items = response?.content || response?.data || [];
-
+      console.log("Fetched categories:", response);
       setCategories(items);
       setTotalCount(response?.totalElements || response?.total || items.length);
     } catch (err: any) {
@@ -61,28 +64,28 @@ const EventCategory: React.FC = () => {
     }
   };
 
-  // Fetch whenever debounced search term or page changes
   useEffect(() => {
-    // always reset to page 1 when search term changes
-    // if the page was changed by the user, fetching uses current page
-    // but if debouncedSearchTerm changed and page is not 1, reset to 1 first
     if (debouncedSearchTerm) {
-      // when a new search occurs, start from page 1
       if (page !== 1) setPage(1);
-      else fetchCategories(1, debouncedSearchTerm);
+      else fetchCategories(1, debouncedSearchTerm, itemsPerPage);
     } else {
-      // no search term -> fetch normal listing for current page
-      fetchCategories(page, "");
+      fetchCategories(page, "", itemsPerPage);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchTerm, page]);
+  }, [debouncedSearchTerm, page, itemsPerPage]);
 
   const handleSearchInputChange = (value: string) => {
     setSearchTerm(value);
   };
 
-  // Remove local filtering — backend handles search. pass categories directly to Table.
-  // const filteredCategories = categories.filter(...);  // removed
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePerPageChange = (newPerPage: number) => {
+    setItemsPerPage(newPerPage);
+    setPage(1);
+  };
 
   const openCreateModal = () => {
     setModalMode("create");
@@ -142,8 +145,7 @@ const EventCategory: React.FC = () => {
       setSelectedCategory(null);
       setErrors({ name: "", description: "" });
 
-      // refetch current view (respect search state)
-      fetchCategories(page, debouncedSearchTerm);
+      fetchCategories(page, debouncedSearchTerm, itemsPerPage);
     } catch (err: any) {
       console.error("Error saving category:", err);
       const errorMessage =
@@ -258,7 +260,6 @@ const EventCategory: React.FC = () => {
             />
             <button
               onClick={() => {
-                // immediate search: set searchTerm to itself to trigger debounce effect immediately if needed
                 setSearchTerm((s) => s);
               }}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
@@ -290,7 +291,8 @@ const EventCategory: React.FC = () => {
           data={categories}
           totalCount={totalCount}
           itemsPerPage={itemsPerPage}
-          onPageChange={(p) => setPage(p)}
+          onPageChange={handlePageChange}
+          onPerPageChange={handlePerPageChange}
           loading={loading}
           renderActions={renderActions}
         />
@@ -461,8 +463,7 @@ const EventCategory: React.FC = () => {
                           response?.message ||
                           "Category deleted successfully"
                       );
-                      // refetch after delete (respect search state)
-                      fetchCategories(page, debouncedSearchTerm);
+                      fetchCategories(page, debouncedSearchTerm, itemsPerPage);
                     } catch (err) {
                       toast.error("Failed to delete category");
                     } finally {

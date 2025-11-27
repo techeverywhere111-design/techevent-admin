@@ -17,8 +17,6 @@ interface Client {
   avatar?: string | null;
 }
 
-const itemsPerPage = 10;
-
 const ClientManagement: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -26,6 +24,7 @@ const ClientManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const navigate = useNavigate();
 
   const fetchClients = async (searchText = "", pageNumber: number = 1) => {
@@ -64,7 +63,7 @@ const ClientManagement: React.FC = () => {
 
   useEffect(() => {
     fetchClients(debouncedSearchTerm, page);
-  }, [debouncedSearchTerm, page]);
+  }, [debouncedSearchTerm, page, itemsPerPage]);
 
   const handleSearchInputChange = (value: string) => {
     setSearchTerm(value);
@@ -127,28 +126,44 @@ const ClientManagement: React.FC = () => {
     },
   ];
 
-  const renderActions = (row: Client) => (
-    <>
-      <button
-        onClick={() => handleViewProfile(row)}
-        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-      >
-        View Profile
-      </button>
-      <button
-        onClick={() => handlePaymentHistory(row)}
-        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-      >
-        Payment History
-      </button>
-      <button
-        onClick={() => handleAuditLogs(row)}
-        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-      >
-        Audit Logs
-      </button>
-    </>
-  );
+  const renderActions = (row: Client) => {
+    return (
+      <>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            handleViewProfile(row);
+          }}
+          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+        >
+          View Profile
+        </button>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            handlePaymentHistory(row);
+          }}
+          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+        >
+          Payment History
+        </button>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            handleAuditLogs(row);
+          }}
+          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+        >
+          Audit Logs
+        </button>
+      </>
+    );
+  };
 
   const handleExport = () => {
     if (clients.length === 0) return;
@@ -210,8 +225,12 @@ const ClientManagement: React.FC = () => {
           columns={columns}
           data={clients}
           totalCount={totalCount}
-          itemsPerPage={itemsPerPage}
+          itemsPerPage={10}
           onPageChange={(p) => setPage(p)}
+          onPerPageChange={(newPerPage) => {
+            setItemsPerPage(newPerPage);
+            setPage(1);
+          }}
           renderActions={renderActions}
           loading={loading}
         />

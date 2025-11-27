@@ -56,3 +56,47 @@ export const AdminUserCreate = async (
   );
   return data;
 };
+
+export const SearchAdminUsers = async (
+  text: string,
+  pageNo: number,
+  pageSize: number
+) => {
+  const { data } = await api.get<AdminUserResponse>(
+    "/api/v1/admin-users/search",
+    { params: { text, pageNo, pageSize } }
+  );
+  return data;
+};
+
+export const GetAdminUsers = async (pageNo: number, pageSize: number) => {
+  const { data } = await api.get("/api/v1/admin-users", {
+    params: { pageNo, pageSize },
+  });
+  return data;
+};
+
+export const GetBulkAdminUsers = async (
+  ids: string[]
+): Promise<AdminUserResponse[]> => {
+  const { data } = await api.post<AdminUserResponse[]>(
+    "/api/v1/admin-users/bulk-ids",
+    ids
+  );
+  return data;
+};
+
+export const UpdateAdminUser = async (
+  userId: string,
+  payload: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  }
+): Promise<AdminUserResponse> => {
+  const { data } = await api.put<AdminUserResponse>(
+    `/api/v1/admin-users/${userId}`,
+    payload
+  );
+  return data;
+};

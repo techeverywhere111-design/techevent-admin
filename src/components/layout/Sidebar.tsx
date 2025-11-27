@@ -11,6 +11,7 @@ import {
   X,
   ChevronRight,
   ChevronDown,
+  ShieldQuestionMark,
 } from "lucide-react";
 import { useState } from "react";
 import Logo from "@/assets/PlutoEvent_Logo.png";
@@ -42,7 +43,8 @@ const navItems: NavItem[] = [
     icon: BarChart2,
   },
   { name: "Plans", path: "/plans", icon: Gem },
-  { name: "Admin Management", path: "/admin-management", icon: ShieldUser },
+  { name: "Enquires", path: "/enquires", icon: ShieldQuestionMark },
+  { name: "User Management", path: "/user-management", icon: ShieldUser },
 ];
 
 export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {

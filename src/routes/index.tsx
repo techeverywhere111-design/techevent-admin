@@ -12,6 +12,8 @@ import ClientManagement from "@/pages/ClientManagement";
 import ClientProfile from "@/pages/ClientProfile";
 import { PrivateRoute } from "@/components/PrivateRoute";
 import EventCategory from "@/pages/EventCategory";
+import UserManagement from "@/pages/UserManagement";
+import UserProfile from "@/pages/UserProfile";
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +42,8 @@ export const router = createBrowserRouter([
       { path: "client-management", element: <ClientManagement /> },
       { path: "client-profile", element: <ClientProfile /> },
       { path: "event-category", element: <EventCategory /> },
+      { path: "user-management", element: <UserManagement /> },
+      { path: "user-profile", element: <UserProfile /> },
     ],
   },
 ]);
