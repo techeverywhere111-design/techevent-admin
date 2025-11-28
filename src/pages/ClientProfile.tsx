@@ -61,6 +61,7 @@ const ClientProfile: React.FC = () => {
 
         const users = await GetBulkAccountUsers([userId]);
         const user = users[0];
+        console.log("Fetched user:", user);
 
         if (!user) {
           toast.error("User not found");
@@ -106,6 +107,7 @@ const ClientProfile: React.FC = () => {
   const profileData = {
     firstName: accountUser.firstName,
     lastName: accountUser.lastName,
+    name: accountUser.name,
     email: accountUser.email,
     planType: "Personal",
     dateJoined: accountUser.createdOn,

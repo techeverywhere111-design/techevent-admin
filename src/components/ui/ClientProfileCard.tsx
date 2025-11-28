@@ -4,6 +4,7 @@ import { CircleUserRound } from "lucide-react";
 export interface ClientInfoProps {
   firstName: string;
   lastName: string;
+  name: string;
   email: string;
   planType: string;
   dateJoined: string;
@@ -13,6 +14,7 @@ export interface ClientInfoProps {
 const ClientProfileCard: React.FC<ClientInfoProps> = ({
   firstName,
   lastName,
+  name,
   email,
   planType,
   dateJoined,
@@ -34,22 +36,35 @@ const ClientProfileCard: React.FC<ClientInfoProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 md:gap-x-12 gap-y-4 flex-1">
-          <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-              First Name
-            </p>
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              {firstName}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-              Last Name
-            </p>
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              {lastName}
-            </p>
-          </div>
+          {name ? (
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                Business Name
+              </p>
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {name}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                  First Name
+                </p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {firstName}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                  Last Name
+                </p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {lastName}
+                </p>
+              </div>
+            </>
+          )}
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
               Email
@@ -62,9 +77,15 @@ const ClientProfileCard: React.FC<ClientInfoProps> = ({
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
               Plan Type
             </p>
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              {planType}
-            </p>
+            {name ? (
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                Business
+              </p>
+            ) : (
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {planType}
+              </p>
+            )}
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
