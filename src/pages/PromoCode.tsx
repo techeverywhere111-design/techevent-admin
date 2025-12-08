@@ -1,89 +1,87 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
 import { User, Search, Upload, Plus, X } from "lucide-react";
 import {
-  GetAdminUsers,
-  SearchAdminUsers,
-  GetBulkAdminUsers,
-} from "@/lib/api/AdminEndpoint";
+  GetPromoCodes,
+  SearchPromoCodes,
+  CreatePromoCode,
+  RenewPromoCode,
+} from "@/lib/api/DiscountManagement";
 import { useDebounce } from "use-debounce";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { toast } from "react-toastify";
 
-interface User {
+interface PromoCode {
   id: string;
-  name: string;
-  email: string;
-  roleType: string;
-  dateJoined: string;
-  avatar?: string | null;
+  code: string;
+  owner: string;
+  discountPercentage: number;
+  startTime: string;
+  endTime: string;
+  createdOn: string;
 }
 
-interface InviteFormState {
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
+interface PromoCodeFormState {
+  code: string;
+  owner: string;
+  discountPercentage: string;
+  startDate: string;
+  startTime: string;
+  endDate: string;
+  endTime: string;
 }
+
+type ModalMode = "create" | "renew";
 
 const PromoCode: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteForm, setInviteForm] = useState<InviteFormState>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    role: "",
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState<ModalMode>("create");
+  const [selectedPromoCode, setSelectedPromoCode] = useState<PromoCode | null>(
+    null
+  );
+  const [promoForm, setPromoForm] = useState<PromoCodeFormState>({
+    code: "",
+    owner: "",
+    discountPercentage: "",
+    startDate: "",
+    startTime: "",
+    endDate: "",
+    endTime: "",
   });
-  const [inviteErrors, setInviteErrors] = useState<Partial<InviteFormState>>(
+  const [promoErrors, setPromoErrors] = useState<Partial<PromoCodeFormState>>(
     {}
   );
-  const [inviteLoading, setInviteLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const navigate = useNavigate();
 
-  const fetchUsers = async (searchText = "", pageNumber: number = 1) => {
+  const fetchPromoCodes = async (searchText = "", pageNumber: number = 1) => {
     try {
       setLoading(true);
 
       const response = searchText
-        ? await SearchAdminUsers(searchText, pageNumber - 1, itemsPerPage)
-        : await GetAdminUsers(pageNumber - 1, itemsPerPage);
+        ? await SearchPromoCodes(searchText, pageNumber - 1, itemsPerPage)
+        : await GetPromoCodes(pageNumber - 1, itemsPerPage);
 
-      const mappedUsers: User[] = response.content.map((c: any) => {
-        const displayName = `${c.firstName} ${c.lastName}`.trim();
-
-        return {
-          id: c.id,
-          name: displayName,
-          email: c.email,
-          roleType: c.roleType,
-          dateJoined: c.createdOn,
-          avatar: null,
-        };
-      });
-
-      setUsers(mappedUsers);
+      setPromoCodes(response.content);
       setTotalCount(response.totalElements);
     } catch (err) {
-      console.error("Error fetching Users:", err);
+      console.error("Error fetching promo codes:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUsers(debouncedSearchTerm, page);
+    fetchPromoCodes(debouncedSearchTerm, page);
   }, [debouncedSearchTerm, page, itemsPerPage]);
 
   const handleSearchInputChange = (value: string) => {
@@ -103,21 +101,39 @@ const PromoCode: React.FC = () => {
     return colors[index];
   };
 
-  const handleViewProfile = async (user: User) => {
-    try {
-      const [adminUser] = await GetBulkAdminUsers([user.id]);
-      navigate(`/user-profile?${user.id}`, { state: { user: adminUser } });
-    } catch (error) {
-      console.error("Error fetching user details:", error);
-      navigate(`/user-profile?${user.id}`);
-    }
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const parseDateTime = (isoString: string) => {
+    const date = new Date(isoString);
+    const dateStr = date.toISOString().split("T")[0];
+    const timeStr = date.toTimeString().slice(0, 5);
+    return { date: dateStr, time: timeStr };
   };
 
   const columns: Column[] = [
     {
-      key: "name",
-      label: "Name",
-      render: (value, _row: User) => (
+      key: "code",
+      label: "Code Name",
+      render: (value) => (
+        <span className="text-sm text-gray-900 dark:text-gray-100">
+          {value}
+        </span>
+      ),
+    },
+    {
+      key: "owner",
+      label: "Owner",
+      render: (value) => (
         <div className="flex items-center gap-3">
           <div
             className={`w-8 h-8 rounded-full ${getAvatarColor(
@@ -133,127 +149,236 @@ const PromoCode: React.FC = () => {
       ),
     },
     {
-      key: "email",
-      label: "Email",
-      render: (v) => (
-        <span className="text-gray-600 dark:text-gray-300">{v}</span>
-      ),
-    },
-    {
-      key: "roleType",
-      label: "Role",
+      key: "discountPercentage",
+      label: "Discount (%)",
       render: (v) => (
         <span className="text-gray-900 dark:text-gray-100">{v}</span>
       ),
     },
+    {
+      key: "startTime",
+      label: "Start Date",
+      render: (v) => (
+        <span className="text-gray-600 dark:text-gray-300">
+          {formatDate(v)}
+        </span>
+      ),
+    },
+    {
+      key: "endTime",
+      label: "End Date",
+      render: (v) => (
+        <span className="text-gray-600 dark:text-gray-300">
+          {formatDate(v)}
+        </span>
+      ),
+    },
   ];
 
-  const renderActions = (row: User) => {
+  const openCreateModal = () => {
+    setModalMode("create");
+    setSelectedPromoCode(null);
+    setPromoErrors({});
+    setPromoForm({
+      code: "",
+      owner: "",
+      discountPercentage: "",
+      startDate: "",
+      startTime: "",
+      endDate: "",
+      endTime: "",
+    });
+    setShowModal(true);
+  };
+
+  const openRenewModal = (promoCode: PromoCode) => {
+    setModalMode("renew");
+    setSelectedPromoCode(promoCode);
+    setPromoErrors({});
+
+    const startDateTime = parseDateTime(promoCode.startTime);
+    const endDateTime = parseDateTime(promoCode.endTime);
+
+    setPromoForm({
+      code: promoCode.code,
+      owner: promoCode.owner,
+      discountPercentage: promoCode.discountPercentage.toString(),
+      startDate: startDateTime.date,
+      startTime: startDateTime.time,
+      endDate: endDateTime.date,
+      endTime: endDateTime.time,
+    });
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    if (submitLoading) return;
+    setShowModal(false);
+    setSelectedPromoCode(null);
+  };
+
+  const renderActions = (row: PromoCode) => {
     return (
       <>
         <button
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            handleViewProfile(row);
+            openRenewModal(row);
           }}
           className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
         >
-          View Profile
+          Renew Code
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            console.log("View Registration for:", row);
+          }}
+          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+        >
+          View Registration
         </button>
       </>
     );
   };
 
   const handleExport = () => {
-    if (users.length === 0) return;
+    if (promoCodes.length === 0) return;
 
-    const exportData = users.map((c) => ({
-      Name: c.name,
-      Email: c.email,
-      "Role Type": c.roleType,
-      "Date Joined": new Date(c.dateJoined).toLocaleDateString(),
+    const exportData = promoCodes.map((c) => ({
+      "Code Name": c.code,
+      Owner: c.owner,
+      "Discount (%)": c.discountPercentage,
+      "Start Date": formatDate(c.startTime),
+      "End Date": formatDate(c.endTime),
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
-
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Admin Users");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Promo Codes");
 
     const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-
     const blob = new Blob([wbout], { type: "application/octet-stream" });
-    saveAs(blob, "Admin_Users_Management.xlsx");
+    saveAs(blob, "Promo_Codes.xlsx");
   };
 
-  const openInviteModal = () => {
-    setInviteErrors({});
-    setInviteForm({
-      firstName: "",
-      lastName: "",
-      email: "",
-      role: "",
-    });
-    setShowInviteModal(true);
+  const handlePromoChange = (
+    field: keyof PromoCodeFormState,
+    value: string
+  ) => {
+    setPromoForm((prev) => ({ ...prev, [field]: value }));
+    setPromoErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
-  const closeInviteModal = () => {
-    if (inviteLoading) return;
-    setShowInviteModal(false);
-  };
+  const validatePromoForm = () => {
+    const errors: Partial<PromoCodeFormState> = {};
 
-  const handleInviteChange = (field: keyof InviteFormState, value: string) => {
-    setInviteForm((prev) => ({ ...prev, [field]: value }));
-    setInviteErrors((prev) => ({ ...prev, [field]: "" }));
-  };
+    if (modalMode === "create") {
+      if (!promoForm.code.trim()) errors.code = "Code name is required";
+      if (!promoForm.owner.trim()) errors.owner = "Owner is required";
+    }
 
-  const validateInviteForm = () => {
-    const errors: Partial<InviteFormState> = {};
-    if (!inviteForm.firstName.trim())
-      errors.firstName = "First name is required";
-    if (!inviteForm.lastName.trim()) errors.lastName = "Last name is required";
-    if (!inviteForm.email.trim()) errors.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteForm.email))
-      errors.email = "Invalid email format";
-    if (!inviteForm.role.trim()) errors.role = "Role is required";
+    if (!promoForm.discountPercentage.trim())
+      errors.discountPercentage = "Discount percentage is required";
+    else if (
+      isNaN(Number(promoForm.discountPercentage)) ||
+      Number(promoForm.discountPercentage) < 0 ||
+      Number(promoForm.discountPercentage) > 100
+    )
+      errors.discountPercentage = "Must be a number between 0 and 100";
+    if (!promoForm.startDate) errors.startDate = "Start date is required";
+    if (!promoForm.startTime) errors.startTime = "Start time is required";
+    if (!promoForm.endDate) errors.endDate = "End date is required";
+    if (!promoForm.endTime) errors.endTime = "End time is required";
+
+    if (
+      promoForm.startDate &&
+      promoForm.startTime &&
+      promoForm.endDate &&
+      promoForm.endTime
+    ) {
+      const startDateTime = new Date(
+        `${promoForm.startDate}T${promoForm.startTime}`
+      );
+      const endDateTime = new Date(`${promoForm.endDate}T${promoForm.endTime}`);
+      if (endDateTime <= startDateTime) {
+        errors.endDate = "End date/time must be after start date/time";
+      }
+    }
     return errors;
   };
 
-  const handleInviteSubmit = async (e: React.FormEvent) => {
+  const handlePromoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const errors = validateInviteForm();
+    const errors = validatePromoForm();
     if (Object.keys(errors).length > 0) {
-      setInviteErrors(errors);
+      setPromoErrors(errors);
       return;
     }
 
     try {
-      setInviteLoading(true);
+      setSubmitLoading(true);
 
-      console.log("Send invite payload:", inviteForm);
+      const startDateTime = new Date(
+        `${promoForm.startDate}T${promoForm.startTime}`
+      );
+      const endDateTime = new Date(`${promoForm.endDate}T${promoForm.endTime}`);
 
-      await fetchUsers(debouncedSearchTerm, page);
+      if (modalMode === "create") {
+        const payload = {
+          code: promoForm.code,
+          owner: promoForm.owner,
+          discountPercentage: Number(promoForm.discountPercentage),
+          startTime: startDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
+        };
 
-      setInviteForm({
-        firstName: "",
-        lastName: "",
-        email: "",
-        role: "",
+        const response = await CreatePromoCode(payload);
+        console.log(response);
+        toast.success(`${response.code} code created successfully`);
+      } else {
+        const payload = {
+          discountPercentage: Number(promoForm.discountPercentage),
+          startTime: startDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
+        };
+
+        await RenewPromoCode(selectedPromoCode!.id, payload);
+      }
+
+      await fetchPromoCodes(debouncedSearchTerm, page);
+
+      setPromoForm({
+        code: "",
+        owner: "",
+        discountPercentage: "",
+        startDate: "",
+        startTime: "",
+        endDate: "",
+        endTime: "",
       });
-      setShowInviteModal(false);
-    } catch (error) {
-      console.error("Error sending invite:", error);
+      setShowModal(false);
+      setSelectedPromoCode(null);
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message || "Creating Promo code failed"
+      );
+      console.error(`Error ${modalMode}ing promo code:`, error);
     } finally {
-      setInviteLoading(false);
+      setSubmitLoading(false);
     }
   };
+
+  const isRenewMode = modalMode === "renew";
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-8 md:w-full sm:w-auto w-[95vw]">
       <div className="md:w-full sm:w-auto w-[60vw]">
         <div className="flex items-center justify-between mb-6 sm:mb-8">
           <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
-            User Management
+            Promo Code
           </h1>
         </div>
 
@@ -261,13 +386,13 @@ const PromoCode: React.FC = () => {
           <div className="flex gap-2 flex-1 sm:flex-initial">
             <input
               type="text"
-              placeholder="Search by name or email"
+              placeholder="Search"
               value={searchTerm}
               onChange={(e) => handleSearchInputChange(e.target.value)}
               className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
             />
             <button
-              onClick={() => fetchUsers(searchTerm, page)}
+              onClick={() => fetchPromoCodes(searchTerm, page)}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               <Search size={20} />
@@ -276,15 +401,15 @@ const PromoCode: React.FC = () => {
 
           <div className="flex gap-4">
             <button
-              onClick={openInviteModal}
+              onClick={openCreateModal}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               <Plus size={18} />
-              Send Invite
+              Create Code
             </button>
             <button
               onClick={handleExport}
-              disabled={users.length === 0}
+              disabled={promoCodes.length === 0}
               className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-white rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Upload size={18} />
@@ -295,7 +420,7 @@ const PromoCode: React.FC = () => {
 
         <Table
           columns={columns}
-          data={users}
+          data={promoCodes}
           totalCount={totalCount}
           itemsPerPage={itemsPerPage}
           onPageChange={(p) => setPage(p)}
@@ -308,166 +433,233 @@ const PromoCode: React.FC = () => {
         />
       </div>
 
-      {/* SEND INVITE MODAL */}
-      {showInviteModal && (
+      {showModal && (
         <div
           className="fixed inset-0 z-[10000] flex items-center justify-center"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
-              closeInviteModal();
+              closeModal();
             }
           }}
         >
-          {/* overlay */}
           <div
             className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-            onClick={closeInviteModal}
+            onClick={closeModal}
           />
 
-          {/* modal card */}
           <div
-            className="relative w-full max-w-2xl h-[87vh] md:h-[60vh] mx-4 rounded-lg overflow-hidden shadow-xl bg-white dark:bg-gray-800 z-[10001]"
+            className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4 rounded-lg shadow-xl bg-white dark:bg-gray-800 z-[10001]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* header */}
-            <div className="flex items-center justify-between px-6 py-4 bg-[#081A30] dark:bg-[#081A30]">
-              <h3 className="text-white font-semibold text-lg">Send Invite</h3>
+            <div className="flex items-center justify-between px-6 py-4 bg-[#1e293b] dark:bg-[#1e293b]">
+              <h3 className="text-white font-semibold text-lg">
+                {isRenewMode ? "Renew Code" : "Create Code"}
+              </h3>
               <button
                 className="text-white hover:text-gray-200"
-                onClick={closeInviteModal}
-                disabled={inviteLoading}
+                onClick={closeModal}
+                disabled={submitLoading}
               >
                 <X size={20} />
               </button>
             </div>
 
-            {/* body */}
-            <form onSubmit={handleInviteSubmit} className="p-6 space-y-6">
+            <form onSubmit={handlePromoSubmit} className="p-6 space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    First Name <span className="text-red-500">*</span>
+                    Code Name
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter first name"
-                    value={inviteForm.firstName}
-                    onChange={(e) =>
-                      handleInviteChange("firstName", e.target.value)
-                    }
+                    placeholder="Enter code name"
+                    value={promoForm.code}
+                    onChange={(e) => handlePromoChange("code", e.target.value)}
+                    disabled={isRenewMode}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                      inviteErrors.firstName
+                      isRenewMode
+                        ? "opacity-50 cursor-not-allowed"
+                        : promoErrors.code
                         ? "border-red-500 focus:ring-red-500"
                         : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
                     }`}
                   />
-                  {inviteErrors.firstName && (
+                  {promoErrors.code && !isRenewMode && (
                     <p className="text-red-500 text-sm mt-1">
-                      {inviteErrors.firstName}
+                      {promoErrors.code}
                     </p>
                   )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    Last Name <span className="text-red-500">*</span>
+                    Owner
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter last name"
-                    value={inviteForm.lastName}
-                    onChange={(e) =>
-                      handleInviteChange("lastName", e.target.value)
-                    }
+                    placeholder="Enter owner name"
+                    value={promoForm.owner}
+                    onChange={(e) => handlePromoChange("owner", e.target.value)}
+                    disabled={isRenewMode}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                      inviteErrors.lastName
+                      isRenewMode
+                        ? "opacity-50 cursor-not-allowed"
+                        : promoErrors.owner
                         ? "border-red-500 focus:ring-red-500"
                         : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
                     }`}
                   />
-                  {inviteErrors.lastName && (
+                  {promoErrors.owner && !isRenewMode && (
                     <p className="text-red-500 text-sm mt-1">
-                      {inviteErrors.lastName}
+                      {promoErrors.owner}
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    Email <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="Enter email"
-                    value={inviteForm.email}
-                    onChange={(e) =>
-                      handleInviteChange("email", e.target.value)
-                    }
-                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                      inviteErrors.email
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-                    }`}
-                  />
-                  {inviteErrors.email && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {inviteErrors.email}
-                    </p>
-                  )}
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  Discount (%)
+                </label>
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  value={promoForm.discountPercentage}
+                  onChange={(e) =>
+                    handlePromoChange("discountPercentage", e.target.value)
+                  }
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
+                    promoErrors.discountPercentage
+                      ? "border-red-500 focus:ring-red-500"
+                      : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
+                  }`}
+                />
+                {promoErrors.discountPercentage && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {promoErrors.discountPercentage}
+                  </p>
+                )}
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    Role <span className="text-red-500">*</span>
-                  </label>
-                  <div
-                    className={`relative w-full ${
-                      inviteErrors.role ? "border-red-500" : ""
-                    }`}
-                  >
-                    <select
-                      value={inviteForm.role}
+              <div>
+                <h4 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                  Date & Time
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                      Start
+                    </label>
+                    <input
+                      type="date"
+                      placeholder="DD/MM/YYYY"
+                      value={promoForm.startDate}
                       onChange={(e) =>
-                        handleInviteChange("role", e.target.value)
+                        handlePromoChange("startDate", e.target.value)
                       }
-                      className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 ${
-                        inviteErrors.role
+                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
+                        promoErrors.startDate
                           ? "border-red-500 focus:ring-red-500"
                           : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
                       }`}
-                    >
-                      <option value="">Select</option>
-                      <option value="ADMIN">Admin</option>
-                      <option value="SUPER_ADMIN">Super Admin</option>
-                      <option value="MANAGER">Manager</option>
-                    </select>
+                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="time"
+                        value={promoForm.startTime}
+                        onChange={(e) =>
+                          handlePromoChange("startTime", e.target.value)
+                        }
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
+                          promoErrors.startTime
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
+                        }`}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                      <input
+                        type="radio"
+                        id="24hour-start"
+                        name="timeFormat"
+                        defaultChecked
+                      />
+                      <label htmlFor="24hour-start">24-hour format</label>
+                    </div>
+                    {promoErrors.startDate && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {promoErrors.startDate}
+                      </p>
+                    )}
                   </div>
-                  {inviteErrors.role && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {inviteErrors.role}
-                    </p>
-                  )}
+
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                      End
+                    </label>
+                    <input
+                      type="date"
+                      placeholder="DD/MM/YYYY"
+                      value={promoForm.endDate}
+                      onChange={(e) =>
+                        handlePromoChange("endDate", e.target.value)
+                      }
+                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
+                        promoErrors.endDate
+                          ? "border-red-500 focus:ring-red-500"
+                          : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
+                      }`}
+                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="time"
+                        value={promoForm.endTime}
+                        onChange={(e) =>
+                          handlePromoChange("endTime", e.target.value)
+                        }
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
+                          promoErrors.endTime
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
+                        }`}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                      <input
+                        type="radio"
+                        id="24hour-end"
+                        name="timeFormatEnd"
+                        defaultChecked
+                      />
+                      <label htmlFor="24hour-end">24-hour format</label>
+                    </div>
+                    {promoErrors.endDate && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {promoErrors.endDate}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* footer */}
-              <div className="flex justify-end gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={closeInviteModal}
-                  disabled={inviteLoading}
-                  className="px-5 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Cancel
-                </button>
+              <div className="flex justify-center pt-4">
                 <button
                   type="submit"
-                  disabled={inviteLoading}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
+                  disabled={submitLoading}
+                  className="px-8 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {inviteLoading ? "Sending..." : "Send Invite"}
+                  {submitLoading
+                    ? isRenewMode
+                      ? "Renewing..."
+                      : "Creating..."
+                    : isRenewMode
+                    ? "Renew"
+                    : "Create"}
                 </button>
               </div>
             </form>

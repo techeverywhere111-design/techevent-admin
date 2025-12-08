@@ -19,6 +19,7 @@ export default function Navbar({ toggleSidebar }: NavbarProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    console.log(user);
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
@@ -66,7 +67,10 @@ export default function Navbar({ toggleSidebar }: NavbarProps) {
 
         {isDropdownOpen && (
           <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md z-50">
-            <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+            <button
+              onClick={() => navigate(`/profile`)}
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
               View Profile
             </button>
 
