@@ -125,3 +125,21 @@ export const GetPromoCodeRegistrationLogs = async (
   );
   return data;
 };
+
+export const MarkAsSettled = async (
+  registrationLogId: string
+): Promise<{ message: string }> => {
+  const { data } = await api.get<{ message: string }>(
+    `/api/v1/promo-codes/${registrationLogId}/mark-as-settled`
+  );
+  return data;
+};
+
+export const MarkAsNotSettled = async (
+  registrationLogId: string
+): Promise<{ message: string }> => {
+  const { data } = await api.get<{ message: string }>(
+    `/api/v1/promo-codes/${registrationLogId}/mark-as-not-settled`
+  );
+  return data;
+};

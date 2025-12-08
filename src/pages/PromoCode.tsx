@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Table, { type Column } from "@/components/ui/Table";
 import { User, Search, Upload, Plus, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   GetPromoCodes,
   SearchPromoCodes,
@@ -35,6 +36,7 @@ interface PromoCodeFormState {
 type ModalMode = "create" | "renew";
 
 const PromoCode: React.FC = () => {
+  const navigate = useNavigate();
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
@@ -234,7 +236,7 @@ const PromoCode: React.FC = () => {
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            console.log("View Registration for:", row);
+            navigate(`/promo-enquires`, { state: { promoCode: row } });
           }}
           className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
         >
