@@ -143,3 +143,16 @@ export const MarkAsNotSettled = async (
   );
   return data;
 };
+
+export const SearchPromoCodeRegistrationLogs = async (
+  text: string,
+  code: string,
+  pageNo: number,
+  pageSize: number
+): Promise<PromoCodeRegistrationLogsResponse> => {
+  const { data } = await api.get<PromoCodeRegistrationLogsResponse>(
+    "/api/v1/promo-codes/logs/search",
+    { params: { text, code, pageNo, pageSize } }
+  );
+  return data;
+};

@@ -4,6 +4,7 @@ import Table, { type Column } from "@/components/ui/Table";
 import { ArrowLeft, Search, Upload } from "lucide-react";
 import {
   GetPromoCodeRegistrationLogs,
+  SearchPromoCodeRegistrationLogs,
   MarkAsSettled,
   MarkAsNotSettled,
 } from "@/lib/api/DiscountManagement";
@@ -48,7 +49,6 @@ const ViewPromoRegistration: React.FC = () => {
     useState<RegistrationLog | null>(null);
   const [settlementLoading, setSettlementLoading] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -66,16 +66,27 @@ const ViewPromoRegistration: React.FC = () => {
     });
   };
 
-  const fetchRegistrations = async (pageNumber: number = 1) => {
+  const fetchRegistrations = async (
+    searchText = "",
+    pageNumber: number = 1
+  ) => {
     if (!promoCode?.code) return;
 
     try {
       setLoading(true);
-      const response = await GetPromoCodeRegistrationLogs(
-        promoCode.code,
-        pageNumber - 1,
-        itemsPerPage
-      );
+
+      const response = searchText
+        ? await SearchPromoCodeRegistrationLogs(
+            searchText,
+            promoCode.code,
+            pageNumber - 1,
+            itemsPerPage
+          )
+        : await GetPromoCodeRegistrationLogs(
+            promoCode.code,
+            pageNumber - 1,
+            itemsPerPage
+          );
 
       setRegistrations(response.content);
       setTotalCount(response.totalElements);
@@ -91,17 +102,13 @@ const ViewPromoRegistration: React.FC = () => {
       navigate("/promo-code");
       return;
     }
-    fetchRegistrations(page);
-  }, [page, itemsPerPage, promoCode]);
+    fetchRegistrations(debouncedSearchTerm, page);
+  }, [debouncedSearchTerm, page, itemsPerPage, promoCode]);
 
   const handleSearchInputChange = (value: string) => {
     setSearchTerm(value);
+    setPage(1); // Reset to first page when searching
   };
-
-  // Filter registrations based on search term
-  const filteredRegistrations = registrations.filter((reg) =>
-    reg.userEmail.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const openSettlementModal = (registration: RegistrationLog) => {
     setSelectedRegistration(registration);
@@ -129,7 +136,7 @@ const ViewPromoRegistration: React.FC = () => {
       }
 
       // Refresh the registrations list
-      await fetchRegistrations(page);
+      await fetchRegistrations(debouncedSearchTerm, page);
       closeSettlementModal();
     } catch (error) {
       console.error("Error toggling settlement status:", error);
@@ -303,7 +310,10 @@ const ViewPromoRegistration: React.FC = () => {
                 onChange={(e) => handleSearchInputChange(e.target.value)}
                 className="flex-1 sm:flex-initial px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 sm:w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm sm:text-base"
               />
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex-shrink-0">
+              <button
+                onClick={() => fetchRegistrations(searchTerm, page)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex-shrink-0"
+              >
                 <Search size={18} className="sm:w-5 sm:h-5" />
               </button>
             </div>
@@ -323,10 +333,8 @@ const ViewPromoRegistration: React.FC = () => {
               <div className="overflow-hidden">
                 <Table
                   columns={columns}
-                  data={searchTerm ? filteredRegistrations : registrations}
-                  totalCount={
-                    searchTerm ? filteredRegistrations.length : totalCount
-                  }
+                  data={registrations}
+                  totalCount={totalCount}
                   itemsPerPage={itemsPerPage}
                   onPageChange={(p) => setPage(p)}
                   onPerPageChange={(newPerPage) => {
