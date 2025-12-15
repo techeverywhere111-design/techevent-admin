@@ -463,7 +463,9 @@ const EventCategory: React.FC = () => {
                           response?.message ||
                           "Category deleted successfully"
                       );
-                      fetchCategories(page, debouncedSearchTerm, itemsPerPage);
+
+                      setPage(1);
+                      fetchCategories(1, debouncedSearchTerm, itemsPerPage);
                     } catch (err) {
                       toast.error("Failed to delete category");
                     } finally {
