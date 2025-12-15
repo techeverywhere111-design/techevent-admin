@@ -15,7 +15,6 @@ import EventCategory from "@/pages/EventCategory";
 import UserManagement from "@/pages/UserManagement";
 import UserProfile from "@/pages/UserProfile";
 import PromoCode from "@/pages/PromoCode";
-import MyProfile from "@/pages/MyProfile";
 import ViewPromoRegistration from "@/pages/ViewPromoRegistration";
 
 export const router = createBrowserRouter([
@@ -48,7 +47,7 @@ export const router = createBrowserRouter([
       { path: "user-management", element: <UserManagement /> },
       { path: "user-profile", element: <UserProfile /> },
       { path: "promo-code", element: <PromoCode /> },
-      { path: "profile", element: <MyProfile /> },
+      { path: "profile", element: <UserProfile /> },
       { path: "promo-enquires", element: <ViewPromoRegistration /> },
     ],
   },

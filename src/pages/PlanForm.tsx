@@ -297,27 +297,27 @@ export default function CreatePlanRedesign() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-8">
+    <div className="min-h-screen bg-white dark:bg-gray-900 p-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-xl font-semibold text-gray-800 mb-6">
+        <h1 className="text-xl font-semibold text-gray-800 dark:text-white mb-6">
           {editing ? "Edit Plan" : "Create Plan"}
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Type
               </label>
               <input
                 type="text"
                 value={planType}
                 readOnly
-                className="w-full bg-gray-100 rounded-lg p-3 text-sm outline-none text-gray-500"
+                className="w-full bg-gray-100 dark:bg-gray-700 dark:text-gray-300 rounded-lg p-3 text-sm outline-none text-gray-500 dark:text-gray-400"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Plan Name
               </label>
               <input
@@ -325,16 +325,20 @@ export default function CreatePlanRedesign() {
                 placeholder="Enter plan name"
                 value={planName}
                 onChange={(e) => setPlanName(e.target.value)}
-                className={`w-full bg-gray-100 rounded-lg p-3 text-sm outline-none border ${
-                  nameError ? "border-red-500" : "border-gray-200"
+                className={`w-full bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:placeholder-gray-500 rounded-lg p-3 text-sm outline-none border ${
+                  nameError
+                    ? "border-red-500 dark:border-red-400"
+                    : "border-gray-200 dark:border-gray-600"
                 }`}
               />
               {nameError && (
-                <p className="text-red-500 text-xs mt-1">{nameError}</p>
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                  {nameError}
+                </p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Price (Naira)
               </label>
               <input
@@ -342,17 +346,21 @@ export default function CreatePlanRedesign() {
                 placeholder=""
                 value={priceNaira}
                 onChange={(e) => setPriceNaira(e.target.value)}
-                className={`w-full bg-gray-100 rounded-lg p-3 text-sm outline-none border ${
-                  priceErrors.naira ? "border-red-500" : "border-gray-200"
+                className={`w-full bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:placeholder-gray-500 rounded-lg p-3 text-sm outline-none border ${
+                  priceErrors.naira
+                    ? "border-red-500 dark:border-red-400"
+                    : "border-gray-200 dark:border-gray-600"
                 }`}
               />
               {priceErrors.naira && (
-                <p className="text-red-500 text-xs mt-1">{priceErrors.naira}</p>
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                  {priceErrors.naira}
+                </p>
               )}
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Price (US Dollar)
             </label>
             <input
@@ -360,25 +368,32 @@ export default function CreatePlanRedesign() {
               placeholder=""
               value={priceUSD}
               onChange={(e) => setPriceUSD(e.target.value)}
-              className={`w-full bg-gray-100 rounded-lg p-3 text-sm outline-none border ${
-                priceErrors.usd ? "border-red-500" : "border-gray-200"
+              className={`w-full bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:placeholder-gray-500 rounded-lg p-3 text-sm outline-none border ${
+                priceErrors.usd
+                  ? "border-red-500 dark:border-red-400"
+                  : "border-gray-200 dark:border-gray-600"
               }`}
             />
             {priceErrors.usd && (
-              <p className="text-red-500 text-xs mt-1">{priceErrors.usd}</p>
+              <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                {priceErrors.usd}
+              </p>
             )}
           </div>
           <div></div>
         </div>
 
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-md font-semibold text-gray-800">Features</h2>
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <h2 className="text-md font-semibold text-gray-800 dark:text-white">
+            Features
+          </h2>
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
             <input
               type="checkbox"
               checked={selectAll}
               onChange={toggleSelectAll}
-            />{" "}
+              className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+            />
             Select all
           </label>
         </div>
@@ -414,8 +429,8 @@ export default function CreatePlanRedesign() {
           disabled={loading}
           className={`mt-12 px-8 py-3 rounded-lg float-right transition-colors text-white ${
             loading
-              ? "bg-blue-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
+              ? "bg-blue-400 dark:bg-blue-500 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
           }`}
         >
           {loading
@@ -453,22 +468,22 @@ function FeatureCard({
   cat,
 }: FeatureCardProps) {
   return (
-    <div className="border rounded-xl p-5 bg-gray-50">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-5 bg-gray-50 dark:bg-gray-800">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-gray-700 capitalize">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 capitalize">
           {title}
         </h3>
         <input
           type="checkbox"
           checked={enabled}
           onChange={toggle}
-          className="cursor-pointer"
+          className="cursor-pointer dark:bg-gray-700 dark:border-gray-600"
         />
       </div>
       <div className="space-y-4">
         {fields.map((f) => (
           <div key={f.key}>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
               {f.label}
             </label>
             {f.type === "checkbox" ? (
@@ -477,7 +492,7 @@ function FeatureCard({
                 disabled={!enabled}
                 checked={data[f.key]}
                 onChange={(e) => update(cat, f.key, e.target.checked)}
-                className="cursor-pointer disabled:cursor-not-allowed"
+                className="cursor-pointer disabled:cursor-not-allowed dark:bg-gray-700 dark:border-gray-600"
               />
             ) : (
               <>
@@ -487,12 +502,14 @@ function FeatureCard({
                   disabled={!enabled}
                   value={data[f.key]}
                   onChange={(e) => update(cat, f.key, e.target.value)}
-                  className={`w-full bg-white rounded-lg p-2 text-sm border ${
-                    data.errors?.[f.key] ? "border-red-500" : "border-gray-200"
-                  } disabled:bg-gray-100 disabled:cursor-not-allowed outline-none focus:border-blue-500`}
+                  className={`w-full bg-white dark:bg-gray-700 dark:text-gray-300 dark:placeholder-gray-500 rounded-lg p-2 text-sm border ${
+                    data.errors?.[f.key]
+                      ? "border-red-500 dark:border-red-400"
+                      : "border-gray-200 dark:border-gray-600"
+                  } disabled:bg-gray-100 dark:disabled:bg-gray-900 disabled:cursor-not-allowed outline-none focus:border-blue-500 dark:focus:border-blue-400`}
                 />
                 {data.errors?.[f.key] && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="text-red-500 dark:text-red-400 text-xs mt-1">
                     {data.errors[f.key]}
                   </p>
                 )}
