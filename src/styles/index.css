@@ -41,3 +41,14 @@
     animation-delay: 0.3s;
   }
 }
+
+.no-arrow {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-repeat: no-repeat;
+}
+
+.no-arrow::-ms-expand {
+  display: none;
+}

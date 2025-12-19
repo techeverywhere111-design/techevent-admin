@@ -126,7 +126,6 @@ const UserProfile: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 sm:p-8">
           <form>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-              {/* First Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   First Name
@@ -140,7 +139,6 @@ const UserProfile: React.FC = () => {
                 />
               </div>
 
-              {/* Last Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Last Name
@@ -156,7 +154,6 @@ const UserProfile: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-              {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Email
@@ -170,14 +167,13 @@ const UserProfile: React.FC = () => {
                 />
               </div>
 
-              {/* Role */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Role
                 </label>
                 <select
                   value={displayUser?.roleType || ""}
-                  className="w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-900 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-900 border rounded-lg appearance-none pr-8 focus:outline-none focus:ring-2 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:ring-blue-500 no-arrow"
                   disabled
                 >
                   <option value="">Select</option>
