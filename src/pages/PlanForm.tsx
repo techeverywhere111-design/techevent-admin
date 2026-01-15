@@ -23,6 +23,8 @@ const initialFeatures = {
   eventFeature: {
     enabled: false,
     numberAllowed: "",
+    numberOfForms: "",
+    allowPaidEvent: false,
     errors: {} as Record<string, string>,
   },
   calendarFeature: {
@@ -46,7 +48,9 @@ const initialFeatures = {
   pollFeature: {
     enabled: false,
     numberOfPolls: "",
+    numberOfPollVotes: "",
     numberOfQuestionAndAnswerSessions: "",
+    numberOfQuestionsSent: "",
     errors: {} as Record<string, string>,
   },
 };

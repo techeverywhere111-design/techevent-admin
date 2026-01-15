@@ -9,6 +9,8 @@ export interface MeetingFeature {
 
 export interface EventFeature {
   numberAllowed: number;
+  numberOfForms: number;
+  allowPaidEvent: boolean;
 }
 
 export interface CalendarFeature {
@@ -28,7 +30,9 @@ export interface AccountFeature {
 
 export interface PollFeature {
   numberOfPolls: number;
+  numberOfPollVotes: number;
   numberOfQuestionAndAnswerSessions: number;
+  numberOfQuestionsSent: number;
 }
 
 export interface PlanFeatures {
