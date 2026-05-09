@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
-import { Search, Download, X } from "lucide-react";
+import { Search, Upload, X } from "lucide-react";
 import { GetEnquiries, SearchEnquiries, MarkAsTreated } from "@/lib/api/EnquiriesEndpoint";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 interface EnquiryRow {
   id: string;
   name: string; // Map both to 'name' for now
-  businessName: string; 
+  businessName: string;
   email: string;
   status: "TREATED" | "NOT TREATED";
   original: any;
@@ -181,9 +181,9 @@ const Enquiries: React.FC = () => {
 
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-[#D1E1F5] text-[#2563EB] rounded-lg hover:bg-blue-200 transition"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition"
           >
-            <Download size={18} />
+            <Upload size={18} />
             Export
           </button>
         </div>
