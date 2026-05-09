@@ -52,7 +52,7 @@ const navItems: NavItem[] = [
     icon: BarChart2,
   },
   { name: "Plans", path: "/plans", icon: Gem },
-  { name: "Enquires", path: "/enquires", icon: ShieldQuestionMark },
+  { name: "Enquires", path: "/enquiries", icon: ShieldQuestionMark },
   { name: "User Management", path: "/user-management", icon: ShieldUser },
   {
     name: "Discount Management",

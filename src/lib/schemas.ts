@@ -138,4 +138,21 @@ export const AuditLogListResponseSchema = PaginationSchema.extend({
   content: z.array(AuditLogSchema),
 });
 
+// Enquiry Schemas
+export const EnquirySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string().email(),
+  subject: z.string(),
+  message: z.string(),
+  isTreated: z.boolean(),
+  treatedBy: z.string().nullable().optional(),
+  treatedByUser: AdminUserSchema.nullable().optional(),
+  createdOn: z.string(),
+});
 
+export type Enquiry = z.infer<typeof EnquirySchema>;
+
+export const EnquiryListResponseSchema = PaginationSchema.extend({
+  content: z.array(EnquirySchema),
+});

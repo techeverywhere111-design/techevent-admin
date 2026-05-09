@@ -18,6 +18,8 @@ import UserManagement from "@/pages/UserManagement";
 import UserProfile from "@/pages/UserProfile";
 import PromoCode from "@/pages/PromoCode";
 import ViewPromoRegistration from "@/pages/ViewPromoRegistration";
+import Enquiries from "@/pages/Enquiries";
+import EnquiryDetails from "@/pages/EnquiryDetails";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export const router = createBrowserRouter([
@@ -56,6 +58,8 @@ export const router = createBrowserRouter([
       { path: "promo-code", element: <PromoCode /> },
       { path: "profile", element: <UserProfile /> },
       { path: "promo-enquires", element: <ViewPromoRegistration /> },
+      { path: "enquiries", element: <Enquiries /> },
+      { path: "enquiries/:id", element: <EnquiryDetails /> },
     ],
   },
 ]);
