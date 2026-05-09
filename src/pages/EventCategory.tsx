@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from "react";
 import Table, { type Column } from "@/components/ui/Table";
-import { Search, Upload, Plus } from "lucide-react";
+import { Search, Upload, Plus, X } from "lucide-react";
 import {
   CreateEventCategory,
   GetEventCategories,
@@ -13,7 +13,6 @@ import {
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { useDebounce } from "use-debounce";
 
 interface EventCategory {
   id: string;
@@ -27,7 +26,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 const EventCategory: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 400);
+  const [activeSearchTerm, setActiveSearchTerm] = useState("");
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [selectedCategory, setSelectedCategory] = useState<EventCategory | null>(null);
   const [newCategory, setNewCategory] = useState({ name: "", description: "" });
@@ -40,14 +39,14 @@ const EventCategory: React.FC = () => {
   const queryClient = useQueryClient();
 
   const { data, isLoading: loading } = useQuery({
-    queryKey: ["eventCategories", debouncedSearchTerm, page, itemsPerPage],
+    queryKey: ["eventCategories", activeSearchTerm, page, itemsPerPage],
     queryFn: async () => {
-      const response = debouncedSearchTerm
-        ? await SearchEventCategory(debouncedSearchTerm, page - 1, itemsPerPage)
+      const response = activeSearchTerm
+        ? await SearchEventCategory(activeSearchTerm, page - 1, itemsPerPage)
         : await GetEventCategories(page - 1, itemsPerPage);
 
-      const items = response?.content || response?.data || [];
-      const total = response?.totalElements || response?.total || items.length;
+      const items = response?.content || [];
+      const total = response?.totalElements || 0;
       return { categories: items, totalCount: total };
     },
   });
@@ -55,9 +54,16 @@ const EventCategory: React.FC = () => {
   const categories = data?.categories || [];
   const totalCount = data?.totalCount || 0;
 
-  useEffect(() => {
-    if (debouncedSearchTerm && page !== 1) setPage(1);
-  }, [debouncedSearchTerm, page]);
+  const handleSearch = () => {
+    setActiveSearchTerm(searchTerm);
+    setPage(1);
+  };
+
+  const handleClear = () => {
+    setSearchTerm("");
+    setActiveSearchTerm("");
+    setPage(1);
+  };
 
   const handleSearchInputChange = (value: string) => {
     setSearchTerm(value);
@@ -261,17 +267,26 @@ const EventCategory: React.FC = () => {
 
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
           <div className="flex gap-2 flex-1 sm:flex-initial">
-            <input
-              type="text"
-              placeholder="Search categories..."
-              value={searchTerm}
-              onChange={(e) => handleSearchInputChange(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-            />
+            <div className="relative flex-1 sm:flex-initial">
+              <input
+                type="text"
+                placeholder="Search categories..."
+                value={searchTerm}
+                onChange={(e) => handleSearchInputChange(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                className="px-4 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+              />
+              {searchTerm && (
+                <button
+                  onClick={handleClear}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
             <button
-              onClick={() => {
-                setSearchTerm((s) => s);
-              }}
+              onClick={handleSearch}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               <Search size={20} />

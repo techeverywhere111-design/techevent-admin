@@ -9,7 +9,6 @@ import {
   SearchAdminUsers,
   GetBulkAdminUsers,
 } from "@/lib/api/AdminEndpoint";
-import { useDebounce } from "use-debounce";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
@@ -43,17 +42,17 @@ const UserManagement: React.FC = () => {
   const [inviteErrors, setInviteErrors] = useState<Partial<InviteFormState>>({});
   const [inviteLoading, setInviteLoading] = useState(false);
 
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
+  const [activeSearchTerm, setActiveSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data, isLoading: loading } = useQuery({
-    queryKey: ["adminUsers", debouncedSearchTerm, page, itemsPerPage],
+    queryKey: ["adminUsers", activeSearchTerm, page, itemsPerPage],
     queryFn: async () => {
-      const response = debouncedSearchTerm
-        ? await SearchAdminUsers(debouncedSearchTerm, page - 1, itemsPerPage)
+      const response = activeSearchTerm
+        ? await SearchAdminUsers(activeSearchTerm, page - 1, itemsPerPage)
         : await GetAdminUsers(page - 1, itemsPerPage);
 
       const mappedUsers: User[] = response.content.map((c: any) => {
@@ -75,9 +74,19 @@ const UserManagement: React.FC = () => {
   const users = data?.users || [];
   const totalCount = data?.totalElements || 0;
 
+  const handleSearch = () => {
+    setActiveSearchTerm(searchTerm);
+    setPage(1);
+  };
+
+  const handleClear = () => {
+    setSearchTerm("");
+    setActiveSearchTerm("");
+    setPage(1);
+  };
+
   const handleSearchInputChange = (value: string) => {
     setSearchTerm(value);
-    setPage(1);
   };
 
   const getAvatarColor = (name: string) => {
@@ -244,14 +253,26 @@ const UserManagement: React.FC = () => {
 
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
           <div className="flex gap-2 flex-1 sm:flex-initial">
-            <input
-              type="text"
-              placeholder="Search by name or email"
-              value={searchTerm}
-              onChange={(e) => handleSearchInputChange(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-            />
+            <div className="relative flex-1 sm:flex-initial">
+              <input
+                type="text"
+                placeholder="Search by name or email"
+                value={searchTerm}
+                onChange={(e) => handleSearchInputChange(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                className="px-4 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+              />
+              {searchTerm && (
+                <button
+                  onClick={handleClear}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
             <button
+              onClick={handleSearch}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               <Search size={20} />

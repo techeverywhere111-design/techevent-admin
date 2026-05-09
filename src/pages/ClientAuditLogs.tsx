@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
-import { Search, Download, ArrowLeft } from "lucide-react";
-import { useDebounce } from "use-debounce";
+import { Search, Download, ArrowLeft, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import {
@@ -15,7 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 
 const AuditLogs: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
+  const [activeSearchTerm, setActiveSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -27,15 +26,26 @@ const AuditLogs: React.FC = () => {
   const clientName = location.state?.clientName;
 
   const { data, isLoading: loading } = useQuery({
-    queryKey: ["auditLogs", debouncedSearchTerm, page, itemsPerPage, clientId],
+    queryKey: ["auditLogs", activeSearchTerm, page, itemsPerPage, clientId],
     queryFn: () =>
-      debouncedSearchTerm
-        ? SearchAccountAuditLogs(debouncedSearchTerm, page - 1, itemsPerPage, clientId)
+      activeSearchTerm
+        ? SearchAccountAuditLogs(activeSearchTerm, page - 1, itemsPerPage, clientId)
         : GetAccountAuditLogs(page - 1, itemsPerPage, clientId),
   });
 
   const logs = data?.content || [];
   const totalCount = data?.totalElements || 0;
+
+  const handleSearch = () => {
+    setActiveSearchTerm(searchTerm);
+    setPage(1);
+  };
+
+  const handleClear = () => {
+    setSearchTerm("");
+    setActiveSearchTerm("");
+    setPage(1);
+  };
 
   const handleSearchInputChange = (value: string) => {
     setSearchTerm(value);
@@ -142,15 +152,26 @@ const AuditLogs: React.FC = () => {
         {/* Search & Export row */}
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
           <div className="flex gap-2 flex-1 sm:flex-initial">
-            <input
-              type="text"
-              placeholder="Search logs..."
-              value={searchTerm}
-              onChange={(e) => handleSearchInputChange(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 sm:w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-            />
+            <div className="relative flex-1 sm:flex-initial">
+              <input
+                type="text"
+                placeholder="Search logs..."
+                value={searchTerm}
+                onChange={(e) => handleSearchInputChange(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                className="px-4 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 sm:w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+              />
+              {searchTerm && (
+                <button
+                  onClick={handleClear}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
             <button
-              onClick={() => handleSearchInputChange(searchTerm)}
+              onClick={handleSearch}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex-shrink-0 flex items-center justify-center"
             >
               <Search size={20} />
