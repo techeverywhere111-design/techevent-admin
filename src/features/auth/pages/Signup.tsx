@@ -79,12 +79,10 @@ const Signup: React.FC = () => {
 
     setLoading(true);
     try {
-      const data = await AdminUserCreate(formData);
-      console.log("Signup successful:", data);
+      await AdminUserCreate(formData);
       toast.success("Account created successfully!");
       navigate("/");
     } catch (err: any) {
-      console.error(err);
       toast.error(err.response?.data?.message || "Signup failed. Try again.");
     } finally {
       setLoading(false);

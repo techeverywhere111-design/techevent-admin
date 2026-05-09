@@ -35,18 +35,14 @@ interface PromoCodeFormState {
 
 type ModalMode = "create" | "renew";
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 const PromoCode: React.FC = () => {
   const navigate = useNavigate();
-  const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(false);
-
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>("create");
-  const [selectedPromoCode, setSelectedPromoCode] = useState<PromoCode | null>(
-    null
-  );
+  const [selectedPromoCode, setSelectedPromoCode] = useState<PromoCode | null>(null);
   const [promoForm, setPromoForm] = useState<PromoCodeFormState>({
     code: "",
     owner: "",
@@ -56,35 +52,25 @@ const PromoCode: React.FC = () => {
     endDate: "",
     endTime: "",
   });
-  const [promoErrors, setPromoErrors] = useState<Partial<PromoCodeFormState>>(
-    {}
-  );
-  const [submitLoading, setSubmitLoading] = useState(false);
+  const [promoErrors, setPromoErrors] = useState<Partial<PromoCodeFormState>>({});
 
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const queryClient = useQueryClient();
 
-  const fetchPromoCodes = async (searchText = "", pageNumber: number = 1) => {
-    try {
-      setLoading(true);
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ["promoCodes", debouncedSearchTerm, page, itemsPerPage],
+    queryFn: async () => {
+      const response = debouncedSearchTerm
+        ? await SearchPromoCodes(debouncedSearchTerm, page - 1, itemsPerPage)
+        : await GetPromoCodes(page - 1, itemsPerPage);
+      return { promoCodes: response.content, totalElements: response.totalElements };
+    },
+  });
 
-      const response = searchText
-        ? await SearchPromoCodes(searchText, pageNumber - 1, itemsPerPage)
-        : await GetPromoCodes(pageNumber - 1, itemsPerPage);
-
-      setPromoCodes(response.content);
-      setTotalCount(response.totalElements);
-    } catch (err) {
-      console.error("Error fetching promo codes:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPromoCodes(debouncedSearchTerm, page);
-  }, [debouncedSearchTerm, page, itemsPerPage]);
+  const promoCodes = data?.promoCodes || [];
+  const totalCount = data?.totalElements || 0;
 
   const handleSearchInputChange = (value: string) => {
     setSearchTerm(value);
@@ -312,45 +298,22 @@ const PromoCode: React.FC = () => {
     return errors;
   };
 
-  const handlePromoSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const errors = validatePromoForm();
-    if (Object.keys(errors).length > 0) {
-      setPromoErrors(errors);
-      return;
-    }
-
-    try {
-      setSubmitLoading(true);
-
-      const startDateTime = new Date(
-        `${promoForm.startDate}T${promoForm.startTime}`
-      );
-      const endDateTime = new Date(`${promoForm.endDate}T${promoForm.endTime}`);
-
-      if (modalMode === "create") {
-        const payload = {
-          code: promoForm.code,
-          owner: promoForm.owner,
-          discountPercentage: Number(promoForm.discountPercentage),
-          startTime: startDateTime.toISOString(),
-          endTime: endDateTime.toISOString(),
-        };
-
-        const response = await CreatePromoCode(payload);
-        console.log(response);
+  const submitMutation = useMutation({
+    mutationFn: async (payload: { mode: ModalMode; data: any }) => {
+      if (payload.mode === "create") {
+        return await CreatePromoCode(payload.data);
+      } else {
+        if (!selectedPromoCode) throw new Error("No promo code selected for renewal");
+        return await RenewPromoCode(selectedPromoCode.id, payload.data);
+      }
+    },
+    onSuccess: (response, variables) => {
+      if (variables.mode === "create") {
         toast.success(`${response.code} code created successfully`);
       } else {
-        const payload = {
-          discountPercentage: Number(promoForm.discountPercentage),
-          startTime: startDateTime.toISOString(),
-          endTime: endDateTime.toISOString(),
-        };
-
-        await RenewPromoCode(selectedPromoCode!.id, payload);
+        toast.success(`Code renewed successfully`);
       }
-
-      await fetchPromoCodes(debouncedSearchTerm, page);
+      queryClient.invalidateQueries({ queryKey: ["promoCodes"] });
 
       setPromoForm({
         code: "",
@@ -363,13 +326,41 @@ const PromoCode: React.FC = () => {
       });
       setShowModal(false);
       setSelectedPromoCode(null);
-    } catch (error: any) {
-      toast.error(
-        error.response?.data?.message || "Creating Promo code failed"
-      );
-      console.error(`Error ${modalMode}ing promo code:`, error);
-    } finally {
-      setSubmitLoading(false);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Operation failed");
+    }
+  });
+
+  const submitLoading = submitMutation.isPending;
+
+  const handlePromoSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const errors = validatePromoForm();
+    if (Object.keys(errors).length > 0) {
+      setPromoErrors(errors);
+      return;
+    }
+
+    const startDateTime = new Date(`${promoForm.startDate}T${promoForm.startTime}`);
+    const endDateTime = new Date(`${promoForm.endDate}T${promoForm.endTime}`);
+
+    if (modalMode === "create") {
+      const payload = {
+        code: promoForm.code,
+        owner: promoForm.owner,
+        discountPercentage: Number(promoForm.discountPercentage),
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime.toISOString(),
+      };
+      submitMutation.mutate({ mode: "create", data: payload });
+    } else {
+      const payload = {
+        discountPercentage: Number(promoForm.discountPercentage),
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime.toISOString(),
+      };
+      submitMutation.mutate({ mode: "renew", data: payload });
     }
   };
 

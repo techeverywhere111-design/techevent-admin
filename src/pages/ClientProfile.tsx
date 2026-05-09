@@ -21,12 +21,11 @@ const generateChartData = (
   return data;
 };
 
+import { useQuery } from "@tanstack/react-query";
+
 const ClientProfile: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
-  const [loading, setLoading] = useState(true);
-  const [accountUser, setAccountUser] = useState<AccountUser | null>(null);
 
   const [paymentMonth, setPaymentMonth] = useState("Jan");
   const [paymentYear, setPaymentYear] = useState("2025");
@@ -47,40 +46,26 @@ const ClientProfile: React.FC = () => {
     return null;
   };
 
+  const userId = getUserId();
+
+  const { data: accountUser, isLoading: loading } = useQuery({
+    queryKey: ["clientProfile", userId],
+    queryFn: async () => {
+      if (!userId) throw new Error("No user ID provided");
+      const users = await GetBulkAccountUsers([userId]);
+      const user = users[0];
+      if (!user) throw new Error("User not found");
+      return user;
+    },
+    enabled: !!userId,
+  });
+
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        setLoading(true);
-        const userId = getUserId();
-
-        if (!userId) {
-          toast.error("No user ID provided");
-          navigate("/client-management");
-          return;
-        }
-
-        const users = await GetBulkAccountUsers([userId]);
-        const user = users[0];
-        console.log("Fetched user:", user);
-
-        if (!user) {
-          toast.error("User not found");
-          navigate("/client-management");
-          return;
-        }
-
-        setAccountUser(user);
-      } catch (err) {
-        console.log("Error fetching account user:", err);
-        toast.error("Error fetching account user:");
-        navigate("/client-management");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [location, navigate]);
+    if (!userId) {
+      toast.error("No user ID provided");
+      navigate("/client-management");
+    }
+  }, [userId, navigate]);
 
   if (loading) {
     return (

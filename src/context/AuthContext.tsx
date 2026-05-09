@@ -21,22 +21,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = Cookies.get("PlutoEventAdminUser");
+    const storedUser = Cookies.get("PLUTO_EVENT_ADMIN_USER");
     if (storedUser) setUser(JSON.parse(storedUser));
     setLoading(false);
   }, []);
 
   const login = (userData: AdminUserLoginResponse) => {
     setUser(userData);
-    Cookies.set("PlutoEventAdminUser", JSON.stringify(userData), {
+    Cookies.set("PLUTO_EVENT_ADMIN_USER", JSON.stringify(userData), {
       expires: 7,
+      secure: window.location.protocol === "https:",
+      sameSite: "Strict",
     });
   };
 
   const logout = () => {
     setUser(null);
-    Cookies.remove("PlutoEventAdminUser");
-    Cookies.remove("token");
+    Cookies.remove("PLUTO_EVENT_ADMIN_USER");
+    Cookies.remove("PLUTO_EVENT_ADMIN_TOKEN");
   };
 
   if (loading) return null;

@@ -16,14 +16,12 @@ interface AdminUser {
   createdOn: string;
 }
 
+import { useQuery } from "@tanstack/react-query";
+
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user: authUser } = useAuth();
-
-  const [loading, setLoading] = useState(false);
-  const [displayUser, setDisplayUser] = useState<AdminUser | null>(null);
-  const [isViewingOtherUser, setIsViewingOtherUser] = useState(false);
 
   const getUserId = (): string | null => {
     if (location.state && (location.state as any).user) {
@@ -36,40 +34,28 @@ const UserProfile: React.FC = () => {
     return null;
   };
 
+  const userId = getUserId();
+  const isViewingOtherUser = !!userId;
+  const initialUserData = location.state && (location.state as any).user ? (location.state as any).user : null;
+
+  const { data: displayUser, isLoading: loading } = useQuery({
+    queryKey: ["userProfile", userId],
+    queryFn: async () => {
+      if (initialUserData) return initialUserData;
+      if (!userId) return null;
+      const [userData] = await GetBulkAdminUsers([userId]);
+      if (!userData) throw new Error("User not found");
+      return userData;
+    },
+    enabled: !!userId && !initialUserData,
+    initialData: initialUserData || (userId ? undefined : authUser),
+  });
+
   useEffect(() => {
-    const fetchUserData = async () => {
-      const userId = getUserId();
-
-      if (userId) {
-        setIsViewingOtherUser(true);
-        setLoading(true);
-
-        try {
-          if (location.state && (location.state as any).user) {
-            const userData = (location.state as any).user as AdminUser;
-            setDisplayUser(userData);
-          } else {
-            const [userData] = await GetBulkAdminUsers([userId]);
-            if (!userData) {
-              navigate("/user-management");
-              return;
-            }
-            setDisplayUser(userData);
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-          navigate("/user-management");
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setIsViewingOtherUser(false);
-        setDisplayUser(authUser);
-      }
-    };
-
-    fetchUserData();
-  }, [location, navigate, authUser]);
+    if (userId && !loading && !displayUser && !initialUserData) {
+      navigate("/user-management");
+    }
+  }, [userId, loading, displayUser, initialUserData, navigate]);
 
   const handleBack = () => {
     navigate("/user-management");

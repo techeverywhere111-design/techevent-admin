@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { PlanCreate, PlanUpdate, PlanGet } from "@/lib/api/Plans";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 type FeatureKeys = keyof typeof initialFeatures;
 
@@ -71,6 +72,7 @@ export default function CreatePlanRedesign() {
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [planId, setPlanId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -85,19 +87,23 @@ export default function CreatePlanRedesign() {
     if (id) {
       setEditing(true);
       setPlanId(id);
-      fetchPlanData(id);
     } else if (fallbackType) {
       setPlanType(fallbackType);
     }
   }, [location.search]);
 
-  const fetchPlanData = async (id: string) => {
-    try {
-      setLoading(true);
-      const data = await PlanGet(id);
+  const { data: fetchedPlan, isLoading: queryLoading } = useQuery({
+    queryKey: ["plan", planId],
+    queryFn: async () => {
+      if (!planId) throw new Error("No plan ID");
+      return await PlanGet(planId);
+    },
+    enabled: !!planId,
+  });
 
-      if (!data) throw new Error("No plan found");
-
+  useEffect(() => {
+    if (fetchedPlan) {
+      const data = fetchedPlan;
       setPlanType(data.type || "");
       setPlanName(data.name || "");
       setPriceNaira(data.priceNaira?.toString() || "");
@@ -113,27 +119,17 @@ export default function CreatePlanRedesign() {
 
             feature.enabled = true;
             Object.keys(apiFeature).forEach((field) => {
-              if (
-                field in feature &&
-                field !== "enabled" &&
-                field !== "errors"
-              ) {
+              if (field in feature && field !== "enabled" && field !== "errors") {
                 const value = apiFeature[field];
-                feature[field] =
-                  typeof value === "number" ? value.toString() : value;
+                feature[field] = typeof value === "number" ? value.toString() : value;
               }
             });
           }
         });
         setFeatures(updatedFeatures);
       }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to load plan details.");
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [fetchedPlan]);
 
   const toggleSelectAll = () => {
     const newVal = !selectAll;
@@ -251,7 +247,36 @@ export default function CreatePlanRedesign() {
     };
   };
 
-  const handleSubmit = async () => {
+  const submitMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      if (editing && planId) {
+        await PlanUpdate(planId, payload);
+        return { isEdit: true, id: planId };
+      } else {
+        const result = await PlanCreate(payload);
+        return { isEdit: false, id: result?.id };
+      }
+    },
+    onSuccess: (result) => {
+      toast.success(result.isEdit ? "Plan updated successfully!" : "Plan created successfully!");
+      if (!result.isEdit) {
+        setPlanName("");
+        setFeatures(initialFeatures);
+        setPriceNaira("");
+        setPriceUSD("");
+        setNameError("");
+        setPriceErrors({ naira: "", usd: "" });
+        setSelectAll(false);
+      }
+      queryClient.invalidateQueries({ queryKey: ["plan"] });
+      navigate(`/view-plans?id=${result.id}`);
+    },
+    onError: () => {
+      toast.error("Operation failed. Please try again.");
+    }
+  });
+
+  const handleSubmit = () => {
     const nameValid = validateName();
     const priceValid = validatePrice();
     const featuresValid = validateFeatures();
@@ -261,38 +286,13 @@ export default function CreatePlanRedesign() {
       return;
     }
 
-    setLoading(true);
     const payload = buildPayload();
-
-    try {
-      if (editing && planId) {
-        console.log("Updating plan:", payload);
-        await PlanUpdate(planId, payload);
-        toast.success("Plan updated successfully!");
-        navigate(`/view-plans?id=${planId}`);
-      } else {
-        console.log("Creating plan:", payload);
-        const result = await PlanCreate(payload);
-
-        toast.success("Plan created successfully!");
-        setPlanName("");
-        setFeatures(initialFeatures);
-        setPriceNaira("");
-        setPriceUSD("");
-        setNameError("");
-        setPriceErrors({ naira: "", usd: "" });
-        setSelectAll(false);
-        navigate(`/view-plans?id=${result?.id}`);
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Operation failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    submitMutation.mutate(payload);
   };
+  
+  const isSubmitLoading = submitMutation.isPending;
 
-  if (loading && editing) {
+  if (queryLoading && editing) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-gray-600">Loading plan data...</div>
@@ -430,14 +430,14 @@ export default function CreatePlanRedesign() {
 
         <button
           onClick={handleSubmit}
-          disabled={loading}
+          disabled={isSubmitLoading}
           className={`mt-12 px-8 py-3 rounded-lg float-right transition-colors text-white ${
-            loading
+            isSubmitLoading
               ? "bg-blue-400 dark:bg-blue-500 cursor-not-allowed"
               : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
           }`}
         >
-          {loading
+          {isSubmitLoading
             ? editing
               ? "Updating..."
               : "Creating..."

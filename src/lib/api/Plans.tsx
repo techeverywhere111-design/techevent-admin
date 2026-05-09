@@ -1,50 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import api from "../utils/api";
+import { PlanSchema, type Plan } from "@/lib/schemas";
 
-export interface MeetingFeature {
-  numberAllowed: number;
-  canRecord: boolean;
-  numberOfParticipants: number;
-}
-
-export interface EventFeature {
-  numberAllowed: number;
-  numberOfForms: number;
-  allowPaidEvent: boolean;
-}
-
-export interface CalendarFeature {
-  numberOfSynchronization: number;
-  numberOfAppointmentSlots: number;
-}
-
-export interface ProposalFeature {
-  numberOfProposalsReceived: number;
-  canQueryProposalSearch: boolean;
-}
-
-export interface AccountFeature {
-  numberOfInvites: number;
-  numberOfSessions: number;
-}
-
-export interface PollFeature {
-  numberOfPolls: number;
-  numberOfPollVotes: number;
-  numberOfQuestionAndAnswerSessions: number;
-  numberOfQuestionsSent: number;
-}
-
-export interface PlanFeatures {
-  meetingFeature?: MeetingFeature;
-  eventFeature?: EventFeature;
-  calendarFeature?: CalendarFeature;
-  proposalFeature?: ProposalFeature;
-  accountFeature?: AccountFeature;
-  pollFeature?: PollFeature;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
-}
+export type PlanResponse = Plan;
+export type PlanFeatures = Plan["features"];
 
 export interface PlanPayload {
   type: string;
@@ -52,17 +10,6 @@ export interface PlanPayload {
   features: PlanFeatures;
   priceNaira: number;
   priceUsd: number;
-}
-
-export interface PlanResponse {
-  id: string;
-  type: string;
-  name: string;
-  features: PlanFeatures;
-  priceNaira: number;
-  priceUsd: number;
-  isActive: boolean;
-  createdOn: string;
 }
 
 export type DisplayLine = {
@@ -153,19 +100,19 @@ export function convertFeaturesToDisplayList(
 export const PlanCreate = async (
   payload: PlanPayload
 ): Promise<PlanResponse> => {
-  const { data } = await api.post<PlanResponse>("/api/v1/plans", payload);
-  return data;
+  const { data } = await api.post("/api/v1/plans", payload);
+  return PlanSchema.parse(data);
 };
 
 export const PlanGet = async (id: string): Promise<PlanResponse> => {
-  const { data } = await api.get<PlanResponse>(`/api/v1/plans/${id}`);
-  return data;
+  const { data } = await api.get(`/api/v1/plans/${id}`);
+  return PlanSchema.parse(data);
 };
 
 export const PlanUpdate = async (
   id: string,
   payload: PlanPayload
 ): Promise<PlanResponse> => {
-  const { data } = await api.put<PlanResponse>(`/api/v1/plans/${id}`, payload);
-  return data;
+  const { data } = await api.put(`/api/v1/plans/${id}`, payload);
+  return PlanSchema.parse(data);
 };

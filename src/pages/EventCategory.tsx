@@ -22,57 +22,42 @@ interface EventCategory {
   createdOn: string;
 }
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 const EventCategory: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
-  const [categories, setCategories] = useState<EventCategory[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 400);
-  const [loading, setLoading] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
-  const [selectedCategory, setSelectedCategory] =
-    useState<EventCategory | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<EventCategory | null>(null);
   const [newCategory, setNewCategory] = useState({ name: "", description: "" });
   const [errors, setErrors] = useState({ name: "", description: "" });
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] =
-    useState<EventCategory | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<EventCategory | null>(null);
 
-  const fetchCategories = async (
-    pageNumber: number = 1,
-    query = "",
-    perPage = itemsPerPage
-  ) => {
-    try {
-      setLoading(true);
+  const queryClient = useQueryClient();
 
-      const response = query
-        ? await SearchEventCategory(query, pageNumber - 1, perPage)
-        : await GetEventCategories(pageNumber - 1, perPage);
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ["eventCategories", debouncedSearchTerm, page, itemsPerPage],
+    queryFn: async () => {
+      const response = debouncedSearchTerm
+        ? await SearchEventCategory(debouncedSearchTerm, page - 1, itemsPerPage)
+        : await GetEventCategories(page - 1, itemsPerPage);
 
       const items = response?.content || response?.data || [];
-      console.log("Fetched categories:", response);
-      setCategories(items);
-      setTotalCount(response?.totalElements || response?.total || items.length);
-    } catch (err: any) {
-      console.error("Error fetching categories:", err);
-      toast.error("Failed to fetch categories");
-    } finally {
-      setLoading(false);
-    }
-  };
+      const total = response?.totalElements || response?.total || items.length;
+      return { categories: items, totalCount: total };
+    },
+  });
+
+  const categories = data?.categories || [];
+  const totalCount = data?.totalCount || 0;
 
   useEffect(() => {
-    if (debouncedSearchTerm) {
-      if (page !== 1) setPage(1);
-      else fetchCategories(1, debouncedSearchTerm, itemsPerPage);
-    } else {
-      fetchCategories(page, "", itemsPerPage);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchTerm, page, itemsPerPage]);
+    if (debouncedSearchTerm && page !== 1) setPage(1);
+  }, [debouncedSearchTerm, page]);
 
   const handleSearchInputChange = (value: string) => {
     setSearchTerm(value);
@@ -120,43 +105,68 @@ const EventCategory: React.FC = () => {
     return !newErrors.name && !newErrors.description;
   };
 
-  const handleSubmit = async () => {
-    if (!validateForm()) return;
-
-    try {
-      setLoading(true);
-
+  const submitMutation = useMutation({
+    mutationFn: async () => {
       if (modalMode === "create") {
-        const response = await CreateEventCategory({
+        return await CreateEventCategory({
           name: newCategory.name.trim(),
           description: newCategory.description.trim(),
         });
-        toast.success(`Category "${response.name}" created successfully!`);
       } else if (modalMode === "edit" && selectedCategory) {
-        const response = await UpdateEventCategory(selectedCategory.id, {
+        return await UpdateEventCategory(selectedCategory.id, {
           name: newCategory.name.trim(),
           description: newCategory.description.trim(),
         });
-        toast.success(`Category "${response.name}" updated successfully!`);
       }
-
+    },
+    onSuccess: (response) => {
+      toast.success(`Category "${response?.name}" ${modalMode === "create" ? "created" : "updated"} successfully!`);
+      queryClient.invalidateQueries({ queryKey: ["eventCategories"] });
       setShowModal(false);
       setNewCategory({ name: "", description: "" });
       setSelectedCategory(null);
       setErrors({ name: "", description: "" });
-
-      fetchCategories(page, debouncedSearchTerm, itemsPerPage);
-    } catch (err: any) {
-      console.error("Error saving category:", err);
-      const errorMessage =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to save category.";
+    },
+    onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to save category.";
       toast.error(errorMessage);
-    } finally {
-      setLoading(false);
     }
+  });
+
+  const handleSubmit = () => {
+    if (!validateForm()) return;
+    submitMutation.mutate();
   };
+  
+  const isSubmitLoading = submitMutation.isPending;
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await DeleteEventCategory(id);
+    },
+    onSuccess: (response) => {
+      toast.success(
+        categoryToDelete?.name + " deleted successfully." ||
+          response?.data?.message ||
+          response?.message ||
+          "Category deleted successfully"
+      );
+      queryClient.invalidateQueries({ queryKey: ["eventCategories"] });
+      setPage(1);
+      setShowDeleteModal(false);
+      setCategoryToDelete(null);
+    },
+    onError: () => {
+      toast.error("Failed to delete category");
+    }
+  });
+
+  const handleDelete = () => {
+    if (!categoryToDelete) return;
+    deleteMutation.mutate(categoryToDelete.id);
+  };
+  
+  const isDeleteLoading = deleteMutation.isPending;
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -381,17 +391,17 @@ const EventCategory: React.FC = () => {
               <div className="flex justify-end gap-3 pt-4">
                 <button
                   onClick={handleCloseModal}
-                  disabled={loading}
+                  disabled={isSubmitLoading}
                   className="px-5 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmit}
-                  disabled={loading}
+                  disabled={isSubmitLoading}
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {loading
+                  {isSubmitLoading
                     ? modalMode === "edit"
                       ? "Updating..."
                       : "Creating..."
@@ -450,31 +460,8 @@ const EventCategory: React.FC = () => {
                 </button>
 
                 <button
-                  onClick={async () => {
-                    if (!categoryToDelete) return;
-                    try {
-                      setLoading(true);
-                      const response = await DeleteEventCategory(
-                        categoryToDelete.id
-                      );
-                      toast.success(
-                        categoryToDelete?.name + " deleted successfully." ||
-                          response?.data?.message ||
-                          response?.message ||
-                          "Category deleted successfully"
-                      );
-
-                      setPage(1);
-                      fetchCategories(1, debouncedSearchTerm, itemsPerPage);
-                    } catch (err) {
-                      toast.error("Failed to delete category");
-                    } finally {
-                      setLoading(false);
-                      setShowDeleteModal(false);
-                      setCategoryToDelete(null);
-                    }
-                  }}
-                  disabled={loading}
+                  onClick={handleDelete}
+                  disabled={isDeleteLoading}
                   className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
                 >
                   Delete

@@ -34,24 +34,22 @@ interface RegistrationLog {
   createdOn: string;
 }
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 const ViewPromoRegistration: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const promoCode = location.state?.promoCode as PromoCode;
 
-  const [registrations, setRegistrations] = useState<RegistrationLog[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(false);
-
   const [showSettlementModal, setShowSettlementModal] = useState(false);
-  const [selectedRegistration, setSelectedRegistration] =
-    useState<RegistrationLog | null>(null);
-  const [settlementLoading, setSettlementLoading] = useState(false);
+  const [selectedRegistration, setSelectedRegistration] = useState<RegistrationLog | null>(null);
 
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  const queryClient = useQueryClient();
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "";
@@ -66,44 +64,28 @@ const ViewPromoRegistration: React.FC = () => {
     });
   };
 
-  const fetchRegistrations = async (
-    searchText = "",
-    pageNumber: number = 1
-  ) => {
-    if (!promoCode?.code) return;
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ["promoRegistrations", promoCode?.code, debouncedSearchTerm, page, itemsPerPage],
+    queryFn: async () => {
+      if (!promoCode?.code) throw new Error("No promo code provided");
+      
+      const response = debouncedSearchTerm
+        ? await SearchPromoCodeRegistrationLogs(debouncedSearchTerm, promoCode.code, page - 1, itemsPerPage)
+        : await GetPromoCodeRegistrationLogs(promoCode.code, page - 1, itemsPerPage);
+        
+      return { registrations: response.content, totalElements: response.totalElements };
+    },
+    enabled: !!promoCode?.code,
+  });
 
-    try {
-      setLoading(true);
-
-      const response = searchText
-        ? await SearchPromoCodeRegistrationLogs(
-            searchText,
-            promoCode.code,
-            pageNumber - 1,
-            itemsPerPage
-          )
-        : await GetPromoCodeRegistrationLogs(
-            promoCode.code,
-            pageNumber - 1,
-            itemsPerPage
-          );
-
-      setRegistrations(response.content);
-      setTotalCount(response.totalElements);
-    } catch (err) {
-      console.error("Error fetching registration logs:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const registrations = data?.registrations || [];
+  const totalCount = data?.totalElements || 0;
 
   useEffect(() => {
     if (!promoCode) {
       navigate("/promo-code");
-      return;
     }
-    fetchRegistrations(debouncedSearchTerm, page);
-  }, [debouncedSearchTerm, page, itemsPerPage, promoCode]);
+  }, [promoCode, navigate]);
 
   const handleSearchInputChange = (value: string) => {
     setSearchTerm(value);
@@ -121,29 +103,29 @@ const ViewPromoRegistration: React.FC = () => {
     setSelectedRegistration(null);
   };
 
-  const handleToggleSettlement = async () => {
-    if (!selectedRegistration) return;
-
-    try {
-      setSettlementLoading(true);
-
+  const toggleSettlementMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedRegistration) throw new Error("No registration selected");
       if (selectedRegistration.hasSettled) {
-        await MarkAsNotSettled(selectedRegistration.id);
-        toast.success("Successfully marked as not settled");
+        return await MarkAsNotSettled(selectedRegistration.id);
       } else {
-        await MarkAsSettled(selectedRegistration.id);
-        toast.success("Successfully marked as settled");
+        return await MarkAsSettled(selectedRegistration.id);
       }
-
-      // Refresh the registrations list
-      await fetchRegistrations(debouncedSearchTerm, page);
+    },
+    onSuccess: (_, _variables) => {
+      toast.success(`Successfully marked as ${selectedRegistration?.hasSettled ? "not settled" : "settled"}`);
+      queryClient.invalidateQueries({ queryKey: ["promoRegistrations"] });
       closeSettlementModal();
-    } catch (error) {
-      console.error("Error toggling settlement status:", error);
+    },
+    onError: () => {
       toast.error("Failed to update settlement status");
-    } finally {
-      setSettlementLoading(false);
     }
+  });
+  
+  const settlementLoading = toggleSettlementMutation.isPending;
+
+  const handleToggleSettlement = () => {
+    toggleSettlementMutation.mutate();
   };
 
   const columns: Column[] = [
@@ -311,7 +293,6 @@ const ViewPromoRegistration: React.FC = () => {
                 className="flex-1 sm:flex-initial px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 sm:w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm sm:text-base"
               />
               <button
-                onClick={() => fetchRegistrations(searchTerm, page)}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex-shrink-0"
               >
                 <Search size={18} className="sm:w-5 sm:h-5" />

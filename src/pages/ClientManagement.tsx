@@ -10,40 +10,38 @@ import { saveAs } from "file-saver";
 
 interface Client {
   id: string;
+  accountId: string;
   name: string;
-  email: string;
+  email: string | null | undefined;
   planType: "Personal" | "Business";
   dateJoined: string;
-  avatar?: string | null;
+  avatar: string | null | undefined;
 }
 
+
+import { useQuery } from "@tanstack/react-query";
+
 const ClientManagement: React.FC = () => {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(false);
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const navigate = useNavigate();
 
-  const fetchClients = async (searchText = "", pageNumber: number = 1) => {
-    try {
-      setLoading(true);
-
-      const response = searchText
-        ? await SearchAccountUsers(searchText, pageNumber - 1, itemsPerPage)
-        : await GetAccountUsers(pageNumber - 1, itemsPerPage);
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ["clients", debouncedSearchTerm, page, itemsPerPage],
+    queryFn: async () => {
+      const response = debouncedSearchTerm
+        ? await SearchAccountUsers(debouncedSearchTerm, page - 1, itemsPerPage)
+        : await GetAccountUsers(page - 1, itemsPerPage);
 
       const mappedClients: Client[] = response.content.map((c) => {
-        const displayName =
-          c.name?.trim() || `${c.firstName} ${c.lastName}`.trim();
-        const planType: "Personal" | "Business" = c.name
-          ? "Business"
-          : "Personal";
+        const displayName = c.name?.trim() || `${c.firstName || ""} ${c.lastName || ""}`.trim();
 
+        const planType: "Personal" | "Business" = c.name ? "Business" : "Personal";
         return {
           id: c.id,
+          accountId: c.accountId,
           name: displayName,
           email: c.email,
           planType,
@@ -52,18 +50,12 @@ const ClientManagement: React.FC = () => {
         };
       });
 
-      setClients(mappedClients);
-      setTotalCount(response.totalElements);
-    } catch (err) {
-      console.error("Error fetching clients:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return { clients: mappedClients, totalElements: response.totalElements };
+    },
+  });
 
-  useEffect(() => {
-    fetchClients(debouncedSearchTerm, page);
-  }, [debouncedSearchTerm, page, itemsPerPage]);
+  const clients = data?.clients || [];
+  const totalCount = data?.totalElements || 0;
 
   const handleSearchInputChange = (value: string) => {
     setSearchTerm(value);
@@ -85,8 +77,7 @@ const ClientManagement: React.FC = () => {
     navigate(`/client-profile?${client.id}`);
   const handlePaymentHistory = (client: Client) =>
     navigate(`/clients/${client.id}/payments`);
-  const handleAuditLogs = (client: Client) =>
-    navigate(`/clients/${client.id}/audit-logs`);
+
 
   const columns: Column[] = [
     {
@@ -149,17 +140,6 @@ const ClientManagement: React.FC = () => {
           className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
         >
           Payment History
-        </button>
-
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            handleAuditLogs(row);
-          }}
-          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-        >
-          Audit Logs
         </button>
       </>
     );

@@ -29,12 +29,10 @@ interface InviteFormState {
   role: string;
 }
 
-const UserManagement: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(false);
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+const UserManagement: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState("");
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteForm, setInviteForm] = useState<InviteFormState>({
     firstName: "",
@@ -42,27 +40,24 @@ const UserManagement: React.FC = () => {
     email: "",
     role: "",
   });
-  const [inviteErrors, setInviteErrors] = useState<Partial<InviteFormState>>(
-    {}
-  );
+  const [inviteErrors, setInviteErrors] = useState<Partial<InviteFormState>>({});
   const [inviteLoading, setInviteLoading] = useState(false);
 
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const fetchUsers = async (searchText = "", pageNumber: number = 1) => {
-    try {
-      setLoading(true);
-
-      const response = searchText
-        ? await SearchAdminUsers(searchText, pageNumber - 1, itemsPerPage)
-        : await GetAdminUsers(pageNumber - 1, itemsPerPage);
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ["adminUsers", debouncedSearchTerm, page, itemsPerPage],
+    queryFn: async () => {
+      const response = debouncedSearchTerm
+        ? await SearchAdminUsers(debouncedSearchTerm, page - 1, itemsPerPage)
+        : await GetAdminUsers(page - 1, itemsPerPage);
 
       const mappedUsers: User[] = response.content.map((c: any) => {
         const displayName = `${c.firstName} ${c.lastName}`.trim();
-
         return {
           id: c.id,
           name: displayName,
@@ -73,18 +68,12 @@ const UserManagement: React.FC = () => {
         };
       });
 
-      setUsers(mappedUsers);
-      setTotalCount(response.totalElements);
-    } catch (err) {
-      console.error("Error fetching Users:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return { users: mappedUsers, totalElements: response.totalElements };
+    },
+  });
 
-  useEffect(() => {
-    fetchUsers(debouncedSearchTerm, page);
-  }, [debouncedSearchTerm, page, itemsPerPage]);
+  const users = data?.users || [];
+  const totalCount = data?.totalElements || 0;
 
   const handleSearchInputChange = (value: string) => {
     setSearchTerm(value);
@@ -108,7 +97,6 @@ const UserManagement: React.FC = () => {
       const [adminUser] = await GetBulkAdminUsers([user.id]);
       navigate(`/user-profile?${user.id}`, { state: { user: adminUser } });
     } catch (error) {
-      console.error("Error fetching user details:", error);
       navigate(`/user-profile?${user.id}`);
     }
   };
@@ -230,9 +218,7 @@ const UserManagement: React.FC = () => {
     try {
       setInviteLoading(true);
 
-      console.log("Send invite payload:", inviteForm);
-
-      await fetchUsers(debouncedSearchTerm, page);
+      await queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
 
       setInviteForm({
         firstName: "",
@@ -242,7 +228,6 @@ const UserManagement: React.FC = () => {
       });
       setShowInviteModal(false);
     } catch (error) {
-      console.error("Error sending invite:", error);
     } finally {
       setInviteLoading(false);
     }
@@ -267,7 +252,6 @@ const UserManagement: React.FC = () => {
               className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
             />
             <button
-              onClick={() => fetchUsers(searchTerm, page)}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               <Search size={20} />

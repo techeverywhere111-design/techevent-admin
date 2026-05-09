@@ -10,12 +10,15 @@ import PlanForm from "@/pages/PlanForm";
 import ViewPlans from "@/pages/ViewPlans";
 import ClientManagement from "@/pages/ClientManagement";
 import ClientProfile from "@/pages/ClientProfile";
+import AuditLogs from "@/pages/ClientAuditLogs";
+
 import { PrivateRoute } from "@/components/PrivateRoute";
 import EventCategory from "@/pages/EventCategory";
 import UserManagement from "@/pages/UserManagement";
 import UserProfile from "@/pages/UserProfile";
 import PromoCode from "@/pages/PromoCode";
 import ViewPromoRegistration from "@/pages/ViewPromoRegistration";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export const router = createBrowserRouter([
   {
@@ -30,7 +33,9 @@ export const router = createBrowserRouter([
     path: "/",
     element: (
       <PrivateRoute>
-        <Layout />
+        <ErrorBoundary>
+          <Layout />
+        </ErrorBoundary>
       </PrivateRoute>
     ),
     children: [
@@ -43,7 +48,9 @@ export const router = createBrowserRouter([
       { path: "view-plans", element: <ViewPlans /> },
       { path: "client-management", element: <ClientManagement /> },
       { path: "client-profile", element: <ClientProfile /> },
+      { path: "audit-logs", element: <AuditLogs /> },
       { path: "event-category", element: <EventCategory /> },
+
       { path: "user-management", element: <UserManagement /> },
       { path: "user-profile", element: <UserProfile /> },
       { path: "promo-code", element: <PromoCode /> },

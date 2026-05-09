@@ -2,14 +2,15 @@ import React from "react";
 import { CircleUserRound } from "lucide-react";
 
 export interface ClientInfoProps {
-  firstName: string;
-  lastName: string;
-  name: string;
-  email: string;
-  planType: string;
-  dateJoined: string;
-  profileImage?: string;
+  firstName: string | null | undefined;
+  lastName: string | null | undefined;
+  name: string | null | undefined;
+  email: string | null | undefined;
+  planType: string | null | undefined;
+  dateJoined: string | null | undefined;
+  profileImage?: string | null;
 }
+
 
 const ClientProfileCard: React.FC<ClientInfoProps> = ({
   firstName,

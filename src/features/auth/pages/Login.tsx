@@ -5,14 +5,18 @@ import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-toastify";
 import { Eye, EyeOff } from "lucide-react";
 import Logo from "@/assets/PlutoEvent_Logo.png";
-import {
-  AdminUserLogin,
-  type AdminUserLoginPayload,
-} from "@/lib/api/AdminEndpoint";
+import { AdminUserLogin, type AdminUserLoginPayload } from "@/lib/api/AdminEndpoint";
+import Cookies from "js-cookie";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  // Clear any existing expired sessions when landing on Login
+  React.useEffect(() => {
+    Cookies.remove("PLUTO_EVENT_ADMIN_TOKEN", { path: "/" });
+    Cookies.remove("PLUTO_EVENT_ADMIN_USER", { path: "/" });
+  }, []);
 
   const [formData, setFormData] = useState<AdminUserLoginPayload>({
     email: "",
@@ -54,7 +58,6 @@ const Login: React.FC = () => {
     setLoading(true);
     try {
       const data = await AdminUserLogin(formData);
-      console.log("Login successful:", data);
       login(data);
       toast.success(`Welcome back, ${data.firstName}!`);
       navigate("/dashboard");

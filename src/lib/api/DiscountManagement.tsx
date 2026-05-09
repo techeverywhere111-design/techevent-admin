@@ -1,33 +1,17 @@
+import { z } from "zod";
 import api from "@/lib/utils/api";
+import { 
+  PromoCodeSchema, 
+  PromoCodeListResponseSchema, 
+  PromoRegistrationLogSchema, 
+  PromoRegistrationLogListResponseSchema,
+  type PromoCode,
+  type PromoRegistrationLog
+} from "@/lib/schemas";
 
-export interface PromoCode {
-  id: string;
-  code: string;
-  owner: string;
-  discountPercentage: number;
-  startTime: string;
-  endTime: string;
-  createdOn: string;
-  createdBy: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    isPendingUser: boolean;
-    roleType: string;
-    lastLogin: string;
-    createdOn: string;
-  };
-}
-
-export interface PromoCodeResponse {
-  totalPages: number;
-  size: number;
-  totalElements: number;
-  hasNext: boolean;
-  hasPrevious: boolean;
-  content: PromoCode[];
-}
+export type { PromoCode, PromoRegistrationLog };
+export type PromoCodeResponse = z.infer<typeof PromoCodeListResponseSchema>;
+export type PromoCodeRegistrationLogsResponse = z.infer<typeof PromoRegistrationLogListResponseSchema>;
 
 export interface CreatePromoCodePayload {
   code: string;
@@ -43,44 +27,14 @@ export interface RenewPromoCodePayload {
   endTime: string;
 }
 
-export interface PromoCodeRegistrationLog {
-  id: string;
-  promoCode: string;
-  userEmail: string;
-  userPaidAmount: number;
-  planAmount: number;
-  hasSettled: boolean;
-  settledDate: string;
-  createdOn: string;
-  lastModifiedByUser: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    isPendingUser: boolean;
-    roleType: string;
-    lastLogin: string;
-    createdOn: string;
-  };
-}
-
-export interface PromoCodeRegistrationLogsResponse {
-  totalPages: number;
-  size: number;
-  totalElements: number;
-  hasNext: boolean;
-  hasPrevious: boolean;
-  content: PromoCodeRegistrationLog[];
-}
-
 export const GetPromoCodes = async (
   pageNo: number,
   pageSize: number
 ): Promise<PromoCodeResponse> => {
-  const { data } = await api.get<PromoCodeResponse>("/api/v1/promo-codes", {
+  const { data } = await api.get("/api/v1/promo-codes", {
     params: { pageNo, pageSize },
   });
-  return data;
+  return PromoCodeListResponseSchema.parse(data);
 };
 
 export const SearchPromoCodes = async (
@@ -88,30 +42,29 @@ export const SearchPromoCodes = async (
   pageNo: number,
   pageSize: number
 ): Promise<PromoCodeResponse> => {
-  const { data } = await api.get<PromoCodeResponse>(
+  const { data } = await api.get(
     "/api/v1/promo-codes/search",
     { params: { text, pageNo, pageSize } }
   );
-  return data;
+  return PromoCodeListResponseSchema.parse(data);
 };
 
 export const CreatePromoCode = async (
   payload: CreatePromoCodePayload
 ): Promise<PromoCode> => {
-  const { data } = await api.post<PromoCode>("/api/v1/promo-codes", payload);
-
-  return data;
+  const { data } = await api.post("/api/v1/promo-codes", payload);
+  return PromoCodeSchema.parse(data);
 };
 
 export const RenewPromoCode = async (
   promoCodeId: string,
   payload: RenewPromoCodePayload
 ): Promise<PromoCode> => {
-  const { data } = await api.put<PromoCode>(
+  const { data } = await api.put(
     `/api/v1/promo-codes/${promoCodeId}`,
     payload
   );
-  return data;
+  return PromoCodeSchema.parse(data);
 };
 
 export const GetPromoCodeRegistrationLogs = async (
@@ -119,11 +72,11 @@ export const GetPromoCodeRegistrationLogs = async (
   pageNo: number,
   pageSize: number
 ): Promise<PromoCodeRegistrationLogsResponse> => {
-  const { data } = await api.get<PromoCodeRegistrationLogsResponse>(
+  const { data } = await api.get(
     "/api/v1/promo-codes/logs",
     { params: { code, pageNo, pageSize } }
   );
-  return data;
+  return PromoRegistrationLogListResponseSchema.parse(data);
 };
 
 export const MarkAsSettled = async (
@@ -150,9 +103,9 @@ export const SearchPromoCodeRegistrationLogs = async (
   pageNo: number,
   pageSize: number
 ): Promise<PromoCodeRegistrationLogsResponse> => {
-  const { data } = await api.get<PromoCodeRegistrationLogsResponse>(
+  const { data } = await api.get(
     "/api/v1/promo-codes/logs/search",
     { params: { text, code, pageNo, pageSize } }
   );
-  return data;
+  return PromoRegistrationLogListResponseSchema.parse(data);
 };

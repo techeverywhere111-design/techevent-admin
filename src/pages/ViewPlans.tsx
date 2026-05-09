@@ -6,37 +6,22 @@ import type { PlanResponse } from "@/lib/api/Plans";
 import { PlanGet } from "@/lib/api/Plans";
 import { toast } from "react-toastify";
 
+import { useQuery } from "@tanstack/react-query";
+
 export default function ViewPlans() {
-  const [plan, setPlan] = useState<PlanResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
 
-  useEffect(() => {
-    const fetchPlan = async () => {
-      if (!id) {
-        setError("No plan ID found.");
-        setLoading(false);
-        return;
-      }
+  const { data: plan, isLoading: loading, error: queryError } = useQuery({
+    queryKey: ["plan", id],
+    queryFn: async () => {
+      if (!id) throw new Error("No plan ID found.");
+      return await PlanGet(id);
+    },
+    enabled: !!id,
+  });
 
-      try {
-        setLoading(true);
-        const data = await PlanGet(id);
-        setPlan(data);
-        console.log("Fetched plan:", data);
-      } catch (err) {
-        console.error("Failed to fetch plan:", err);
-        setError("Failed to load plan. Please try again.");
-        toast.error("Failed to load plan.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPlan();
-  }, [id]);
+  const error = queryError?.message || (!id ? "No plan ID found." : "");
 
   const getIcon = (type: string) => {
     switch (type.toLowerCase()) {

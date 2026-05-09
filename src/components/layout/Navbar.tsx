@@ -19,7 +19,6 @@ export default function Navbar({ toggleSidebar }: NavbarProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    console.log(user);
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
