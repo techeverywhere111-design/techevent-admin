@@ -58,9 +58,8 @@ const ActionDropdown: React.FC<{
         <div
           ref={dropdownRef}
           onMouseDown={(e) => e.stopPropagation()}
-          className={`fixed w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-[9999] ${
-            positionAbove ? "" : ""
-          }`}
+          className={`fixed w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-[9999] ${positionAbove ? "" : ""
+            }`}
           style={{
             top: positionAbove
               ? `${buttonRef.current!.getBoundingClientRect().top - 10}px`
@@ -244,13 +243,12 @@ const Table: React.FC<TableProps> = ({
                     typeof page === "number" && handlePageChange(page)
                   }
                   disabled={page === "..."}
-                  className={`min-w-[40px] px-3 py-1 rounded text-sm transition ${
-                    page === currentPage
+                  className={`min-w-[40px] px-3 py-1 rounded text-sm transition ${page === currentPage
                       ? "bg-blue-600 text-white"
                       : page === "..."
-                      ? "text-gray-400 dark:text-gray-500 cursor-default bg-transparent"
-                      : "bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-gray-600"
-                  }`}
+                        ? "text-gray-400 dark:text-gray-500 cursor-default bg-transparent"
+                        : "bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-gray-600"
+                    }`}
                 >
                   {page}
                 </button>

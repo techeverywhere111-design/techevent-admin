@@ -2,6 +2,7 @@ import { z } from "zod";
 import api from "../utils/api";
 import {
   EnquiryListResponseSchema,
+  EnquirySchema,
   type Enquiry
 } from "@/lib/schemas";
 

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
 import { Search, Upload, X } from "lucide-react";
-import { GetEnquiries, SearchEnquiries, MarkAsTreated } from "@/lib/api/EnquiriesEndpoint";
+import { GetEnquiries, SearchEnquiries, MarkAsTreated, MarkAsNotTreated } from "@/lib/api/EnquiriesEndpoint";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 
 interface EnquiryRow {
   id: string;
-  name: string; // Map both to 'name' for now
+  name: string;
   businessName: string;
   email: string;
   status: "TREATED" | "NOT TREATED";
@@ -50,6 +50,17 @@ const Enquiries: React.FC = () => {
     mutationFn: MarkAsTreated,
     onSuccess: () => {
       toast.success("Enquiry marked as treated");
+      queryClient.invalidateQueries({ queryKey: ["enquiries"] });
+    },
+    onError: () => {
+      toast.error("Failed to update enquiry status");
+    },
+  });
+
+  const markAsNotTreatedMutation = useMutation({
+    mutationFn: MarkAsNotTreated,
+    onSuccess: () => {
+      toast.success("Enquiry marked as not treated");
       queryClient.invalidateQueries({ queryKey: ["enquiries"] });
     },
     onError: () => {
@@ -114,7 +125,15 @@ const Enquiries: React.FC = () => {
       >
         View
       </button>
-      {row.status === "NOT TREATED" && (
+      {row.status === "TREATED" ? (<button
+        onClick={(e) => {
+          e.stopPropagation();
+          markAsNotTreatedMutation.mutate(row.id);
+        }}
+        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+      >
+        Mark as Not Treated
+      </button>) : (
         <button
           onClick={(e) => {
             e.stopPropagation();
