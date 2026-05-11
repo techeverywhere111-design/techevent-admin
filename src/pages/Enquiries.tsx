@@ -36,7 +36,7 @@ const Enquiries: React.FC = () => {
       const mappedEnquiries: EnquiryRow[] = response.content.map((e) => ({
         id: e.id,
         name: e.name,
-        businessName: e.name,
+        businessName: e.businessName || "N/A",
         email: e.email,
         status: e.isTreated ? "TREATED" : "NOT TREATED",
         original: e,
@@ -112,14 +112,14 @@ const Enquiries: React.FC = () => {
     },
   ];
 
-  const handleView = (id: string) => navigate(`/enquiries/${id}`);
+  const handleView = (row: EnquiryRow) => navigate(`/enquiries/${row.id}`, { state: { enquiry: row.original } });
 
   const renderActions = (row: EnquiryRow) => (
     <>
       <button
         onClick={(e) => {
           e.stopPropagation();
-          handleView(row.id);
+          handleView(row);
         }}
         className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
       >

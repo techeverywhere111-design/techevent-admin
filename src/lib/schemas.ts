@@ -142,6 +142,7 @@ export const AuditLogListResponseSchema = PaginationSchema.extend({
 export const EnquirySchema = z.object({
   id: z.string(),
   name: z.string(),
+  businessName: z.string().nullable().optional(),
   email: z.string().email(),
   subject: z.string(),
   message: z.string(),

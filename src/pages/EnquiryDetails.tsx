@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GetEnquiryById, MarkAsTreated, MarkAsNotTreated } from "@/lib/api/EnquiriesEndpoint";
@@ -8,12 +8,16 @@ import { toast } from "react-toastify";
 const EnquiryDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
+
+  const initialEnquiry = location.state?.enquiry;
 
   const { data: enquiry, isLoading, error } = useQuery({
     queryKey: ["enquiry", id],
     queryFn: () => GetEnquiryById(id!),
     enabled: !!id,
+    initialData: initialEnquiry,
   });
 
   const updateStatusMutation = useMutation({
@@ -81,7 +85,7 @@ const EnquiryDetails: React.FC = () => {
           </div>
           <div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Business Name</p>
-            <p className="font-semibold text-gray-900 dark:text-white">{enquiry.name}</p>
+            <p className="font-semibold text-gray-900 dark:text-white">{enquiry.businessName || "N/A"}</p>
           </div>
           <div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Subject</p>
