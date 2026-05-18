@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import Logo from "@/assets/PlutoEvent_Logo.png";
+import { useAuth } from "@/context/AuthContext";
+import { usePermissionStore } from "@/store/permissionStore";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -28,48 +30,60 @@ interface NavItem {
   name: string;
   path?: string;
   icon: any;
-  subItems?: { name: string; path: string }[];
+  permission?: string;
+  subItems?: { name: string; path: string; permission?: string }[];
 }
 
 const navItems: NavItem[] = [
-  { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+  { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard, permission: "view_dashboard" },
   {
     name: "Client Management",
     icon: Users,
-    subItems: [{ name: "All Clients", path: "/client-management" },
-    { name: "Audit Logs", path: "/audit-logs" }
+    permission: "view_clients",
+    subItems: [
+      { name: "All Clients", path: "/client-management" },
+      { name: "Audit Logs", path: "/audit-logs", permission: "view_audit_logs" }
     ],
   },
   {
     name: "Event Management",
     icon: Calendar1,
+    permission: "view_events",
     subItems: [{ name: "Category", path: "/event-category" }],
   },
-  { name: "Payment History", path: "/payments", icon: CreditCard },
+  { name: "Payment History", path: "/payments", icon: CreditCard, permission: "view_payments" },
   {
     name: "Analytics and Insight",
     path: "/analytics-and-insight",
     icon: BarChart2,
+    permission: "view_analytics",
   },
-  { name: "Plans", path: "/plans", icon: Gem },
-  { name: "Enquires", path: "/enquiries", icon: ShieldQuestionMark },
-  { name: "User Management", path: "/user-management", icon: ShieldUser },
+  { name: "Plans", path: "/plans", icon: Gem, permission: "view_plans" },
+  { name: "Enquires", path: "/enquiries", icon: ShieldQuestionMark, permission: "view_enquiries" },
+  { name: "User Management", path: "/user-management", icon: ShieldUser, permission: "view_users" },
   {
     name: "Discount Management",
     icon: Percent,
+    permission: "view_discounts",
     subItems: [{ name: "Promo Code", path: "/promo-code" }],
   },
   {
     name: "Roles and Permission",
     icon: UserRoundCog,
-    subItems: [{ name: "Roles", path: "/roles" },
-    { name: "Permission", path: "/permissions" }
+    permission: "view_roles",
+    subItems: [
+      { name: "Roles", path: "/roles" },
+      { name: "Permission", path: "/permissions" }
     ],
   },
   {
     name: "Security",
     icon: Shield,
-    subItems: [{ name: "Suspicious Activity", path: "/suspicious-activity" }, { name: "Suspicious User", path: "/suspicious-user" }],
+    permission: "view_security",
+    subItems: [
+      { name: "Suspicious Activity", path: "/suspicious-activity" },
+      { name: "Suspicious User", path: "/suspicious-user" }
+    ],
   },
 ];
 
@@ -77,6 +91,15 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
     {}
   );
+  const { user } = useAuth();
+  const permissions = usePermissionStore((s) => s.permissions);
+
+  const isSuperAdmin = user?.roleType === "SUPER_ADMIN";
+
+  const hasPermission = (permissionName?: string): boolean => {
+    if (!permissionName || isSuperAdmin) return true;
+    return permissions.some((p) => p.name === permissionName);
+  };
 
   const toggleDropdown = (name: string) => {
     setOpenDropdowns((prev) => ({
@@ -84,6 +107,18 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
       [name]: !prev[name],
     }));
   };
+
+  const filteredNavItems = navItems
+    .filter((item) => hasPermission(item.permission))
+    .map((item) => {
+      if (!item.subItems) return item;
+      const filteredSubs = item.subItems.filter((sub) =>
+        hasPermission(sub.permission)
+      );
+      if (filteredSubs.length === 0) return null;
+      return { ...item, subItems: filteredSubs };
+    })
+    .filter(Boolean) as NavItem[];
 
   return (
     <>
@@ -110,7 +145,7 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 mt-6 space-y-1 overflow-y-auto custom-scrollbar pb-6">
-          {navItems.map(({ name, path, icon: Icon, subItems }) => {
+          {filteredNavItems.map(({ name, path, icon: Icon, subItems }) => {
 
             const isSubItemActive = subItems?.some(
               (sub) => sub.path === window.location.pathname
@@ -185,3 +220,4 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
     </>
   );
 }
+

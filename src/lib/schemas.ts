@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+// Admin Role Types
+export const RoleTypeEnum = z.enum(["SUPER_ADMIN", "ADMIN", "MANAGER"]);
+export type RoleType = z.infer<typeof RoleTypeEnum>;
+export const ROLE_OPTIONS = RoleTypeEnum.options;
+
 // Base User Schema
 export const AdminUserSchema = z.object({
   id: z.string(),
@@ -7,7 +12,7 @@ export const AdminUserSchema = z.object({
   firstName: z.string().nullable().optional(),
   lastName: z.string().nullable().optional(),
   isPendingUser: z.boolean(),
-  roleType: z.string(),
+  roleType: RoleTypeEnum,
   lastLogin: z.string().nullable().optional(),
   createdOn: z.string(),
 });
@@ -156,4 +161,59 @@ export type Enquiry = z.infer<typeof EnquirySchema>;
 
 export const EnquiryListResponseSchema = PaginationSchema.extend({
   content: z.array(EnquirySchema),
+});
+
+// Permission Schemas
+export const PermissionSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  module: z.string(),
+  description: z.string(),
+  endpoint: z.string(),
+  method: z.string(),
+  planFeature: z.string(),
+  isGeneral: z.boolean(),
+  createdOn: z.string(),
+});
+
+export type Permission = z.infer<typeof PermissionSchema>;
+
+export const PermissionListResponseSchema = PaginationSchema.extend({
+  content: z.array(PermissionSchema),
+});
+
+export const PermissionPayloadSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  module: z.string(),
+  endpoint: z.string(),
+  method: z.string(),
+  planFeature: z.string(),
+  isGeneral: z.boolean(),
+});
+
+export type PermissionPayload = z.infer<typeof PermissionPayloadSchema>;
+
+// Admin Permission Schemas (role-permission mapping)
+export const AdminPermissionPayloadSchema = z.object({
+  role: RoleTypeEnum,
+  permissionIds: z.array(z.string()),
+});
+
+export type AdminPermissionPayload = z.infer<typeof AdminPermissionPayloadSchema>;
+
+// Meeting Daily Creation Schema
+export const MeetingDailyCreationColumnSchema = z.object({
+  day: z.number(),
+  totalCount: z.number(),
+});
+
+export const MeetingDailyCreationResponseSchema = z.object({
+  columns: z.array(MeetingDailyCreationColumnSchema),
+});
+
+export type MeetingDailyCreationResponse = z.infer<typeof MeetingDailyCreationResponseSchema>;
+
+export const MessageResponseSchema = z.object({
+  message: z.string(),
 });

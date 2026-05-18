@@ -3,9 +3,19 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
+import { useHydratePermissions } from "@/hooks/useHydratePermissions";
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isLoaded } = useHydratePermissions();
+
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">

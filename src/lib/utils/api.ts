@@ -1,6 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
+import { queryClient } from "@/lib/react-query";
 
 // Configure Cookies to NOT encode characters like + and / which are common in your tokens
 const customCookies = Cookies.withConverter({
@@ -39,7 +40,18 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+    if (error.response?.status === 403) {
+      // Permission was revoked — refetch permissions to update UI
+      queryClient.invalidateQueries({ queryKey: ["role-permissions"] });
+
+      const message = error.response.data?.message || "You don't have permission to perform this action.";
+      if (!toast.isActive("permission-denied")) {
+        toast.error(message, { toastId: "permission-denied" });
+      }
+      return Promise.reject(error);
+    }
+
+    if (error.response?.status === 401) {
       const message = error.response.data?.message || "Session expired. Please login again.";
 
       customCookies.remove("PLUTO_EVENT_ADMIN_TOKEN", { path: "/" });

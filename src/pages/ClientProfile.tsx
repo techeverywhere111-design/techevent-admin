@@ -1,42 +1,49 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ClientProfileCard from "@/components/ui/ClientProfileCard";
 import ClientChartCard from "@/components/ui/ClientChartCard";
 import { GetBulkAccountUsers, type AccountUser } from "@/lib/api/UserEndPoint";
+import {
+  GetClientDailyMeetingCreation,
+  GetClientDailyEventCreation,
+} from "@/lib/api/MeetingEndpoint";
 import { toast } from "react-toastify";
+import { useQuery } from "@tanstack/react-query";
 
-const generateChartData = (
-  days: number,
-  type: "payment" | "events" | "meetings"
-) => {
-  const data = [];
-  for (let i = 1; i <= days; i++) {
-    const value =
-      type === "payment"
-        ? Math.floor(Math.random() * 300) + 200
-        : Math.floor(Math.random() * 60) + 20;
-    data.push({ day: i.toString().padStart(2, "0"), value });
-  }
-  return data;
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+
+const buildTimestamp = (monthAbbr: string, year: string): string => {
+  const monthIndex = MONTHS.indexOf(monthAbbr);
+  return new Date(Date.UTC(parseInt(year), monthIndex, 1)).toISOString();
 };
 
-import { useQuery } from "@tanstack/react-query";
+const mapColumnsToChartData = (
+  columns: { day: number; totalCount: number }[] | undefined
+) => {
+  if (!columns) return [];
+  return columns.map((col) => ({
+    day: col.day.toString().padStart(2, "0"),
+    value: col.totalCount,
+  }));
+};
 
 const ClientProfile: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [paymentMonth, setPaymentMonth] = useState("Jan");
-  const [paymentYear, setPaymentYear] = useState("2025");
-  const [eventsMonth, setEventsMonth] = useState("Jan");
-  const [eventsYear, setEventsYear] = useState("2025");
-  const [meetingsMonth, setMeetingsMonth] = useState("Jan");
-  const [meetingsYear, setMeetingsYear] = useState("2025");
+  const now = new Date();
+  const currentMonthAbbr = MONTHS[now.getMonth()];
+  const currentYear = now.getFullYear().toString();
 
-  const paymentData = generateChartData(30, "payment");
-  const eventsData = generateChartData(30, "events");
-  const meetingsData = generateChartData(30, "meetings");
+  const [eventsMonth, setEventsMonth] = useState(currentMonthAbbr);
+  const [eventsYear, setEventsYear] = useState(currentYear);
+  const [meetingsMonth, setMeetingsMonth] = useState(currentMonthAbbr);
+  const [meetingsYear, setMeetingsYear] = useState(currentYear);
 
   const getUserId = (): string | null => {
     const query = location.search;
@@ -59,6 +66,50 @@ const ClientProfile: React.FC = () => {
     },
     enabled: !!userId,
   });
+
+  const accountId = accountUser?.accountId;
+
+  // Events
+  const eventsTimestamp = useMemo(
+    () => buildTimestamp(eventsMonth, eventsYear),
+    [eventsMonth, eventsYear]
+  );
+
+  const {
+    data: eventsApiData,
+    isLoading: eventsLoading,
+    isFetching: eventsFetching,
+  } = useQuery({
+    queryKey: ["clientEventCreation", accountId, eventsTimestamp],
+    queryFn: () => GetClientDailyEventCreation(accountId!, eventsTimestamp),
+    enabled: !!accountId,
+  });
+
+  const eventsChartData = useMemo(
+    () => mapColumnsToChartData(eventsApiData?.columns),
+    [eventsApiData]
+  );
+
+  // Meetings
+  const meetingsTimestamp = useMemo(
+    () => buildTimestamp(meetingsMonth, meetingsYear),
+    [meetingsMonth, meetingsYear]
+  );
+
+  const {
+    data: meetingsApiData,
+    isLoading: meetingsLoading,
+    isFetching: meetingsFetching,
+  } = useQuery({
+    queryKey: ["clientMeetingCreation", accountId, meetingsTimestamp],
+    queryFn: () => GetClientDailyMeetingCreation(accountId!, meetingsTimestamp),
+    enabled: !!accountId,
+  });
+
+  const meetingsChartData = useMemo(
+    () => mapColumnsToChartData(meetingsApiData?.columns),
+    [meetingsApiData]
+  );
 
   useEffect(() => {
     if (!userId) {
@@ -116,25 +167,14 @@ const ClientProfile: React.FC = () => {
 
         <ClientProfileCard {...profileData} />
 
-        <ClientChartCard
-          title="Payment Flow"
-          data={paymentData}
-          dataKey="value"
-          type="line"
-          color="#10b981"
-          showMonthYear
-          selectedMonth={paymentMonth}
-          selectedYear={paymentYear}
-          onMonthChange={setPaymentMonth}
-          onYearChange={setPaymentYear}
-        />
 
         <ClientChartCard
           title="Event Creation Activity"
-          data={eventsData}
+          data={eventsChartData}
           dataKey="value"
           type="bar"
           color="#1e40af"
+          loading={eventsLoading || eventsFetching}
           showMonthYear
           selectedMonth={eventsMonth}
           selectedYear={eventsYear}
@@ -144,10 +184,11 @@ const ClientProfile: React.FC = () => {
 
         <ClientChartCard
           title="Meeting Creation Activity"
-          data={meetingsData}
+          data={meetingsChartData}
           dataKey="value"
           type="bar"
           color="#3b82f6"
+          loading={meetingsLoading || meetingsFetching}
           showMonthYear
           selectedMonth={meetingsMonth}
           selectedYear={meetingsYear}

@@ -20,6 +20,7 @@ interface ChartProps {
   dataKey: string;
   type: "line" | "bar";
   color?: string;
+  loading?: boolean;
   showMonthYear?: boolean;
   selectedMonth?: string;
   selectedYear?: string;
@@ -27,12 +28,28 @@ interface ChartProps {
   onYearChange?: (year: string) => void;
 }
 
+const ChartSkeleton: React.FC = () => (
+  <div className="h-64 sm:h-72 md:h-80 animate-pulse flex flex-col justify-end gap-2 px-4">
+    <div className="flex items-end gap-[6px] h-full pt-8">
+      {Array.from({ length: 20 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-t"
+          style={{ height: `${Math.random() * 60 + 20}%` }}
+        />
+      ))}
+    </div>
+    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+  </div>
+);
+
 const ClientChartCard: React.FC<ChartProps> = ({
   title,
   data,
   dataKey,
   type,
   color = "#3b82f6",
+  loading = false,
   showMonthYear = false,
   selectedMonth,
   selectedYear,
@@ -53,7 +70,10 @@ const ClientChartCard: React.FC<ChartProps> = ({
     "Nov",
     "Dec",
   ];
-  const years = ["2023", "2024", "2025"];
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 2010 + 1 }, (_, i) =>
+    (2010 + i).toString()
+  );
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 mb-6 transition-colors duration-300">
@@ -91,46 +111,50 @@ const ClientChartCard: React.FC<ChartProps> = ({
         )}
       </div>
 
-      {/* Chart */}
-      <div className="h-64 sm:h-72 md:h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          {type === "line" ? (
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="day" tick={{ fill: "#9ca3af", fontSize: 12 }} />
-              <YAxis tick={{ fill: "#9ca3af", fontSize: 12 }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#1f2937",
-                  border: "none",
-                  color: "#f9fafb",
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey={dataKey}
-                stroke={color}
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          ) : (
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="day" tick={{ fill: "#9ca3af", fontSize: 12 }} />
-              <YAxis tick={{ fill: "#9ca3af", fontSize: 12 }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#1f2937",
-                  border: "none",
-                  color: "#f9fafb",
-                }}
-              />
-              <Bar dataKey={dataKey} fill={color} radius={[4, 4, 0, 0]} />
-            </BarChart>
-          )}
-        </ResponsiveContainer>
-      </div>
+      {/* Chart or Skeleton */}
+      {loading ? (
+        <ChartSkeleton />
+      ) : (
+        <div className="h-64 sm:h-72 md:h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            {type === "line" ? (
+              <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="day" tick={{ fill: "#9ca3af", fontSize: 12 }} />
+                <YAxis tick={{ fill: "#9ca3af", fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1f2937",
+                    border: "none",
+                    color: "#f9fafb",
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey={dataKey}
+                  stroke={color}
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            ) : (
+              <BarChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="day" tick={{ fill: "#9ca3af", fontSize: 12 }} />
+                <YAxis tick={{ fill: "#9ca3af", fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1f2937",
+                    border: "none",
+                    color: "#f9fafb",
+                  }}
+                />
+                <Bar dataKey={dataKey} fill={color} radius={[4, 4, 0, 0]} />
+              </BarChart>
+            )}
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 };

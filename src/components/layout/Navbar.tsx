@@ -4,6 +4,7 @@ import ThemeToggle from "./ThemeToggle";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { usePermissionStore } from "@/store/permissionStore";
 
 interface NavbarProps {
   toggleSidebar: () => void;
@@ -13,6 +14,7 @@ export default function Navbar({ toggleSidebar }: NavbarProps) {
   const { toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const clearPermissions = usePermissionStore((s) => s.clearPermissions);
 
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -32,6 +34,7 @@ export default function Navbar({ toggleSidebar }: NavbarProps) {
   }, []);
 
   const handleLogout = () => {
+    clearPermissions();
     logout();
     document.cookie =
       "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";

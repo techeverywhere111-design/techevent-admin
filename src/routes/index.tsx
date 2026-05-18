@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import Login from "@/features/auth/pages/Login";
 import Signup from "@/features/auth/pages/Signup";
 import Layout from "@/components/layout/Layout";
+import RootLayout from "@/components/layout/RootLayout";
 import Dashboard from "@/pages/Dashboard";
 import AnalyticsAndInsights from "@/pages/AnalyticsAndInsight";
 import Plans from "@/pages/Plans";
@@ -21,45 +22,58 @@ import ViewPromoRegistration from "@/pages/ViewPromoRegistration";
 import Enquiries from "@/pages/Enquiries";
 import EnquiryDetails from "@/pages/EnquiryDetails";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { PermissionGuard } from "@/components/PermissionGuard";
+import Permissions from "@/pages/Permissions";
+import Roles from "@/pages/Roles";
 
 export const router = createBrowserRouter([
   {
-    path: "/",
-    element: <Login />,
-  },
-  {
-    path: "/signup",
-    element: <Signup />,
-  },
-  {
-    path: "/",
-    element: (
-      <PrivateRoute>
-        <ErrorBoundary>
-          <Layout />
-        </ErrorBoundary>
-      </PrivateRoute>
-    ),
+    element: <RootLayout />,
     children: [
-      { path: "dashboard", element: <Dashboard /> },
-      { path: "clients", element: <Plans /> },
-      // { path: "payments", element: <PaymentHistory /> },
-      { path: "analytics-and-insight", element: <AnalyticsAndInsights /> },
-      { path: "plans", element: <Plans /> },
-      { path: "plan-creation", element: <PlanForm /> },
-      { path: "view-plans", element: <ViewPlans /> },
-      { path: "client-management", element: <ClientManagement /> },
-      { path: "client-profile", element: <ClientProfile /> },
-      { path: "audit-logs", element: <AuditLogs /> },
-      { path: "event-category", element: <EventCategory /> },
+      {
+        path: "/",
+        element: <Login />,
+      },
+      {
+        path: "/signup",
+        element: <Signup />,
+      },
+      {
+        path: "/",
+        element: (
+          <PrivateRoute>
+            <ErrorBoundary>
+              <Layout />
+            </ErrorBoundary>
+          </PrivateRoute>
+        ),
+        children: [
+          { path: "dashboard", element: <PermissionGuard requires="view_dashboard"><Dashboard /></PermissionGuard> },
+          { path: "clients", element: <PermissionGuard requires="view_plans"><Plans /></PermissionGuard> },
+          // { path: "payments", element: <PermissionGuard requires="view_payments"><PaymentHistory /></PermissionGuard> },
+          { path: "analytics-and-insight", element: <PermissionGuard requires="view_analytics"><AnalyticsAndInsights /></PermissionGuard> },
+          { path: "plans", element: <PermissionGuard requires="view_plans"><Plans /></PermissionGuard> },
+          { path: "plan-creation", element: <PermissionGuard requires="view_plans"><PlanForm /></PermissionGuard> },
+          { path: "view-plans", element: <PermissionGuard requires="view_plans"><ViewPlans /></PermissionGuard> },
+          { path: "client-management", element: <PermissionGuard requires="view_clients"><ClientManagement /></PermissionGuard> },
+          { path: "client-profile", element: <PermissionGuard requires="view_clients"><ClientProfile /></PermissionGuard> },
+          { path: "audit-logs", element: <PermissionGuard requires="view_audit_logs"><AuditLogs /></PermissionGuard> },
+          { path: "event-category", element: <PermissionGuard requires="view_events"><EventCategory /></PermissionGuard> },
 
-      { path: "user-management", element: <UserManagement /> },
-      { path: "user-profile", element: <UserProfile /> },
-      { path: "promo-code", element: <PromoCode /> },
-      { path: "profile", element: <UserProfile /> },
-      { path: "promo-enquires", element: <ViewPromoRegistration /> },
-      { path: "enquiries", element: <Enquiries /> },
-      { path: "enquiries/:id", element: <EnquiryDetails /> },
+          { path: "user-management", element: <PermissionGuard requires="view_users"><UserManagement /></PermissionGuard> },
+          { path: "user-profile", element: <PermissionGuard requires="view_users"><UserProfile /></PermissionGuard> },
+          { path: "promo-code", element: <PermissionGuard requires="view_discounts"><PromoCode /></PermissionGuard> },
+          { path: "profile", element: <UserProfile /> },
+          { path: "promo-enquires", element: <PermissionGuard requires="view_discounts"><ViewPromoRegistration /></PermissionGuard> },
+          { path: "enquiries", element: <PermissionGuard requires="view_enquiries"><Enquiries /></PermissionGuard> },
+          { path: "enquiries/:id", element: <PermissionGuard requires="view_enquiries"><EnquiryDetails /></PermissionGuard> },
+
+          { path: "permissions", element: <PermissionGuard requires="view_roles"><Permissions /></PermissionGuard> },
+          { path: "roles", element: <PermissionGuard requires="view_roles"><Roles /></PermissionGuard> },
+        ],
+      },
     ],
   },
 ]);
+
+
