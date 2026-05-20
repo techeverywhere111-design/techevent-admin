@@ -217,3 +217,21 @@ export type MeetingDailyCreationResponse = z.infer<typeof MeetingDailyCreationRe
 export const MessageResponseSchema = z.object({
   message: z.string(),
 });
+
+export const TotalCountResponseSchema = z.object({
+  totalCount: z.number(),
+});
+
+export type TotalCountResponse = z.infer<typeof TotalCountResponseSchema>;
+
+export const FeatureBreakdownColumnSchema = z.object({
+  feature: z.string(),
+  totalCount: z.number(),
+});
+
+export const FeatureBreakdownResponseSchema = z.object({
+  columns: z.array(FeatureBreakdownColumnSchema),
+});
+
+export type FeatureBreakdownResponse = z.infer<typeof FeatureBreakdownResponseSchema>;
+

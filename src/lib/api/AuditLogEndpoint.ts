@@ -3,7 +3,9 @@ import api from "../utils/api";
 import {
 
   AuditLogListResponseSchema,
-  type AuditLog
+  type AuditLog,
+  FeatureBreakdownResponseSchema,
+  type FeatureBreakdownResponse,
 } from "@/lib/schemas";
 
 export type { AuditLog };
@@ -32,6 +34,23 @@ export const SearchAccountAuditLogs = async (
   return AuditLogListResponseSchema.parse(data);
 };
 
+export const GetCoreFeatureBreakdown = async (
+  startTime: string,
+  endTime: string
+): Promise<FeatureBreakdownResponse> => {
+  const { data } = await api.get("/api/v1/audit-logs/breakdown/core", {
+    params: { startTime, endTime },
+  });
+  return FeatureBreakdownResponseSchema.parse(data);
+};
 
-
+export const GetFeatureUsageBreakdown = async (
+  startTime: string,
+  endTime: string
+): Promise<FeatureBreakdownResponse> => {
+  const { data } = await api.get("/api/v1/audit-logs/breakdown", {
+    params: { startTime, endTime },
+  });
+  return FeatureBreakdownResponseSchema.parse(data);
+};
 

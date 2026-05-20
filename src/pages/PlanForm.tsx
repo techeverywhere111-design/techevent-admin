@@ -69,7 +69,7 @@ export default function CreatePlanRedesign() {
   const [priceUSD, setPriceUSD] = useState("");
   const [priceErrors, setPriceErrors] = useState({ naira: "", usd: "" });
   const [nameError, setNameError] = useState("");
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [planId, setPlanId] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -119,9 +119,14 @@ export default function CreatePlanRedesign() {
 
             feature.enabled = true;
             Object.keys(apiFeature).forEach((field) => {
-              if (field in feature && field !== "enabled" && field !== "errors") {
+              if (
+                field in feature &&
+                field !== "enabled" &&
+                field !== "errors"
+              ) {
                 const value = apiFeature[field];
-                feature[field] = typeof value === "number" ? value.toString() : value;
+                feature[field] =
+                  typeof value === "number" ? value.toString() : value;
               }
             });
           }
@@ -152,7 +157,7 @@ export default function CreatePlanRedesign() {
   const updateField = (
     cat: FeatureKeys,
     field: string,
-    value: string | boolean
+    value: string | boolean,
   ) => {
     const updated = { ...features };
     const feature = updated[cat] as Record<string, any>;
@@ -258,7 +263,11 @@ export default function CreatePlanRedesign() {
       }
     },
     onSuccess: (result) => {
-      toast.success(result.isEdit ? "Plan updated successfully!" : "Plan created successfully!");
+      toast.success(
+        result.isEdit
+          ? "Plan updated successfully!"
+          : "Plan created successfully!",
+      );
       if (!result.isEdit) {
         setPlanName("");
         setFeatures(initialFeatures);
@@ -273,7 +282,7 @@ export default function CreatePlanRedesign() {
     },
     onError: () => {
       toast.error("Operation failed. Please try again.");
-    }
+    },
   });
 
   const handleSubmit = () => {
@@ -289,7 +298,7 @@ export default function CreatePlanRedesign() {
     const payload = buildPayload();
     submitMutation.mutate(payload);
   };
-  
+
   const isSubmitLoading = submitMutation.isPending;
 
   if (queryLoading && editing) {
@@ -442,8 +451,8 @@ export default function CreatePlanRedesign() {
               ? "Updating..."
               : "Creating..."
             : editing
-            ? "Update"
-            : "Create"}
+              ? "Update"
+              : "Create"}
         </button>
       </div>
     </div>

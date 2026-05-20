@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -8,18 +8,31 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import PieChartCard from "@/components/ui/PieChartCard";
+import { useQuery } from "@tanstack/react-query";
+import { GetTotalCreatedAccounts, GetAccountPlanStatistics } from "@/lib/api/UserEndPoint";
+import { GetTotalCreatedEvents } from "@/lib/api/EventManagement";
+import { GetFeatureUsageBreakdown } from "@/lib/api/AuditLogEndpoint";
+import { type FeatureBreakdownResponse } from "@/lib/schemas";
+import { type ChartData } from "@/types/chart";
 
-const pieData = [
-  { name: "Personal", value: 40 },
-  { name: "Business", value: 60 },
+const PLAN_COLORS = ["#84cc16", "#ec4899", "#3b82f6", "#f59e0b", "#8b5cf6"];
+
+const mapBreakdownToChartData = (data?: FeatureBreakdownResponse, fallback: ChartData[] = []): ChartData[] => {
+  const mapped = data?.columns.map((col) => ({ name: col.feature, value: col.totalCount })) ?? [];
+  return mapped.length > 0 ? mapped : fallback;
+};
+
+const DEFAULT_PLAN_DATA: ChartData[] = [
+  { name: "Personal", value: 0 },
+  { name: "Business", value: 0 },
 ];
 
-const barData = [
-  { name: "Events", value: 43 },
-  { name: "Meetings", value: 33 },
-  { name: "Q&A", value: 14 },
-  { name: "Polls", value: 7 },
-  { name: "Others", value: 3 },
+const DEFAULT_FEATURE_USAGE: ChartData[] = [
+  { name: "Events", value: 0 },
+  { name: "Meetings", value: 0 },
+  { name: "Q&A", value: 0 },
+  { name: "Polls", value: 0 },
+  { name: "Others", value: 0 },
 ];
 
 export default function Dashboard() {
@@ -28,6 +41,47 @@ export default function Dashboard() {
     const timer = setTimeout(() => setLoading(false), 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  const { startTime, endTime } = useMemo(() => {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return {
+      startTime: thirtyDaysAgo.toISOString(),
+      endTime: now.toISOString(),
+    };
+  }, []);
+
+  const { data: totalAccountsData, isLoading: totalAccountsLoading } = useQuery({
+    queryKey: ["totalCreatedAccounts", startTime, endTime],
+    queryFn: () => GetTotalCreatedAccounts(startTime, endTime),
+  });
+
+  const { data: totalEventsData, isLoading: totalEventsLoading } = useQuery({
+    queryKey: ["totalCreatedEvents", startTime, endTime],
+    queryFn: () => GetTotalCreatedEvents(startTime, endTime),
+  });
+
+  const { data: planStatsData, isLoading: planStatsLoading } = useQuery({
+    queryKey: ["accountPlanStatistics"],
+    queryFn: GetAccountPlanStatistics,
+  });
+
+  const { data: featureUsageData, isLoading: featureUsageLoading } = useQuery({
+    queryKey: ["featureUsageBreakdown", startTime, endTime],
+    queryFn: () => GetFeatureUsageBreakdown(startTime, endTime),
+  });
+
+  const chartData = useMemo(() => {
+    if (!featureUsageData || featureUsageData.columns.length === 0) {
+      return DEFAULT_FEATURE_USAGE;
+    }
+    return featureUsageData.columns
+      .map((col) => ({ name: col.feature, value: col.totalCount }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+  }, [featureUsageData]);
+
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-xl font-semibold mb-4">Welcome back!</h1>
@@ -39,7 +93,13 @@ export default function Dashboard() {
           <p className="text-gray-600 dark:text-gray-400 font-medium">
             Total New Accounts
           </p>
-          <p className="text-3xl font-bold mt-2">1,550</p>
+          {totalAccountsLoading ? (
+            <div className="h-9 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mt-2" />
+          ) : (
+            <p className="text-3xl font-bold mt-2">
+              {totalAccountsData ? totalAccountsData.totalCount.toLocaleString() : "0"}
+            </p>
+          )}
           <p className="text-sm text-gray-500 mt-1">last 30 days</p>
         </div>
 
@@ -47,7 +107,13 @@ export default function Dashboard() {
           <p className="text-gray-600 dark:text-gray-400 font-medium">
             Total Events Created
           </p>
-          <p className="text-3xl font-bold mt-2">400</p>
+          {totalEventsLoading ? (
+            <div className="h-9 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mt-2" />
+          ) : (
+            <p className="text-3xl font-bold mt-2">
+              {totalEventsData ? totalEventsData.totalCount.toLocaleString() : "0"}
+            </p>
+          )}
           <p className="text-sm text-gray-500 mt-1">last 30 days</p>
         </div>
       </div>
@@ -55,9 +121,9 @@ export default function Dashboard() {
       <div className="grid md:grid-cols-2 gap-4">
         <PieChartCard
           title="New Accounts By Plans"
-          data={pieData}
-          colors={["#84cc16", "#ec4899"]}
-          loading={loading}
+          data={mapBreakdownToChartData(planStatsData, DEFAULT_PLAN_DATA)}
+          colors={PLAN_COLORS}
+          loading={planStatsLoading}
         />
 
         {/* Bar Chart */}
@@ -65,16 +131,23 @@ export default function Dashboard() {
           <h3 className="text-lg font-semibold mb-4">
             Top 5 Most Used Features
           </h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={barData} layout="vertical">
-              <XAxis type="number" hide />
-              <YAxis type="category" dataKey="name" width={80} />
-              <Tooltip />
-              <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 4, 4]} />
-            </BarChart>
-          </ResponsiveContainer>
+          {featureUsageLoading ? (
+            <div className="h-[250px] w-full flex items-center justify-center">
+              <div className="h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={chartData} layout="vertical">
+                <XAxis type="number" hide />
+                <YAxis type="category" dataKey="name" width={80} />
+                <Tooltip />
+                <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 4, 4]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
     </div>
   );
 }
+

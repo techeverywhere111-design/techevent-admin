@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+// import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Gem } from "lucide-react";
 import EditPlanCard from "@/components/ui/EditPlanCard";
-import type { PlanResponse } from "@/lib/api/Plans";
+// import type { PlanResponse } from "@/lib/api/Plans";
 import { PlanGet } from "@/lib/api/Plans";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
 
 import { useQuery } from "@tanstack/react-query";
 
@@ -12,7 +12,11 @@ export default function ViewPlans() {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
 
-  const { data: plan, isLoading: loading, error: queryError } = useQuery({
+  const {
+    data: plan,
+    isLoading: loading,
+    error: queryError,
+  } = useQuery({
     queryKey: ["plan", id],
     queryFn: async () => {
       if (!id) throw new Error("No plan ID found.");

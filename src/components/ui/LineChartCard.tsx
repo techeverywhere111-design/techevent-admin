@@ -24,14 +24,19 @@ interface LineChartCardProps {
   loading: boolean;
   onYearChange?: (year: string) => void;
   selectedYear?: string;
+  comparisonYears?: string[];
 }
+
+const currentYearValue = new Date().getFullYear();
+const defaultComparisonYears = Array.from({ length: 5 }, (_, i) => (currentYearValue - 1 - i).toString());
 
 const LineChartCard: React.FC<LineChartCardProps> = ({
   title,
   data = [],
   loading,
   onYearChange,
-  selectedYear = "2025",
+  selectedYear = defaultComparisonYears[0],
+  comparisonYears = defaultComparisonYears,
 }) => {
   return (
     <div className="bg-white dark:bg-[#0B1120] shadow rounded-lg p-4 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
@@ -41,7 +46,7 @@ const LineChartCard: React.FC<LineChartCardProps> = ({
         </h3>
         <div className="flex items-center space-x-2">
           <label className="text-xs text-gray-500 dark:text-gray-400">
-            Current Year:
+            Year Comparison:
           </label>
           <select
             className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-[#1E293B] text-gray-700 dark:text-gray-200 transition-colors duration-300"
@@ -50,8 +55,11 @@ const LineChartCard: React.FC<LineChartCardProps> = ({
               onYearChange?.(e.target.value)
             }
           >
-            <option value="2025">2025</option>
-            <option value="2024">2024</option>
+            {comparisonYears.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -102,7 +110,7 @@ const LineChartCard: React.FC<LineChartCardProps> = ({
               <Line
                 type="monotone"
                 dataKey="lastYear"
-                name="Last Year"
+                name="Year Comparison"
                 stroke="#ef4444"
                 strokeWidth={2}
                 dot

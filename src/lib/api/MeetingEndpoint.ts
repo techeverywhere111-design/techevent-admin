@@ -2,6 +2,8 @@ import api from "../utils/api";
 import {
   MeetingDailyCreationResponseSchema,
   type MeetingDailyCreationResponse,
+  TotalCountResponseSchema,
+  type TotalCountResponse,
 } from "@/lib/schemas";
 
 export const GetClientDailyMeetingCreation = async (
@@ -22,5 +24,10 @@ export const GetClientDailyEventCreation = async (
     params: { accountId, anyTimestamp },
   });
   return MeetingDailyCreationResponseSchema.parse(data);
+};
+
+export const GetTotalMeetings = async (): Promise<TotalCountResponse> => {
+  const { data } = await api.get("/api/v1/meetings/total-meetings");
+  return TotalCountResponseSchema.parse(data);
 };
 
