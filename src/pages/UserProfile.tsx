@@ -1,20 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { GetBulkAdminUsers } from "@/lib/api/AdminEndpoint";
 
-interface AdminUser {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  isPendingUser: boolean;
-  roleType: string;
-  lastLogin: string;
-  createdOn: string;
-}
+
 
 import { useQuery } from "@tanstack/react-query";
 

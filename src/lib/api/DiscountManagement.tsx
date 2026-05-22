@@ -3,7 +3,6 @@ import api from "@/lib/utils/api";
 import { 
   PromoCodeSchema, 
   PromoCodeListResponseSchema, 
-  PromoRegistrationLogSchema, 
   PromoRegistrationLogListResponseSchema,
   type PromoCode,
   type PromoRegistrationLog

@@ -1,5 +1,5 @@
 import api from "../utils/api";
-import { PlanSchema, type Plan } from "@/lib/schemas";
+import { PlanSchema, PlanListResponseSchema, type Plan, type PlanListResponse } from "@/lib/schemas";
 
 export type PlanResponse = Plan;
 export type PlanFeatures = Plan["features"];
@@ -79,10 +79,10 @@ export function convertFeaturesToDisplayList(
     } else {
       const catLabel = categoryKey
         ? categoryKey
-            .replace(/Feature$/i, " Feature")
-            .replace(/([A-Z])/g, " $1")
-            .replace(/\s+/g, " ")
-            .trim()
+          .replace(/Feature$/i, " Feature")
+          .replace(/([A-Z])/g, " $1")
+          .replace(/\s+/g, " ")
+          .trim()
         : "Feature";
 
       const catLabelCased = catLabel
@@ -115,4 +115,35 @@ export const PlanUpdate = async (
 ): Promise<PlanResponse> => {
   const { data } = await api.put(`/api/v1/plans/${id}`, payload);
   return PlanSchema.parse(data);
+};
+
+export const PlanGetList = async (
+  pageNo: number,
+  pageSize: number
+): Promise<PlanListResponse> => {
+  const { data } = await api.get("/api/v1/plans", {
+    params: { pageNo, pageSize },
+  });
+  return PlanListResponseSchema.parse(data);
+};
+
+export const PlanSearch = async (
+  text: string,
+  pageNo: number,
+  pageSize: number
+): Promise<PlanListResponse> => {
+  const { data } = await api.get("/api/v1/plans/search", {
+    params: { text, pageNo, pageSize },
+  });
+  return PlanListResponseSchema.parse(data);
+};
+
+export const PlanActivate = async (id: string): Promise<{ message: string }> => {
+  const { data } = await api.get(`/api/v1/plans/${id}/activate`);
+  return data;
+};
+
+export const PlanDeactivate = async (id: string): Promise<{ message: string }> => {
+  const { data } = await api.get(`/api/v1/plans/${id}/deactivate`);
+  return data;
 };

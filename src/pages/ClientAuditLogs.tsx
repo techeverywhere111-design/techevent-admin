@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
 import { Search, Download, ArrowLeft, X } from "lucide-react";
 import * as XLSX from "xlsx";

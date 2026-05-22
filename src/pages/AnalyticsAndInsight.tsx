@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import StatCard from "@/components/ui/StatCard";
 import PieChartCard from "@/components/ui/PieChartCard";
 import BarChartCard from "@/components/ui/BarChartCard";
@@ -81,7 +81,6 @@ const DEFAULT_EVENT_TYPE: ChartData[] = [
 ];
 
 export default function AnalyticsAndInsights() {
-  const [loading, setLoading] = useState<boolean>(true);
 
   const currentYearVal = new Date().getFullYear();
   const comparisonYears = useMemo(() => {
@@ -216,10 +215,7 @@ export default function AnalyticsAndInsights() {
     },
   ];
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-6 md:p-8 text-gray-800 dark:text-gray-100 transition-colors duration-300">

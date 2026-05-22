@@ -27,8 +27,8 @@ export default function ViewPlans() {
 
   const error = queryError?.message || (!id ? "No plan ID found." : "");
 
-  const getIcon = (type: string) => {
-    switch (type.toLowerCase()) {
+  const getIcon = (type?: string | null) => {
+    switch (type?.toLowerCase()) {
       default:
         return <Gem className="w-12 h-12 text-blue-600" />;
     }
@@ -62,15 +62,15 @@ export default function ViewPlans() {
     <div className="min-h-screen bg-gray-50 dark:bg-[#020617] flex flex-wrap justify-center items-start gap-10 p-10 -pt-10 transition-colors duration-300">
       <EditPlanCard
         id={plan.id}
-        isActive={plan.isActive}
+        isActive={plan.isActive ?? false}
         icon={getIcon(plan.type)}
-        type={plan.type}
-        title={plan.name}
-        priceNaira={plan.priceNaira.toLocaleString(undefined, {
+        type={plan.type ?? undefined}
+        title={plan.name ?? ""}
+        priceNaira={(plan.priceNaira ?? 0).toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })}
-        priceUSD={plan.priceUsd.toLocaleString(undefined, {
+        priceUSD={(plan.priceUsd ?? 0).toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })}

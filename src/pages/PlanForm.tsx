@@ -111,24 +111,28 @@ export default function CreatePlanRedesign() {
 
       if (data.features) {
         const updatedFeatures = { ...initialFeatures };
-        Object.keys(data.features).forEach((key) => {
+        Object.keys(data.features || {}).forEach((key) => {
           if (key in updatedFeatures) {
             const featureKey = key as FeatureKeys;
-            const apiFeature = data.features[key] as Record<string, any>;
+            const apiFeature = (data.features || {})[key];
             const feature = updatedFeatures[featureKey] as Record<string, any>;
 
-            feature.enabled = true;
-            Object.keys(apiFeature).forEach((field) => {
-              if (
-                field in feature &&
-                field !== "enabled" &&
-                field !== "errors"
-              ) {
-                const value = apiFeature[field];
-                feature[field] =
-                  typeof value === "number" ? value.toString() : value;
-              }
-            });
+            if (apiFeature && typeof apiFeature === "object") {
+              feature.enabled = true;
+              Object.keys(apiFeature).forEach((field) => {
+                if (
+                  field in feature &&
+                  field !== "enabled" &&
+                  field !== "errors"
+                ) {
+                  const value = (apiFeature as Record<string, any>)[field];
+                  feature[field] =
+                    typeof value === "number" ? value.toString() : value;
+                }
+              });
+            } else {
+              feature.enabled = false;
+            }
           }
         });
         setFeatures(updatedFeatures);

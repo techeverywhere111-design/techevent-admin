@@ -1,6 +1,7 @@
 import { RouterProvider } from "react-router-dom";
 import { router } from "@/routes";
 import { AppProvider } from "@/context/AppContext";
+import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -12,10 +13,12 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>
-        <ThemeProvider>
-          <RouterProvider router={router} />
-          <ToastContainer position="top-right" autoClose={3000} />
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <RouterProvider router={router} />
+            <ToastContainer position="top-right" autoClose={3000} />
+          </ThemeProvider>
+        </AuthProvider>
       </AppProvider>
       <ReactQueryDevtools initialIsOpen={false} position="bottom" />
     </QueryClientProvider>

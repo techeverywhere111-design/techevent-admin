@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -36,11 +36,6 @@ const DEFAULT_FEATURE_USAGE: ChartData[] = [
 ];
 
 export default function Dashboard() {
-  const [loading, setLoading] = useState<boolean>(true);
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
 
   const { startTime, endTime } = useMemo(() => {
     const now = new Date();

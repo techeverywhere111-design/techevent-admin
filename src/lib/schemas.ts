@@ -37,11 +37,11 @@ export type AccountUser = z.infer<typeof AccountUserSchema>;
 
 // Pagination Meta Schema
 export const PaginationSchema = z.object({
-  totalPages: z.number(),
-  size: z.number(),
-  totalElements: z.number(),
-  hasNext: z.boolean(),
-  hasPrevious: z.boolean(),
+  totalPages: z.number().nullish(),
+  size: z.number().nullish(),
+  totalElements: z.number().nullish(),
+  hasNext: z.boolean().nullish(),
+  hasPrevious: z.boolean().nullish(),
 });
 
 // Paginated Responses
@@ -54,20 +54,27 @@ export const AccountUserListResponseSchema = PaginationSchema.extend({
 });
 
 // Plan Schemas
-export const FeatureSchema = z.record(z.string(), z.any());
+export const FeatureSchema = z.record(z.string(), z.any()).nullish();
 
 export const PlanSchema = z.object({
   id: z.string(),
-  type: z.string(),
-  name: z.string(),
-  features: z.record(z.string(), FeatureSchema),
-  priceNaira: z.number(),
-  priceUsd: z.number(),
-  isActive: z.boolean(),
-  createdOn: z.string(),
+  type: z.string().nullish(),
+  name: z.string().nullish(),
+  features: z.record(z.string(), FeatureSchema).nullish(),
+  priceNaira: z.number().nullish(),
+  priceUsd: z.number().nullish(),
+  isActive: z.boolean().nullish(),
+  createdOn: z.string().nullish(),
+  createdAt: z.string().nullish(),
 });
 
 export type Plan = z.infer<typeof PlanSchema>;
+
+export const PlanListResponseSchema = PaginationSchema.extend({
+  content: z.array(PlanSchema),
+});
+
+export type PlanListResponse = z.infer<typeof PlanListResponseSchema>;
 
 // Promo Code Schemas
 export const PromoCodeSchema = z.object({

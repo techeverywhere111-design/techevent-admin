@@ -22,7 +22,7 @@ const UserProfile: React.FC = () => {
                 <input
                   type="text"
                   placeholder="Jane"
-                  value={user?.firstName}
+                  value={user?.firstName || ""}
                   className={`w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-900 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:ring-blue-500
                   `}
                   disabled
@@ -37,7 +37,7 @@ const UserProfile: React.FC = () => {
                 <input
                   type="text"
                   placeholder="Doe"
-                  value={user?.lastName}
+                  value={user?.lastName || ""}
                   className={`w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-900 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:ring-blue-500
                   `}
                   disabled
@@ -54,7 +54,7 @@ const UserProfile: React.FC = () => {
                 <input
                   type="email"
                   placeholder="janedoe123@gmail.com"
-                  value={user?.email}
+                  value={user?.email || ""}
                   className={`w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-900 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:ring-blue-500
                   `}
                 />
@@ -65,7 +65,7 @@ const UserProfile: React.FC = () => {
                   Role
                 </label>
                 <select
-                  value={user?.roleType}
+                  value={user?.roleType || ""}
                   className={`w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-900 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:ring-blue-500
                   `}
                 >

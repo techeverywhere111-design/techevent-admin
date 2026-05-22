@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ClientProfileCard from "@/components/ui/ClientProfileCard";
 import ClientChartCard from "@/components/ui/ClientChartCard";
-import { GetBulkAccountUsers, type AccountUser } from "@/lib/api/UserEndPoint";
+import { GetBulkAccountUsers } from "@/lib/api/UserEndPoint";
 import {
   GetClientDailyMeetingCreation,
   GetClientDailyEventCreation,
