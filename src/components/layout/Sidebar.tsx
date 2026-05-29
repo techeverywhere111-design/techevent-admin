@@ -42,8 +42,13 @@ const navItems: NavItem[] = [
     permission: "view_clients",
     subItems: [
       { name: "All Clients", path: "/client-management" },
-      { name: "Audit Logs", path: "/audit-logs", permission: "view_audit_logs" }
+
     ],
+  },
+  {
+    name: "Audit Logs", path: "/audit-logs",
+    icon: Shield,
+    permission: "view_audit_logs"
   },
   {
     name: "Event Management",
