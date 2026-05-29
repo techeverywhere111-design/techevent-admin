@@ -14,7 +14,7 @@ import {
   ShieldQuestionMark,
   Percent,
   Shield,
-  UserRoundCog
+  UserRoundCog, ClipboardPenLine
 } from "lucide-react";
 import { useState } from "react";
 import Logo from "@/assets/PlutoEvent_Logo.png";
@@ -47,7 +47,7 @@ const navItems: NavItem[] = [
   },
   {
     name: "Audit Logs", path: "/audit-logs",
-    icon: Shield,
+    icon: ClipboardPenLine,
     permission: "view_audit_logs"
   },
   {
