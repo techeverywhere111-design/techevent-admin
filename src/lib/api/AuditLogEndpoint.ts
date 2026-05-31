@@ -1,7 +1,6 @@
 import { z } from "zod";
 import api from "../utils/api";
 import {
-
   AuditLogListResponseSchema,
   type AuditLog,
   FeatureBreakdownResponseSchema,
@@ -11,26 +10,30 @@ import {
 export type { AuditLog };
 export type AuditLogResponse = z.infer<typeof AuditLogListResponseSchema>;
 
-export const GetAccountAuditLogs = async (
-  pageNo: number,
-  pageSize: number,
-  accountId?: string
-): Promise<AuditLogResponse> => {
-  const { data } = await api.get("/api/v1/audit-logs", {
-    params: { pageNo, pageSize, accountId },
-  });
-  return AuditLogListResponseSchema.parse(data);
-};
+export interface FilterAuditLogsParams {
+  startTime: string;
+  endTime: string;
+  pageNo: number;
+  pageSize: number;
+  module?: string;
+}
 
-export const SearchAccountAuditLogs = async (
-  text: string,
-  pageNo: number,
-  pageSize: number,
-  accountId?: string
-): Promise<AuditLogResponse> => {
-  const { data } = await api.get("/api/v1/audit-logs/search", {
-    params: { text, pageNo, pageSize, accountId },
-  });
+export const FilterAuditLogs = async ({
+  startTime,
+  endTime,
+  pageNo,
+  pageSize,
+  module,
+}: FilterAuditLogsParams): Promise<AuditLogResponse> => {
+  const params: Record<string, string | number> = {
+    startTime,
+    endTime,
+    pageNo,
+    pageSize,
+  };
+  if (module) params.module = module;
+
+  const { data } = await api.get("/api/v1/audit-logs/filter", { params });
   return AuditLogListResponseSchema.parse(data);
 };
 
@@ -53,4 +56,3 @@ export const GetFeatureUsageBreakdown = async (
   });
   return FeatureBreakdownResponseSchema.parse(data);
 };
-

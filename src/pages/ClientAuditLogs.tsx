@@ -1,54 +1,109 @@
-import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
-import { Search, Download, ArrowLeft, X } from "lucide-react";
+import { Download, ArrowLeft, Filter, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import {
-  GetAccountAuditLogs,
-  SearchAccountAuditLogs,
+  FilterAuditLogs,
   type AuditLog,
 } from "@/lib/api/AuditLogEndpoint";
-
 import { useQuery } from "@tanstack/react-query";
 
+const toLocalDatetimeString = (d: Date): string => {
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
+const getDefaultStartTime = (): string => {
+  const d = new Date();
+  d.setDate(1);
+  d.setHours(0, 0, 0, 0);
+  return toLocalDatetimeString(d);
+};
+
+const getDefaultEndTime = (): string => {
+  return toLocalDatetimeString(new Date());
+};
+
+const toISO = (localDatetime: string): string => {
+  return new Date(localDatetime).toISOString();
+};
+
 const AuditLogs: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeSearchTerm, setActiveSearchTerm] = useState("");
+  const [module, setModule] = useState("");
+  const [startTime, setStartTime] = useState(getDefaultStartTime);
+  const [endTime, setEndTime] = useState(getDefaultEndTime);
+
+  const [activeFilters, setActiveFilters] = useState({
+    module: "",
+    startTime: getDefaultStartTime(),
+    endTime: getDefaultEndTime(),
+  });
+
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [dateError, setDateError] = useState("");
 
   const navigate = useNavigate();
-  const location = useLocation();
-  
-  // Optionally still filter by clientId if passed via state, but not required in URL
-  const clientId = location.state?.clientId;
-  const clientName = location.state?.clientName;
+
+  const isValidRange = activeFilters.startTime < activeFilters.endTime;
 
   const { data, isLoading: loading } = useQuery({
-    queryKey: ["auditLogs", activeSearchTerm, page, itemsPerPage, clientId],
+    queryKey: [
+      "auditLogs",
+      "filter",
+      activeFilters.module,
+      activeFilters.startTime,
+      activeFilters.endTime,
+      page,
+      itemsPerPage,
+    ],
     queryFn: () =>
-      activeSearchTerm
-        ? SearchAccountAuditLogs(activeSearchTerm, page - 1, itemsPerPage, clientId)
-        : GetAccountAuditLogs(page - 1, itemsPerPage, clientId),
+      FilterAuditLogs({
+        startTime: toISO(activeFilters.startTime),
+        endTime: toISO(activeFilters.endTime),
+        pageNo: page - 1,
+        pageSize: itemsPerPage,
+        module: activeFilters.module || undefined,
+      }),
+    enabled: isValidRange,
   });
 
   const logs = data?.content || [];
   const totalCount = data?.totalElements || 0;
 
-  const handleSearch = () => {
-    setActiveSearchTerm(searchTerm);
+  const hasActiveFilters = useMemo(
+    () => activeFilters.module !== "",
+    [activeFilters.module]
+  );
+
+  const handleApplyFilter = () => {
+    if (endTime <= startTime) {
+      setDateError("End time must be after start time");
+      return;
+    }
+    setDateError("");
+    setActiveFilters({
+      module,
+      startTime,
+      endTime,
+    });
     setPage(1);
   };
 
-  const handleClear = () => {
-    setSearchTerm("");
-    setActiveSearchTerm("");
+  const handleClearFilters = () => {
+    const defaultStart = getDefaultStartTime();
+    const defaultEnd = getDefaultEndTime();
+    setModule("");
+    setStartTime(defaultStart);
+    setEndTime(defaultEnd);
+    setActiveFilters({
+      module: "",
+      startTime: defaultStart,
+      endTime: defaultEnd,
+    });
     setPage(1);
-  };
-
-  const handleSearchInputChange = (value: string) => {
-    setSearchTerm(value);
   };
 
   const handleExport = () => {
@@ -68,7 +123,7 @@ const AuditLogs: React.FC = () => {
 
     const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
     const blob = new Blob([wbout], { type: "application/octet-stream" });
-    saveAs(blob, `Audit_Logs_${(clientName || "General").replace(/\s+/g, "_")}.xlsx`);
+    saveAs(blob, `Audit_Logs_Export.xlsx`);
   };
 
   const formatDate = (dateString: string) => {
@@ -83,7 +138,7 @@ const AuditLogs: React.FC = () => {
     const minutes = date.getMinutes().toString().padStart(2, "0");
     const ampm = hours >= 12 ? "PM" : "AM";
     hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
+    hours = hours ? hours : 12;
     const formattedHours = hours.toString().padStart(2, "0");
 
     return `${day} - ${month} - ${year} ${formattedHours}:${minutes}${ampm}`;
@@ -144,48 +199,96 @@ const AuditLogs: React.FC = () => {
               <ArrowLeft className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </button>
             <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
-              Audit Logs {clientName ? `- ${clientName}` : ""}
+              Audit Logs
             </h1>
           </div>
         </div>
 
-        {/* Search & Export row */}
-        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-          <div className="flex gap-2 flex-1 sm:flex-initial">
-            <div className="relative flex-1 sm:flex-initial">
+        {/* Filter & Export row */}
+        <div className="mb-6 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 flex-1">
+            {/* Module */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Module
+              </label>
               <input
+                id="filter-module"
                 type="text"
-                placeholder="Search logs..."
-                value={searchTerm}
-                onChange={(e) => handleSearchInputChange(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="px-4 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 sm:w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                placeholder="e.g. MEETING"
+                value={module}
+                onChange={(e) => setModule(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleApplyFilter()}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-40 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm transition-shadow"
               />
-              {searchTerm && (
+            </div>
+
+            {/* Start Time */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Start Time
+              </label>
+              <input
+                id="filter-start-time"
+                type="datetime-local"
+                value={startTime}
+                onChange={(e) => { setStartTime(e.target.value); setDateError(""); }}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm transition-shadow"
+              />
+            </div>
+
+            {/* End Time */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                End Time
+              </label>
+              <input
+                id="filter-end-time"
+                type="datetime-local"
+                value={endTime}
+                onChange={(e) => { setEndTime(e.target.value); setDateError(""); }}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm transition-shadow"
+              />
+            </div>
+
+            {/* Filter + Clear buttons */}
+            <div className="flex gap-2 self-end">
+              <button
+                id="apply-filter-btn"
+                onClick={handleApplyFilter}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:scale-95 transition-all flex items-center gap-2 text-sm font-medium shadow-sm"
+              >
+                <Filter size={16} />
+                Apply
+              </button>
+              {hasActiveFilters && (
                 <button
-                  onClick={handleClear}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
+                  id="clear-filter-btn"
+                  onClick={handleClearFilters}
+                  className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 active:scale-95 transition-all flex items-center gap-1 text-sm"
                 >
-                  <X size={16} />
+                  <X size={14} />
+                  Clear
                 </button>
               )}
             </div>
-            <button
-              onClick={handleSearch}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex-shrink-0 flex items-center justify-center"
-            >
-              <Search size={20} />
-            </button>
           </div>
 
           <button
+            id="export-btn"
             onClick={handleExport}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 active:scale-95 transition-all text-sm font-medium"
           >
             <Download size={18} />
             Export
           </button>
         </div>
+
+        {dateError && (
+          <div className="mb-4 px-4 py-2.5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm font-medium">
+            {dateError}
+          </div>
+        )}
 
         {/* Table */}
         <Table
@@ -206,4 +309,3 @@ const AuditLogs: React.FC = () => {
 };
 
 export default AuditLogs;
-
