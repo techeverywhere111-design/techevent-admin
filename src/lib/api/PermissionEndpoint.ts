@@ -25,17 +25,6 @@ export const SearchPermissions = async (
   return PermissionListResponseSchema.parse(data);
 };
 
-export const CreatePermission = async (
-  payload: PermissionPayload
-): Promise<Permission> => {
-  const { data } = await api.post("/api/v1/permissions", payload);
-  return PermissionSchema.parse(data);
-};
-
-export const BulkCreatePermissions = async (payloads: PermissionPayload[]) => {
-  const { data } = await api.post("/api/v1/permissions/bulk", payloads);
-  return MessageResponseSchema.parse(data);
-};
 
 export const UpdatePermission = async (
   id: string,

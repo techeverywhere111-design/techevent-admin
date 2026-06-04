@@ -274,7 +274,7 @@ const Roles: React.FC = () => {
             </div>
 
             {/* Transfer Buttons */}
-            <div className="flex lg:flex-col items-center justify-center gap-3 py-4">
+            <div className="flex lg:flex-col items-center justify-center gap-3 py-4 lg:sticky lg:top-1/2 lg:-translate-y-1/2 lg:self-start">
               <button
                 onClick={handleAssign}
                 disabled={selectedAvailable.size === 0 || isMutating}
