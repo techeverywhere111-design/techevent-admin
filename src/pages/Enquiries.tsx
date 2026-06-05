@@ -14,6 +14,9 @@ interface EnquiryRow {
   name: string;
   businessName: string;
   email: string;
+  subject: string;
+  createdOn: string;
+  treatedBy: string;
   status: "TREATED" | "NOT TREATED";
   original: any;
 }
@@ -38,6 +41,9 @@ const Enquiries: React.FC = () => {
         name: e.name,
         businessName: e.businessName || "N/A",
         email: e.email,
+        subject: e.subject || "N/A",
+        createdOn: new Date(e.createdOn).toLocaleString(),
+        treatedBy: e.treatedByUser ? `${e.treatedByUser.firstName || ""} ${e.treatedByUser.lastName || ""}`.trim() || e.treatedByUser.email : "N/A",
         status: e.isTreated ? "TREATED" : "NOT TREATED",
         original: e,
       }));
@@ -94,16 +100,16 @@ const Enquiries: React.FC = () => {
       render: (v) => <span className="text-gray-600 dark:text-gray-300">{v}</span>,
     },
     {
-      key: "businessName",
-      label: "Business Name",
-      render: (v) => <span className="text-gray-600 dark:text-gray-300">{v}</span>,
+      key: "subject",
+      label: "Subject",
+      render: (v) => <span className="block truncate max-w-[100px] sm:max-w-[150px] md:max-w-[200px] text-gray-600 dark:text-gray-300" title={v as string}>{v}</span>,
     },
     {
       key: "status",
       label: "Status",
       render: (v) => (
         <span
-          className={`font-semibold text-xs ${v === "TREATED" ? "text-blue-600" : "text-gray-500"
+          className={`font-semibold text-xs uppercase ${v === "TREATED" ? "text-blue-600" : "text-gray-500"
             }`}
         >
           {v}
@@ -152,7 +158,7 @@ const Enquiries: React.FC = () => {
     const exportData = enquiries.map((e) => ({
       Name: e.name,
       Email: e.email,
-      "Business Name": e.businessName,
+      Subject: e.subject,
       Status: e.status,
     }));
     const worksheet = XLSX.utils.json_to_sheet(exportData);
