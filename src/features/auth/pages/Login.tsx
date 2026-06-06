@@ -69,8 +69,7 @@ const Login: React.FC = () => {
   };
 
   const inputClass = (field: keyof AdminUserLoginPayload) =>
-    `w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent ${
-      errors[field] ? "border-red-500 focus:ring-red-500" : "border-gray-300"
+    `w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent ${errors[field] ? "border-red-500 focus:ring-red-500" : "border-gray-300"
     }`;
 
   return (
@@ -157,15 +156,7 @@ const Login: React.FC = () => {
               {loading ? "Signing in..." : "Sign In"}
             </button>
 
-            <p className="text-sm text-center text-gray-600 mt-2">
-              Don&apos;t have an account?{" "}
-              <a
-                href="/signup"
-                className="text-sky-600 hover:underline font-medium"
-              >
-                Sign Up
-              </a>
-            </p>
+
           </form>
         </div>
       </div>
