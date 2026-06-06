@@ -74,7 +74,7 @@ const EnquiryDetails: React.FC = () => {
           <h2 className="text-lg font-medium text-[#1F2937] dark:text-white">View</h2>
         </div>
 
-        <div className="bg-[#F3F7FA] dark:bg-gray-800 p-6 rounded-xl mb-6 grid grid-cols-1 md:grid-cols-5 gap-8">
+        <div className="bg-[#F3F7FA] dark:bg-gray-800 p-6 rounded-xl mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           <div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Name</p>
             <p className="font-semibold text-gray-900 dark:text-white">{enquiry.name}</p>
@@ -84,13 +84,10 @@ const EnquiryDetails: React.FC = () => {
             <p className="font-semibold text-gray-900 dark:text-white">{enquiry.email}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Business Name</p>
-            <p className="font-semibold text-gray-900 dark:text-white">{enquiry.businessName || "N/A"}</p>
-          </div>
-          <div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Subject</p>
             <p className="font-semibold text-gray-900 dark:text-white">{enquiry.subject}</p>
           </div>
+        
           <div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Status</p>
             <div className="relative">
@@ -107,6 +104,7 @@ const EnquiryDetails: React.FC = () => {
               </div>
             </div>
           </div>
+       
         </div>
 
         <div className="bg-[#F3F7FA] dark:bg-gray-800 p-6 rounded-xl min-h-[200px]">
