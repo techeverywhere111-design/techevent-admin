@@ -24,10 +24,12 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PermissionGuard } from "@/components/PermissionGuard";
 import Permissions from "@/pages/Permissions";
 import Roles from "@/pages/Roles";
+import ErrorPage from "@/pages/ErrorPage";
 
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
+    errorElement: <ErrorPage />,
     children: [
       {
         path: "/",
