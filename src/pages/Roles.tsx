@@ -155,11 +155,10 @@ const Roles: React.FC = () => {
   ) => (
     <label
       key={permission.id}
-      className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors rounded-lg ${
-        isSelected
+      className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors rounded-lg ${isSelected
           ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700"
           : "hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-transparent"
-      }`}
+        }`}
     >
       <input
         type="checkbox"
@@ -182,7 +181,6 @@ const Roles: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
-          <Shield size={28} className="text-blue-600 dark:text-blue-400" />
           <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
             Role Permissions
           </h1>
@@ -194,11 +192,10 @@ const Roles: React.FC = () => {
             <button
               key={role}
               onClick={() => handleRoleChange(role)}
-              className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                selectedRole === role
+              className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${selectedRole === role
                   ? "bg-blue-600 text-white shadow-md"
                   : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-              }`}
+                }`}
             >
               {ROLE_LABELS[role]}
             </button>
