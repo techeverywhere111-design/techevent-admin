@@ -2,7 +2,6 @@ import api from "../utils/api";
 import {
   PermissionSchema,
   PermissionListResponseSchema,
-  MessageResponseSchema,
   type Permission,
   type PermissionPayload,
 } from "@/lib/schemas";
