@@ -74,7 +74,7 @@ export default function ErrorPage() {
         </div>
 
         {/* Technical details toggle (only for non-404 or dev environment) */}
-        {!is404 && error && (
+        {!is404 && !!error && (
           <div className="mt-8 w-full max-w-lg text-left bg-gray-900/50 border border-gray-800 rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
             <div className="flex items-center gap-2 text-red-400 mb-2 font-bold">
               <AlertOctagon size={14} />
