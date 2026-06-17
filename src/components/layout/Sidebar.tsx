@@ -82,13 +82,10 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    name: "Security",
+    name: "Suspicious Users/Activity",
+    path: "/suspicious-users-activity",
     icon: Shield,
     permission: "view_security",
-    subItems: [
-      { name: "Suspicious Activity", path: "/suspicious-activity" },
-      { name: "Suspicious User", path: "/suspicious-user" }
-    ],
   },
 ];
 

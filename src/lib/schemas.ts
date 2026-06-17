@@ -242,3 +242,50 @@ export const FeatureBreakdownResponseSchema = z.object({
 
 export type FeatureBreakdownResponse = z.infer<typeof FeatureBreakdownResponseSchema>;
 
+// Suspicious Users & Activities Schemas
+export const SuspiciousAccountUserSchema = AccountUserSchema.extend({
+  isActive: z.boolean().nullable().optional(),
+});
+
+export type SuspiciousAccountUser = z.infer<typeof SuspiciousAccountUserSchema>;
+
+export const SuspiciousUserSchema = z.object({
+  id: z.string(),
+  accountId: z.string(),
+  createdBy: z.string().nullable().optional(),
+  accountUserResponse: SuspiciousAccountUserSchema.nullable().optional(),
+  userAgent: z.string().nullable().optional(),
+  numberOfOccurrences: z.number(),
+  isBlocked: z.boolean().nullable().optional(),
+  createdOn: z.string(),
+  updatedOn: z.string().nullable().optional(),
+});
+
+export type SuspiciousUser = z.infer<typeof SuspiciousUserSchema>;
+
+export const SuspiciousUserListResponseSchema = PaginationSchema.extend({
+  content: z.array(SuspiciousUserSchema),
+});
+
+export type SuspiciousUserListResponse = z.infer<typeof SuspiciousUserListResponseSchema>;
+
+export const SuspiciousActivitySchema = z.object({
+  id: z.string(),
+  accountId: z.string(),
+  createdBy: z.string().nullable().optional(),
+  accountUserResponse: SuspiciousAccountUserSchema.nullable().optional(),
+  userAgent: z.string().nullable().optional(),
+  actionPerformed: z.string(),
+  endpoint: z.string(),
+  method: z.string(),
+  createdOn: z.string(),
+});
+
+export type SuspiciousActivity = z.infer<typeof SuspiciousActivitySchema>;
+
+export const SuspiciousActivityListResponseSchema = PaginationSchema.extend({
+  content: z.array(SuspiciousActivitySchema),
+});
+
+export type SuspiciousActivityListResponse = z.infer<typeof SuspiciousActivityListResponseSchema>;
+

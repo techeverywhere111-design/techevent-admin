@@ -25,6 +25,7 @@ import { PermissionGuard } from "@/components/PermissionGuard";
 import Permissions from "@/pages/Permissions";
 import Roles from "@/pages/Roles";
 import ErrorPage from "@/pages/ErrorPage";
+import SuspiciousUsersActivity from "@/pages/SuspiciousUsersActivity";
 
 export const router = createBrowserRouter([
   {
@@ -67,6 +68,7 @@ export const router = createBrowserRouter([
 
           { path: "permissions", element: <PermissionGuard requires="view_roles"><Permissions /></PermissionGuard> },
           { path: "roles", element: <PermissionGuard requires="view_roles"><Roles /></PermissionGuard> },
+          { path: "suspicious-users-activity", element: <PermissionGuard requires="view_security"><SuspiciousUsersActivity /></PermissionGuard> },
         ],
       },
     ],
