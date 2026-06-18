@@ -7,7 +7,7 @@ import AnalyticsAndInsights from "@/pages/AnalyticsAndInsight";
 import Plans from "@/pages/Plans";
 import PlanForm from "@/pages/PlanForm";
 // import PaymentHistory from "@/pages/PaymentHistory";
-import ViewPlans from "@/pages/ViewPlans";
+
 import ClientManagement from "@/pages/ClientManagement";
 import ClientProfile from "@/pages/ClientProfile";
 import AuditLogs from "@/pages/ClientAuditLogs";
@@ -52,7 +52,7 @@ export const router = createBrowserRouter([
           { path: "analytics-and-insight", element: <PermissionGuard requires="view_analytics"><AnalyticsAndInsights /></PermissionGuard> },
           { path: "plans", element: <PermissionGuard requires="view_plans"><Plans /></PermissionGuard> },
           { path: "plan-creation", element: <PermissionGuard requires="view_plans"><PlanForm /></PermissionGuard> },
-          { path: "view-plans", element: <PermissionGuard requires="view_plans"><ViewPlans /></PermissionGuard> },
+
           { path: "client-management", element: <PermissionGuard requires="view_clients"><ClientManagement /></PermissionGuard> },
           { path: "client-profile", element: <PermissionGuard requires="view_clients"><ClientProfile /></PermissionGuard> },
           { path: "audit-logs", element: <PermissionGuard requires="view_audit_logs"><AuditLogs /></PermissionGuard> },

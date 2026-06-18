@@ -69,6 +69,7 @@ export default function CreatePlanRedesign() {
   const [priceUSD, setPriceUSD] = useState("");
   const [priceErrors, setPriceErrors] = useState({ naira: "", usd: "" });
   const [nameError, setNameError] = useState("");
+  const [featureError, setFeatureError] = useState("");
   // const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [planId, setPlanId] = useState<string | null>(null);
@@ -106,8 +107,8 @@ export default function CreatePlanRedesign() {
       const data = fetchedPlan;
       setPlanType(data.type || "");
       setPlanName(data.name || "");
-      setPriceNaira(data.priceNaira?.toString() || "");
-      setPriceUSD(data.priceUsd?.toString() || "");
+      setPriceNaira(data.priceNaira ? formatThousands(data.priceNaira.toString()) : "");
+      setPriceUSD(data.priceUsd ? formatThousands(data.priceUsd.toString()) : "");
 
       if (data.features) {
         const updatedFeatures = { ...initialFeatures };
@@ -183,10 +184,50 @@ export default function CreatePlanRedesign() {
     setFeatures(updated);
   };
 
+  const MAX_PRICE = 9_999_999;
+
+  const formatThousands = (raw: string): string => {
+    const digits = raw.replace(/,/g, "").replace(/[^0-9]/g, "");
+    if (!digits) return "";
+    return Number(digits).toLocaleString("en-US");
+  };
+
+  const getRawNumber = (formatted: string): number =>
+    Number(formatted.replace(/,/g, ""));
+
+  const handlePriceChange = (
+    raw: string,
+    setter: (v: string) => void,
+    field: "naira" | "usd",
+  ) => {
+    const digitsOnly = raw.replace(/,/g, "").replace(/[^0-9]/g, "");
+    const num = Number(digitsOnly);
+    if (digitsOnly === "") {
+      setter("");
+      setPriceErrors((prev) => ({ ...prev, [field]: "Price is required" }));
+      return;
+    }
+    if (num > MAX_PRICE) {
+      setPriceErrors((prev) => ({
+        ...prev,
+        [field]: `Price cannot exceed ${MAX_PRICE.toLocaleString("en-US")}`,
+      }));
+      return;
+    }
+    setter(formatThousands(digitsOnly));
+    setPriceErrors((prev) => ({ ...prev, [field]: "" }));
+  };
+
   const validatePrice = () => {
     const errors = { naira: "", usd: "" };
+    const nairaNum = getRawNumber(priceNaira);
+    const usdNum = getRawNumber(priceUSD);
     if (priceNaira.trim() === "") errors.naira = "Price is required";
+    else if (nairaNum > MAX_PRICE)
+      errors.naira = `Price cannot exceed ${MAX_PRICE.toLocaleString("en-US")}`;
     if (priceUSD.trim() === "") errors.usd = "Price is required";
+    else if (usdNum > MAX_PRICE)
+      errors.usd = `Price cannot exceed ${MAX_PRICE.toLocaleString("en-US")}`;
     setPriceErrors(errors);
     return errors.naira === "" && errors.usd === "";
   };
@@ -251,8 +292,8 @@ export default function CreatePlanRedesign() {
       type: planType,
       name: planName.trim(),
       features: featuresPayload,
-      priceNaira: Number(priceNaira),
-      priceUsd: Number(priceUSD),
+      priceNaira: getRawNumber(priceNaira),
+      priceUsd: getRawNumber(priceUSD),
     };
   };
 
@@ -278,11 +319,12 @@ export default function CreatePlanRedesign() {
         setPriceNaira("");
         setPriceUSD("");
         setNameError("");
+        setFeatureError("");
         setPriceErrors({ naira: "", usd: "" });
         setSelectAll(false);
       }
       queryClient.invalidateQueries({ queryKey: ["plan"] });
-      navigate(`/view-plans?id=${result.id}`);
+      navigate("/plans");
     },
     onError: () => {
       toast.error("Operation failed. Please try again.");
@@ -293,6 +335,17 @@ export default function CreatePlanRedesign() {
     const nameValid = validateName();
     const priceValid = validatePrice();
     const featuresValid = validateFeatures();
+
+    const anyFeatureEnabled = (Object.keys(features) as FeatureKeys[]).some(
+      (key) => features[key].enabled,
+    );
+    if (!anyFeatureEnabled) {
+      setFeatureError("At least one feature must be selected.");
+      toast.error("Please fix all errors before submitting.");
+      return;
+    } else {
+      setFeatureError("");
+    }
 
     if (!nameValid || !priceValid || !featuresValid) {
       toast.error("Please fix all errors before submitting.");
@@ -307,8 +360,8 @@ export default function CreatePlanRedesign() {
 
   if (queryLoading && editing) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-gray-600">Loading plan data...</div>
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-gray-600 dark:text-gray-400">Loading plan data...</div>
       </div>
     );
   }
@@ -316,9 +369,20 @@ export default function CreatePlanRedesign() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 p-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-xl font-semibold text-gray-800 dark:text-white mb-6">
-          {editing ? "Edit Plan" : "Create Plan"}
-        </h1>
+        <div className="flex items-center gap-3 mb-6">
+          <button
+            onClick={() => navigate("/plans")}
+            className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="Back to plans"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+          <h1 className="text-xl font-semibold text-gray-800 dark:text-white">
+            {editing ? "Edit Plan" : "Create Plan"}
+          </h1>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <div className="space-y-6">
@@ -359,10 +423,13 @@ export default function CreatePlanRedesign() {
                 Price (Naira)
               </label>
               <input
-                type="number"
-                placeholder=""
+                type="text"
+                inputMode="numeric"
+                placeholder="0"
                 value={priceNaira}
-                onChange={(e) => setPriceNaira(e.target.value)}
+                onChange={(e) =>
+                  handlePriceChange(e.target.value, setPriceNaira, "naira")
+                }
                 className={`w-full bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:placeholder-gray-500 rounded-lg p-3 text-sm outline-none border ${
                   priceErrors.naira
                     ? "border-red-500 dark:border-red-400"
@@ -381,10 +448,13 @@ export default function CreatePlanRedesign() {
               Price (US Dollar)
             </label>
             <input
-              type="number"
-              placeholder=""
+              type="text"
+              inputMode="numeric"
+              placeholder="0"
               value={priceUSD}
-              onChange={(e) => setPriceUSD(e.target.value)}
+              onChange={(e) =>
+                handlePriceChange(e.target.value, setPriceUSD, "usd")
+              }
               className={`w-full bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:placeholder-gray-500 rounded-lg p-3 text-sm outline-none border ${
                 priceErrors.usd
                   ? "border-red-500 dark:border-red-400"
@@ -400,10 +470,17 @@ export default function CreatePlanRedesign() {
           <div></div>
         </div>
 
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-md font-semibold text-gray-800 dark:text-white">
-            Features
-          </h2>
+        <div className="flex items-center justify-between mb-1">
+          <div>
+            <h2 className="text-md font-semibold text-gray-800 dark:text-white">
+              Features
+            </h2>
+            {featureError && (
+              <p className="text-red-500 dark:text-red-400 text-xs mt-0.5">
+                {featureError}
+              </p>
+            )}
+          </div>
           <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
             <input
               type="checkbox"
@@ -414,6 +491,7 @@ export default function CreatePlanRedesign() {
             Select all
           </label>
         </div>
+        <div className="mb-4" />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {Object.entries(features).map(([key, value]) => (

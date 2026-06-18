@@ -22,7 +22,6 @@ const Roles: React.FC = () => {
 
   const queryClient = useQueryClient();
 
-  // Fetch all permissions (large page to get all)
   const { data: allPermissionsData, isLoading: loadingAll } = useQuery({
     queryKey: ["permissions", "all"],
     queryFn: () => GetPermissions(0, 500),
@@ -156,8 +155,8 @@ const Roles: React.FC = () => {
     <label
       key={permission.id}
       className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors rounded-lg ${isSelected
-          ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700"
-          : "hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-transparent"
+        ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700"
+        : "hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-transparent"
         }`}
     >
       <input
@@ -193,8 +192,8 @@ const Roles: React.FC = () => {
               key={role}
               onClick={() => handleRoleChange(role)}
               className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${selectedRole === role
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                ? "bg-blue-600 text-white shadow-md"
+                : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                 }`}
             >
               {ROLE_LABELS[role]}
