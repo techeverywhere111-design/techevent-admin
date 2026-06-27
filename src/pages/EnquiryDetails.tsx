@@ -109,7 +109,7 @@ const EnquiryDetails: React.FC = () => {
 
         <div className="bg-[#F3F7FA] dark:bg-gray-800 p-6 rounded-xl min-h-[200px]">
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Message</p>
-          <p className="text-gray-800 dark:text-gray-200 leading-relaxed">
+          <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-all">
             {enquiry.message}
           </p>
         </div>
