@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from "react";
 import { MoreVertical } from "lucide-react";
+import AppLoader from "./AppLoader";
 
 export interface Column {
   key: string;
@@ -178,9 +178,9 @@ const Table: React.FC<TableProps> = ({
               <tr>
                 <td
                   colSpan={columns.length + (renderActions ? 1 : 0)}
-                  className="text-center py-8 text-blue-600 dark:text-blue-300"
+                  className="py-12"
                 >
-                  Loading data...
+                  <AppLoader fullScreen={false} />
                 </td>
               </tr>
             ) : currentData.length === 0 ? (

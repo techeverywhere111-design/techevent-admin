@@ -20,6 +20,7 @@ import {
   Loader2,
   CalendarDays,
 } from "lucide-react";
+import AppLoader from "@/components/ui/AppLoader";
 import {
   PlanGetList,
   PlanSearch,
@@ -278,11 +279,8 @@ export default function Plans() {
 
         {/* Loading State */}
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center">
-            <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-            <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-              Loading plans...
-            </p>
+          <div className="py-20">
+            <AppLoader fullScreen={false} />
           </div>
         ) : error ? (
           <div className="py-20 text-center border border-dashed border-red-300 dark:border-red-800/50 rounded-2xl bg-white dark:bg-[#0b1739] p-6">

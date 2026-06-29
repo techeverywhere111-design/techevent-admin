@@ -17,6 +17,7 @@ interface PromoCode {
   code: string;
   owner: string;
   discountPercentage: number;
+  settlementPercentage: number;
   startTime: string;
   endTime: string;
   createdOn: string;
@@ -26,6 +27,7 @@ interface PromoCodeFormState {
   code: string;
   owner: string;
   discountPercentage: string;
+  settlementPercentage: string;
   startDate: string;
   startTime: string;
   endDate: string;
@@ -46,6 +48,7 @@ const PromoCode: React.FC = () => {
     code: "",
     owner: "",
     discountPercentage: "",
+    settlementPercentage: "",
     startDate: "",
     startTime: "",
     endDate: "",
@@ -153,6 +156,13 @@ const PromoCode: React.FC = () => {
       ),
     },
     {
+      key: "settlementPercentage",
+      label: "Settlement (%)",
+      render: (v) => (
+        <span className="text-gray-900 dark:text-gray-100">{v}</span>
+      ),
+    },
+    {
       key: "startTime",
       label: "Start Date",
       render: (v) => (
@@ -180,6 +190,7 @@ const PromoCode: React.FC = () => {
       code: "",
       owner: "",
       discountPercentage: "",
+      settlementPercentage: "",
       startDate: "",
       startTime: "",
       endDate: "",
@@ -200,6 +211,7 @@ const PromoCode: React.FC = () => {
       code: promoCode.code,
       owner: promoCode.owner,
       discountPercentage: promoCode.discountPercentage.toString(),
+      settlementPercentage: (promoCode.settlementPercentage ?? 0).toString(),
       startDate: startDateTime.date,
       startTime: startDateTime.time,
       endDate: endDateTime.date,
@@ -248,6 +260,7 @@ const PromoCode: React.FC = () => {
       "Code Name": c.code,
       Owner: c.owner,
       "Discount (%)": c.discountPercentage,
+      "Settlement (%)": c.settlementPercentage,
       "Start Date": formatDate(c.startTime),
       "End Date": formatDate(c.endTime),
     }));
@@ -276,6 +289,15 @@ const PromoCode: React.FC = () => {
       if (!promoForm.code.trim()) errors.code = "Code name is required";
       if (!promoForm.owner.trim()) errors.owner = "Owner is required";
     }
+
+    if (!promoForm.settlementPercentage.trim())
+      errors.settlementPercentage = "Settlement percentage is required";
+    else if (
+      isNaN(Number(promoForm.settlementPercentage)) ||
+      Number(promoForm.settlementPercentage) < 0 ||
+      Number(promoForm.settlementPercentage) > 100
+    )
+      errors.settlementPercentage = "Must be a number between 0 and 100";
 
     if (!promoForm.discountPercentage.trim())
       errors.discountPercentage = "Discount percentage is required";
@@ -316,18 +338,22 @@ const PromoCode: React.FC = () => {
         return await RenewPromoCode(selectedPromoCode.id, payload.data);
       }
     },
-    onSuccess: (response, variables) => {
+    onSuccess: async (response, variables) => {
       if (variables.mode === "create") {
         toast.success(`${response.code} code created successfully`);
+        setSearchTerm("");
+        setActiveSearchTerm("");
+        setPage(1);
       } else {
         toast.success(`Code renewed successfully`);
       }
-      queryClient.invalidateQueries({ queryKey: ["promoCodes"] });
+      await queryClient.invalidateQueries({ queryKey: ["promoCodes"] });
 
       setPromoForm({
         code: "",
         owner: "",
         discountPercentage: "",
+        settlementPercentage: "",
         startDate: "",
         startTime: "",
         endDate: "",
@@ -359,6 +385,7 @@ const PromoCode: React.FC = () => {
         code: promoForm.code,
         owner: promoForm.owner,
         discountPercentage: Number(promoForm.discountPercentage),
+        settlementPercentage: Number(promoForm.settlementPercentage),
         startTime: startDateTime.toISOString(),
         endTime: endDateTime.toISOString(),
       };
@@ -366,6 +393,7 @@ const PromoCode: React.FC = () => {
     } else {
       const payload = {
         discountPercentage: Number(promoForm.discountPercentage),
+        settlementPercentage: Number(promoForm.settlementPercentage),
         startTime: startDateTime.toISOString(),
         endTime: endDateTime.toISOString(),
       };
@@ -531,31 +559,60 @@ const PromoCode: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Discount (%)
-                </label>
-                <input
-                  type="number"
-                  placeholder="0.00"
-                  value={promoForm.discountPercentage}
-                  onChange={(e) =>
-                    handlePromoChange("discountPercentage", e.target.value)
-                  }
-                  min="0"
-                  max="100"
-                  step="0.01"
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                    promoErrors.discountPercentage
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-                  }`}
-                />
-                {promoErrors.discountPercentage && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {promoErrors.discountPercentage}
-                  </p>
-                )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                    Discount (%)
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="0.00"
+                    value={promoForm.discountPercentage}
+                    onChange={(e) =>
+                      handlePromoChange("discountPercentage", e.target.value)
+                    }
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
+                      promoErrors.discountPercentage
+                        ? "border-red-500 focus:ring-red-500"
+                        : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
+                    }`}
+                  />
+                  {promoErrors.discountPercentage && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {promoErrors.discountPercentage}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                    Settlement (%)
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="0.00"
+                    value={promoForm.settlementPercentage}
+                    onChange={(e) =>
+                      handlePromoChange("settlementPercentage", e.target.value)
+                    }
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
+                      promoErrors.settlementPercentage
+                        ? "border-red-500 focus:ring-red-500"
+                        : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
+                    }`}
+                  />
+                  {promoErrors.settlementPercentage && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {promoErrors.settlementPercentage}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div>

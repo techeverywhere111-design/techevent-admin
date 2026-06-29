@@ -26,3 +26,7 @@ dist-ssr
 # AI Agents directories
 .agents/
 
+.env
+html_template/
+pdf_templates/
+

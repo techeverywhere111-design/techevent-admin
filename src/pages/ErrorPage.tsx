@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { useRouteError, isRouteErrorResponse, useNavigate } from "react-router-dom";
 import Logo from "@/assets/PlutoEvent_Logo.png";
-import { Home, ArrowLeft, AlertOctagon } from "lucide-react";
+import { Home, ArrowLeft, AlertOctagon, ChevronDown, ChevronUp } from "lucide-react";
 
 export default function ErrorPage() {
   const error = useRouteError();
   const navigate = useNavigate();
+  const [showDetails, setShowDetails] = useState(false);
 
   let title = "Error";
   let message = "An unexpected error occurred.";
@@ -20,16 +22,14 @@ export default function ErrorPage() {
       message = error.statusText || error.data?.message || message;
     }
   } else if (error instanceof Error) {
-    message = error.message;
+    message = "An unexpected software error occurred in the application. Please try reloading the page or return to the dashboard.";
   }
 
   return (
     <div className="min-h-screen bg-[#0B1739] text-white flex flex-col justify-between p-6 relative overflow-hidden select-none">
-      {/* Decorative stars/glowing circles */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-pulse delay-700" />
       
-      {/* Top Header */}
       <header className="flex items-center justify-between max-w-7xl w-full mx-auto relative z-10">
         <div className="flex items-center gap-3">
           <img src={Logo} alt="PlutoSpace" className="h-10 w-auto" />
@@ -37,9 +37,7 @@ export default function ErrorPage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-center text-center max-w-2xl mx-auto px-4 relative z-10 my-12">
-        {/* Floating/Glow Effect for status code */}
         <div className="relative mb-6">
           <div className="absolute inset-0 bg-sky-500/20 rounded-full blur-2xl transform scale-75" />
           <h1 className="text-9xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-sky-400 to-indigo-600 select-all relative animate-bounce [animation-duration:3s]">
@@ -54,7 +52,6 @@ export default function ErrorPage() {
           {message}
         </p>
 
-        {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-sm">
           <button
             onClick={() => navigate(-1)}
@@ -75,19 +72,33 @@ export default function ErrorPage() {
 
 
         {!is404 && !!error && (
-          <div className="mt-8 w-full max-w-lg text-left bg-gray-900/50 border border-gray-800 rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
-            <div className="flex items-center gap-2 text-red-400 mb-2 font-bold">
-              <AlertOctagon size={14} />
-              Technical details:
-            </div>
-            <pre className="whitespace-pre-wrap">
-              {error instanceof Error ? error.stack : JSON.stringify(error, null, 2)}
-            </pre>
+          <div className="mt-8 w-full max-w-lg text-left bg-gray-900/40 border border-gray-800 rounded-lg overflow-hidden transition-all duration-300">
+            <button
+              onClick={() => setShowDetails(!showDetails)}
+              className="w-full flex items-center justify-between px-4 py-3 bg-gray-900/85 hover:bg-gray-800/80 transition text-gray-300 hover:text-white font-medium text-xs border-b border-gray-800"
+            >
+              <span className="flex items-center gap-2 text-red-400 font-bold">
+                <AlertOctagon size={14} />
+                Technical Details
+              </span>
+              <span className="flex items-center gap-1 text-gray-400 text-[10px] uppercase tracking-wider font-semibold">
+                {showDetails ? "Hide" : "Show"} details
+                {showDetails ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              </span>
+            </button>
+            
+            {showDetails && (
+              <div className="p-4 font-mono text-xs overflow-y-auto max-h-64 custom-scrollbar text-gray-400 select-text selection:bg-sky-500/30 selection:text-white space-y-2">
+                <p className="text-red-400 font-semibold">{error instanceof Error ? `${error.name}: ${error.message}` : "Unknown System Error"}</p>
+                <pre className="whitespace-pre-wrap break-all opacity-85 leading-relaxed">
+                  {error instanceof Error ? error.stack : JSON.stringify(error, null, 2)}
+                </pre>
+              </div>
+            )}
           </div>
         )}
       </main>
 
-      {/* Footer */}
       <footer className="text-center text-xs text-gray-500 relative z-10 max-w-7xl mx-auto w-full">
         &copy; {new Date().getFullYear()} PlutoSpace Admin Portal. All rights reserved.
       </footer>

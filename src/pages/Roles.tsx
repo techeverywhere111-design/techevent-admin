@@ -6,6 +6,7 @@ import { GetPermissions } from "@/lib/api/PermissionEndpoint";
 import { ROLE_OPTIONS, type RoleType, type Permission } from "@/lib/schemas";
 import { toast } from "react-toastify";
 import { Search, X, ChevronRight, ChevronLeft, Shield, Loader2 } from "lucide-react";
+import AppLoader from "@/components/ui/AppLoader";
 
 const ROLE_LABELS: Record<RoleType, string> = {
   SUPER_ADMIN: "Super Admin",
@@ -255,7 +256,7 @@ const Roles: React.FC = () => {
               <div className="flex-1 overflow-y-auto p-2 space-y-1">
                 {isLoading ? (
                   <div className="flex items-center justify-center h-32">
-                    <Loader2 className="animate-spin text-blue-500" size={24} />
+                    <AppLoader fullScreen={false} />
                   </div>
                 ) : filteredAvailable.length === 0 ? (
                   <p className="text-center text-gray-400 dark:text-gray-500 text-sm py-8">
@@ -339,7 +340,7 @@ const Roles: React.FC = () => {
               <div className="flex-1 overflow-y-auto p-2 space-y-1">
                 {isLoading ? (
                   <div className="flex items-center justify-center h-32">
-                    <Loader2 className="animate-spin text-blue-500" size={24} />
+                    <AppLoader fullScreen={false} />
                   </div>
                 ) : filteredAssigned.length === 0 ? (
                   <p className="text-center text-gray-400 dark:text-gray-500 text-sm py-8">

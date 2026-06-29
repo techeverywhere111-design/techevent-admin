@@ -82,6 +82,7 @@ export const PromoCodeSchema = z.object({
   code: z.string(),
   owner: z.string(),
   discountPercentage: z.number(),
+  settlementPercentage: z.number(),
   startTime: z.string(),
   endTime: z.string(),
   createdOn: z.string(),
