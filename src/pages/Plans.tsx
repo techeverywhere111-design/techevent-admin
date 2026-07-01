@@ -17,7 +17,6 @@ import {
   Check,
   Edit3,
   Sliders,
-  Loader2,
   CalendarDays,
 } from "lucide-react";
 import AppLoader from "@/components/ui/AppLoader";
@@ -29,7 +28,6 @@ import {
 } from "@/lib/api/Plans";
 import type { Plan } from "@/lib/schemas";
 
-// Icon and color mapping for feature categories
 const featureCategories = [
   {
     key: "meetingFeature",
@@ -69,7 +67,6 @@ const featureCategories = [
   },
 ];
 
-// Friendly human-readable labels for plan nested fields
 const fieldLabels: Record<string, string> = {
   numberAllowed: "Number Allowed",
   canRecord: "Recording Support",
@@ -320,11 +317,10 @@ export default function Plans() {
                   <div className="p-6 pb-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-start">
                     <div>
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider mb-2 ${
-                          plan.type?.toLowerCase() === "business"
-                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-                            : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-                        }`}
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider mb-2 ${plan.type?.toLowerCase() === "business"
+                          ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+                          : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                          }`}
                       >
                         {plan.type || "N/A"}
                       </span>
@@ -336,29 +332,25 @@ export default function Plans() {
                     {/* Active toggle */}
                     <div className="flex items-center gap-2">
                       <span
-                        className={`text-xs font-medium hidden sm:inline ${
-                          plan.isActive
-                            ? "text-green-600 dark:text-green-400"
-                            : "text-gray-400"
-                        }`}
+                        className={`text-xs font-medium hidden sm:inline ${plan.isActive
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-gray-400"
+                          }`}
                       >
                         {plan.isActive ? "Active" : "Inactive"}
                       </span>
                       <button
                         onClick={(e) => handleToggleActive(plan, e)}
                         disabled={toggleActiveMutation.isPending}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none ${
-                          plan.isActive ? "bg-green-500" : "bg-gray-300 dark:bg-gray-700"
-                        } ${
-                          toggleActiveMutation.isPending
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none ${plan.isActive ? "bg-green-500" : "bg-gray-300 dark:bg-gray-700"
+                          } ${toggleActiveMutation.isPending
                             ? "opacity-50 cursor-not-allowed"
                             : "cursor-pointer"
-                        }`}
+                          }`}
                       >
                         <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
-                            plan.isActive ? "translate-x-6" : "translate-x-1"
-                          }`}
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${plan.isActive ? "translate-x-6" : "translate-x-1"
+                            }`}
                         />
                       </button>
                     </div>
@@ -431,13 +423,12 @@ export default function Plans() {
                       key={idx}
                       onClick={() => typeof p === "number" && setPage(p)}
                       disabled={p === "..."}
-                      className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${
-                        p === page
-                          ? "bg-blue-600 text-white"
-                          : p === "..."
+                      className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${p === page
+                        ? "bg-blue-600 text-white"
+                        : p === "..."
                           ? "text-gray-400 cursor-default"
                           : "bg-white dark:bg-[#0b1739] text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-                      }`}
+                        }`}
                     >
                       {p}
                     </button>
@@ -472,16 +463,14 @@ export default function Plans() {
           {/* Drawer Overlay */}
           <div
             onClick={handleCloseDrawer}
-            className={`fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 z-45 ${
-              isDrawerOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
+            className={`fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 z-45 ${isDrawerOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+              }`}
           />
 
           {/* Drawer Body */}
           <div
-            className={`fixed inset-y-0 right-0 max-w-md w-full bg-white dark:bg-[#0b1739] shadow-2xl border-l border-gray-100 dark:border-gray-850 z-50 flex flex-col transition-transform duration-300 ease-out transform ${
-              isDrawerOpen ? "translate-x-0" : "translate-x-full"
-            }`}
+            className={`fixed inset-y-0 right-0 max-w-md w-full bg-white dark:bg-[#0b1739] shadow-2xl border-l border-gray-100 dark:border-gray-850 z-50 flex flex-col transition-transform duration-300 ease-out transform ${isDrawerOpen ? "translate-x-0" : "translate-x-full"
+              }`}
           >
             {/* Drawer Header */}
             <div className="p-6 border-b border-gray-100 dark:border-gray-850 flex items-center justify-between">
@@ -522,11 +511,10 @@ export default function Plans() {
                       Status
                     </span>
                     <span
-                      className={`font-semibold ${
-                        selectedPlanForDrawer.isActive
-                          ? "text-green-600 dark:text-green-400"
-                          : "text-red-500"
-                      }`}
+                      className={`font-semibold ${selectedPlanForDrawer.isActive
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-500"
+                        }`}
                     >
                       {selectedPlanForDrawer.isActive ? "Active" : "Inactive"}
                     </span>
@@ -588,9 +576,8 @@ export default function Plans() {
                           </div>
                           <ChevronDown
                             size={16}
-                            className={`text-gray-400 transition-transform duration-200 ${
-                              isOpen ? "rotate-180" : ""
-                            }`}
+                            className={`text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                              }`}
                           />
                         </button>
 
