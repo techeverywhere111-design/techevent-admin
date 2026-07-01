@@ -171,7 +171,13 @@ const Roles: React.FC = () => {
           {permission.name}
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-          {permission.module} · {permission.method} {permission.endpoint}
+          {permission.module}
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+          {permission.method}
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+          {permission.endpoint}
         </p>
       </div>
     </label>
