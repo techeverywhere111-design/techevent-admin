@@ -79,7 +79,7 @@ export default function Dashboard() {
   }, [featureUsageData]);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-5 space-y-5">
       <h1 className="text-xl font-semibold mb-4">Welcome back!</h1>
       <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
 

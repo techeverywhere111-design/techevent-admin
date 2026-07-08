@@ -126,8 +126,8 @@ const ViewPromoRegistration: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["promoRegistrations"] });
       closeSettlementModal();
     },
-    onError: () => {
-      toast.error("Failed to update settlement status");
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to update settlement status");
     }
   });
   
@@ -219,7 +219,7 @@ const ViewPromoRegistration: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-5">
       <div className="max-w-full mx-auto">
         <div>
           <h1 className="text-xl mb-6 sm:text-2xl font-semibold text-gray-900 dark:text-white">

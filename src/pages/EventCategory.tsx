@@ -17,7 +17,7 @@ import { saveAs } from "file-saver";
 interface EventCategory {
   id: string;
   name: string;
-  description: string;
+  description?: string | null;
   createdOn: string;
 }
 
@@ -91,7 +91,7 @@ const EventCategory: React.FC = () => {
     setSelectedCategory(category);
     setNewCategory({
       name: category.name,
-      description: category.description,
+      description: category.description || "",
     });
     setErrors({ name: "", description: "" });
     setShowModal(true);
@@ -103,12 +103,9 @@ const EventCategory: React.FC = () => {
     if (!newCategory.name.trim()) {
       newErrors.name = "Please enter a category title.";
     }
-    if (!newCategory.description.trim()) {
-      newErrors.description = "Please enter a category description.";
-    }
 
     setErrors(newErrors);
-    return !newErrors.name && !newErrors.description;
+    return !newErrors.name;
   };
 
   const submitMutation = useMutation({
@@ -125,8 +122,8 @@ const EventCategory: React.FC = () => {
         });
       }
     },
-    onSuccess: (response) => {
-      toast.success(`Category "${response?.name}" ${modalMode === "create" ? "created" : "updated"} successfully!`);
+    onSuccess: () => {
+      toast.success(modalMode === "create" ? "Category created successfully" : "Category updated successfully");
       queryClient.invalidateQueries({ queryKey: ["eventCategories"] });
       setShowModal(false);
       setNewCategory({ name: "", description: "" });
@@ -162,8 +159,8 @@ const EventCategory: React.FC = () => {
       setShowDeleteModal(false);
       setCategoryToDelete(null);
     },
-    onError: () => {
-      toast.error("Failed to delete category");
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to delete category");
     }
   });
 
@@ -212,8 +209,8 @@ const EventCategory: React.FC = () => {
       key: "description",
       label: "Description",
       render: (v) => (
-        <span className="text-gray-600 dark:text-gray-300 line-clamp-1">
-          {v}
+        <span className="text-gray-600 dark:text-gray-300">
+          {v || "-"}
         </span>
       ),
     },
@@ -257,7 +254,7 @@ const EventCategory: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-5">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
@@ -378,29 +375,20 @@ const EventCategory: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Description <span className="text-red-500">*</span>
+                  Description
                 </label>
                 <textarea
                   rows={4}
                   placeholder="Enter category description"
-                  value={newCategory.description}
+                  value={newCategory.description || ""}
                   onChange={(e) =>
                     setNewCategory({
                       ...newCategory,
                       description: e.target.value,
                     })
                   }
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-none ${
-                    errors.description
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-                  }`}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-none"
                 />
-                {errors.description && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.description}
-                  </p>
-                )}
               </div>
 
               <div className="flex justify-end gap-3 pt-4">

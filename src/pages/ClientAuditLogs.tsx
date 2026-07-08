@@ -187,17 +187,12 @@ const AuditLogs: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-8 md:w-full sm:w-auto w-[95vw]">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-5 md:w-full sm:w-auto w-[95vw]">
       <div className="md:w-full sm:w-auto w-[60vw]">
 
         <div className="mb-6">
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
-            >
-              <ArrowLeft className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </button>
+
             <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
               Audit Logs
             </h1>

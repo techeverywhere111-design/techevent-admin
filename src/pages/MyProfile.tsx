@@ -4,7 +4,7 @@ const UserProfile: React.FC = () => {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-5">
       <div className="max-w-4xl ">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 sm:p-8">
           <div className="mb-6">

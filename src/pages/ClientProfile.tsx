@@ -121,7 +121,7 @@ const ClientProfile: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8 transition-colors duration-300">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-5 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <AppLoader fullScreen={false} />
         </div>
@@ -131,7 +131,7 @@ const ClientProfile: React.FC = () => {
 
   if (!accountUser) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8 transition-colors duration-300">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-5 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <p className="text-center text-gray-600 dark:text-gray-300">
             User not found
@@ -152,7 +152,7 @@ const ClientProfile: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8 transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-5 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">
           Clients Management

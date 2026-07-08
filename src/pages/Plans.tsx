@@ -199,7 +199,7 @@ export default function Plans() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#020617] transition-colors duration-300 p-4 sm:p-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#020617] transition-colors duration-300 p-4 sm:p-5">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -207,12 +207,8 @@ export default function Plans() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Subscription Plans
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Create, configure, and manage user subscription packages.
-            </p>
           </div>
 
-          {/* Action button */}
           <div className="relative">
             <button
               onClick={(e) => {
@@ -246,32 +242,33 @@ export default function Plans() {
         </div>
 
         {/* Filter / Search Bar */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1 max-w-md">
-            <input
-              type="text"
-              placeholder="Search plans..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="w-full pl-4 pr-10 py-2 border border-gray-300 dark:border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-[#0b1739] text-gray-900 dark:text-gray-100 placeholder-gray-400 text-sm"
-            />
-            {searchTerm && (
-              <button
-                onClick={handleClear}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
-              >
-                <X size={16} />
-              </button>
-            )}
+        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+          <div className="flex gap-2 flex-1 sm:flex-initial">
+            <div className="relative flex-1 sm:flex-initial">
+              <input
+                type="text"
+                placeholder="Search plans..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                className="px-4 py-2 pr-10 border border-gray-300 dark:border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 sm:w-64 bg-white dark:bg-[#0b1739] text-gray-900 dark:text-gray-100 placeholder-gray-400 text-sm"
+              />
+              {searchTerm && (
+                <button
+                  onClick={handleClear}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+            <button
+              onClick={handleSearch}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex-shrink-0 flex items-center justify-center"
+            >
+              <Search size={20} />
+            </button>
           </div>
-          <button
-            onClick={handleSearch}
-            className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2 font-medium text-sm"
-          >
-            <Search size={16} />
-            Search
-          </button>
         </div>
 
         {/* Loading State */}

@@ -58,8 +58,8 @@ const Enquiries: React.FC = () => {
       toast.success("Enquiry marked as treated");
       queryClient.invalidateQueries({ queryKey: ["enquiries"] });
     },
-    onError: () => {
-      toast.error("Failed to update enquiry status");
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to update enquiry status");
     },
   });
 
@@ -69,8 +69,8 @@ const Enquiries: React.FC = () => {
       toast.success("Enquiry marked as not treated");
       queryClient.invalidateQueries({ queryKey: ["enquiries"] });
     },
-    onError: () => {
-      toast.error("Failed to update enquiry status");
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to update enquiry status");
     },
   });
 
@@ -102,7 +102,7 @@ const Enquiries: React.FC = () => {
     {
       key: "subject",
       label: "Subject",
-      render: (v) => <span className="block truncate max-w-[100px] sm:max-w-[150px] md:max-w-[200px] text-gray-600 dark:text-gray-300" title={v as string}>{v}</span>,
+      render: (v) => <span className="text-gray-600 dark:text-gray-300" title={v as string}>{v}</span>,
     },
     {
       key: "status",
@@ -170,7 +170,7 @@ const Enquiries: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8 md:w-full">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-5 md:w-full">
       <div className="md:w-full">
         <h1 className="text-xl sm:text-2xl font-semibold text-[#1F2937] dark:text-white mb-6">
           Enquiries

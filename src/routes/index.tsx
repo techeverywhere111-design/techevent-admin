@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import Login from "@/features/auth/pages/Login";
+import CompleteRegistration from "@/features/auth/pages/CompleteRegistration";
 import Layout from "@/components/layout/Layout";
 import RootLayout from "@/components/layout/RootLayout";
 import Dashboard from "@/pages/Dashboard";
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
       {
         path: "/",
         element: <Login />,
+      },
+      {
+        path: "complete-registration",
+        element: <CompleteRegistration />,
       },
       {
         path: "/",

@@ -320,7 +320,7 @@ const SuspiciousUsersActivity: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8 md:w-full">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-5 md:w-full">
       <div className="md:w-full">
         <h1 className="text-xl sm:text-2xl font-semibold text-[#1F2937] dark:text-white mb-6">
           Suspicious Users & Activity

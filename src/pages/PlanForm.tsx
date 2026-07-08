@@ -326,8 +326,8 @@ export default function CreatePlanRedesign() {
       queryClient.invalidateQueries({ queryKey: ["plan"] });
       navigate("/plans");
     },
-    onError: () => {
-      toast.error("Operation failed. Please try again.");
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Operation failed. Please try again.");
     },
   });
 
@@ -367,7 +367,7 @@ export default function CreatePlanRedesign() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 p-8">
+    <div className="min-h-screen bg-white dark:bg-gray-900 p-4 sm:p-5">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <button

@@ -34,8 +34,8 @@ const EnquiryDetails: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["enquiry", id] });
       queryClient.invalidateQueries({ queryKey: ["enquiries"] });
     },
-    onError: () => {
-      toast.error("Failed to update status");
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to update status");
     },
   });
 
@@ -55,7 +55,7 @@ const EnquiryDetails: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-5">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl font-semibold text-[#1F2937] dark:text-white mb-6">
           Enquiries

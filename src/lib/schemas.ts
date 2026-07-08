@@ -118,7 +118,7 @@ export const PromoRegistrationLogListResponseSchema = PaginationSchema.extend({
 export const EventCategorySchema = z.object({
   id: z.string(),
   name: z.string(),
-  description: z.string(),
+  description: z.string().nullable().optional(),
   createdOn: z.string(),
 });
 

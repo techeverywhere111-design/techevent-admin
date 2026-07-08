@@ -55,7 +55,7 @@ const UserProfile: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-5">
         <div className="max-w-4xl mx-auto">
           <AppLoader fullScreen={false} />
         </div>
@@ -65,7 +65,7 @@ const UserProfile: React.FC = () => {
 
   if (!displayUser) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-5">
         <div className="max-w-4xl mx-auto">
           <div className="text-center text-gray-600 dark:text-gray-400">
             User not found
@@ -76,7 +76,7 @@ const UserProfile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-5">
       <div className="max-w-4xl ">
         <div className="mb-6">
           {isViewingOtherUser ? (

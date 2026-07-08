@@ -164,7 +164,7 @@ const Table: React.FC<TableProps> = ({
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap"
+                  className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-200 break-words whitespace-normal"
                 >
                   {column.label}
                 </th>
@@ -201,7 +201,7 @@ const Table: React.FC<TableProps> = ({
                   {columns.map((column) => (
                     <td
                       key={column.key}
-                      className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100"
+                      className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 max-w-xs md:max-w-sm break-words whitespace-normal"
                     >
                       {column.render
                         ? column.render(row[column.key], row)

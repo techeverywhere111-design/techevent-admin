@@ -68,3 +68,28 @@ export const UpdateAdminUser = async (
   const { data } = await api.put(`/api/v1/admin-users/${userId}`, payload);
   return AdminUserSchema.parse(data);
 };
+
+// --- Invite Registration (TODO: update endpoints when backend is ready) ---
+
+export interface CompleteRegistrationPayload {
+  password: string;
+  confirmPassword: string;
+}
+
+export const ValidateInviteToken = async (
+  token: string
+): Promise<AdminUserResponse> => {
+  const { data } = await api.get(`/api/v1/admin-users/validate-invite/${token}`);
+  return AdminUserSchema.parse(data);
+};
+
+export const CompleteAdminRegistration = async (
+  token: string,
+  payload: CompleteRegistrationPayload
+): Promise<AdminUserResponse> => {
+  const { data } = await api.put(
+    `/api/v1/admin-users/complete-registration/${token}`,
+    payload
+  );
+  return AdminUserSchema.parse(data);
+};
