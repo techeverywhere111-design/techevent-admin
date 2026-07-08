@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+
 import Table, { type Column } from "@/components/ui/Table";
-import { Download, ArrowLeft, Filter, X } from "lucide-react";
+import { Download, Filter, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import {
@@ -45,7 +45,7 @@ const AuditLogs: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [dateError, setDateError] = useState("");
 
-  const navigate = useNavigate();
+
 
   const isValidRange = activeFilters.startTime < activeFilters.endTime;
 
