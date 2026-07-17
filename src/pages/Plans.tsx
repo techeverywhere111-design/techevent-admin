@@ -17,8 +17,6 @@ import {
   BarChart3,
   Check,
   Edit3,
-  Sliders,
-  CalendarDays,
 } from "lucide-react";
 import AppLoader from "@/components/ui/AppLoader";
 import {
@@ -309,57 +307,56 @@ export default function Plans() {
               {plans.map((plan) => (
                 <div
                   key={plan.id}
-                  className="bg-white dark:bg-[#0b1739] border border-gray-150 dark:border-gray-800/80 rounded-2xl shadow-sm hover:shadow-md dark:shadow-none hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden"
+                  className="bg-white dark:bg-[#0b1739] border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm hover:shadow-md dark:shadow-none transition-shadow duration-200 flex flex-col overflow-hidden"
                 >
                   {/* Card Header */}
-                  <div className="p-6 pb-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-start">
-                    <div>
+                  <div className="p-6 pb-5 border-b border-gray-100 dark:border-gray-800">
+                    <div className="flex items-start justify-between gap-4">
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider mb-2 ${plan.type?.toLowerCase() === "business"
+                        className={`inline-flex px-3 py-1 rounded-md text-xs font-semibold uppercase tracking-wide ${plan.type?.toLowerCase() === "business"
                           ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
                           : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
                           }`}
                       >
                         {plan.type || "N/A"}
                       </span>
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1">
-                        {plan.name || "Unnamed Plan"}
-                      </h3>
-                    </div>
 
-                    {/* Active toggle */}
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`text-xs font-medium hidden sm:inline ${plan.isActive
-                          ? "text-green-600 dark:text-green-400"
-                          : "text-gray-400"
-                          }`}
-                      >
-                        {plan.isActive ? "Active" : "Inactive"}
-                      </span>
-                      <button
-                        onClick={(e) => handleToggleActive(plan, e)}
-                        disabled={toggleActiveMutation.isPending}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none ${plan.isActive ? "bg-green-500" : "bg-gray-300 dark:bg-gray-700"
-                          } ${toggleActiveMutation.isPending
-                            ? "opacity-50 cursor-not-allowed"
-                            : "cursor-pointer"
-                          }`}
-                      >
+                      <div className="flex items-center gap-2">
                         <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${plan.isActive ? "translate-x-6" : "translate-x-1"
+                          className={`text-xs font-medium ${plan.isActive
+                            ? "text-green-600 dark:text-green-400"
+                            : "text-gray-400"
                             }`}
-                        />
-                      </button>
+                        >
+                          {plan.isActive ? "Active" : "Inactive"}
+                        </span>
+                        <button
+                          onClick={(e) => handleToggleActive(plan, e)}
+                          disabled={toggleActiveMutation.isPending}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none ${plan.isActive ? "bg-green-500" : "bg-gray-300 dark:bg-gray-700"
+                            } ${toggleActiveMutation.isPending
+                              ? "opacity-50 cursor-not-allowed"
+                              : "cursor-pointer"
+                            }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${plan.isActive ? "translate-x-6" : "translate-x-1"
+                              }`}
+                          />
+                        </button>
+                      </div>
                     </div>
+                    <h3 className="mt-4 text-xl font-semibold text-gray-950 dark:text-white line-clamp-1">
+                      {plan.name || "Unnamed Plan"}
+                    </h3>
                   </div>
 
                   {/* Card Body (Prices) */}
-                  <div className="p-6 py-4 flex-1">
-                    <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-3">
+                  <div className="p-6 py-5 flex-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold mb-3">
                       Pricing Tiers
                     </p>
-                    <div className="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-800/40 p-4 rounded-xl">
+                    <div className="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg">
                       <div>
                         <span className="text-xs text-gray-500 dark:text-gray-400 block mb-0.5">
                           Local (NGN)
@@ -379,29 +376,28 @@ export default function Plans() {
                     </div>
 
                     {/* Meta info */}
-                    <div className="flex items-center gap-2 text-xs text-gray-450 dark:text-gray-400 mt-4">
-                      <CalendarDays size={14} className="text-gray-400" />
-                      <span>
-                        Created: {plan.createdOn || plan.createdAt ? new Date(plan.createdOn || plan.createdAt || "").toLocaleDateString() : "N/A"}
-                      </span>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-5">
+                      <span className="font-medium text-gray-500 dark:text-gray-500">
+                        Created:
+                      </span>{" "}
+                      {plan.createdOn || plan.createdAt ? new Date(plan.createdOn || plan.createdAt || "").toLocaleDateString() : "N/A"}
                     </div>
                   </div>
 
                   {/* Card Actions */}
-                  <div className="px-6 py-4 bg-gray-50/55 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3">
+                  <div className="px-6 py-4 bg-gray-50/60 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3">
                     <button
                       onClick={() => handleOpenDrawer(plan)}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium transition-colors"
+                      className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium transition-colors"
                     >
-                      <Sliders size={15} />
                       View Features
                     </button>
                     <button
                       onClick={() => navigate(`/plan-creation?id=${plan.id}`)}
-                      className="px-3 py-2 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium transition-colors"
+                      className="px-5 py-2.5 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium transition-colors"
                       title="Edit Plan"
                     >
-                      <Edit3 size={15} />
+                      Edit
                     </button>
                   </div>
                 </div>

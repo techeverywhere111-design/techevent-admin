@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
@@ -57,13 +57,21 @@ const initialFeatures = {
   },
 };
 
+const createInitialFeatures = (): typeof initialFeatures =>
+  Object.fromEntries(
+    Object.entries(initialFeatures).map(([key, value]) => [
+      key,
+      { ...value, errors: {} },
+    ])
+  ) as typeof initialFeatures;
+
 export default function CreatePlanRedesign() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [selectAll, setSelectAll] = useState(false);
   const [features, setFeatures] =
-    useState<typeof initialFeatures>(initialFeatures);
+    useState<typeof initialFeatures>(() => createInitialFeatures());
   const [planName, setPlanName] = useState("");
   const [planType, setPlanType] = useState("");
   const [priceNaira, setPriceNaira] = useState("");
@@ -75,6 +83,18 @@ export default function CreatePlanRedesign() {
   const [editing, setEditing] = useState(false);
   const [planId, setPlanId] = useState<string | null>(null);
   const queryClient = useQueryClient();
+
+  const resetForm = useCallback((type = "") => {
+    setSelectAll(false);
+    setFeatures(createInitialFeatures());
+    setPlanName("");
+    setPlanType(type);
+    setPriceNaira("");
+    setPriceUSD("");
+    setPriceErrors({ naira: "", usd: "" });
+    setNameError("");
+    setFeatureError("");
+  }, []);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -89,10 +109,13 @@ export default function CreatePlanRedesign() {
     if (id) {
       setEditing(true);
       setPlanId(id);
-    } else if (fallbackType) {
-      setPlanType(fallbackType);
+      return;
     }
-  }, [location.search]);
+
+    setEditing(false);
+    setPlanId(null);
+    resetForm(fallbackType || "");
+  }, [location.search, resetForm]);
 
   const { data: fetchedPlan, isLoading: queryLoading } = useQuery({
     queryKey: ["plan", planId],
@@ -112,7 +135,7 @@ export default function CreatePlanRedesign() {
       setPriceUSD(data.priceUsd ? formatThousands(data.priceUsd.toString()) : "");
 
       if (data.features) {
-        const updatedFeatures = { ...initialFeatures };
+        const updatedFeatures = createInitialFeatures();
         Object.keys(data.features || {}).forEach((key) => {
           if (key in updatedFeatures) {
             const featureKey = key as FeatureKeys;
@@ -315,14 +338,7 @@ export default function CreatePlanRedesign() {
           : "Plan created successfully!",
       );
       if (!result.isEdit) {
-        setPlanName("");
-        setFeatures(initialFeatures);
-        setPriceNaira("");
-        setPriceUSD("");
-        setNameError("");
-        setFeatureError("");
-        setPriceErrors({ naira: "", usd: "" });
-        setSelectAll(false);
+        resetForm(planType);
       }
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["plan"] }),
