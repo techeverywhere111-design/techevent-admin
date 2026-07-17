@@ -93,7 +93,7 @@ export default function Plans() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeSearchTerm, setActiveSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showCreateDropdown, setShowCreateDropdown] = useState(false);
   const [selectedPlanForDrawer, setSelectedPlanForDrawer] = useState<Plan | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -409,23 +409,23 @@ export default function Plans() {
             </div>
 
             {/* Pagination */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8 border-t border-gray-200 dark:border-gray-850 pt-6">
-              <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-md">
-                Page {page} of {totalPages}
+            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <span className="px-3 py-1 rounded text-sm bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300">
+                {page} of {totalPages}
               </span>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap justify-center">
                 {totalPages > 1 &&
                   renderPagination().map((p, idx) => (
                     <button
                       key={idx}
                       onClick={() => typeof p === "number" && setPage(p)}
                       disabled={p === "..."}
-                      className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${p === page
+                      className={`min-w-[40px] px-3 py-1 rounded text-sm transition ${p === page
                         ? "bg-blue-600 text-white"
                         : p === "..."
-                          ? "text-gray-400 cursor-default"
-                          : "bg-white dark:bg-[#0b1739] text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+                          ? "text-gray-400 dark:text-gray-500 cursor-default bg-transparent"
+                          : "bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-gray-600"
                         }`}
                     >
                       {p}
@@ -443,11 +443,12 @@ export default function Plans() {
                     setItemsPerPage(Number(e.target.value));
                     setPage(1);
                   }}
-                  className="px-3 h-9 rounded-lg border border-gray-350 dark:border-gray-800 bg-white dark:bg-[#0b1739] text-gray-700 dark:text-gray-300 text-sm focus:outline-none"
+                  className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value={6}>6</option>
-                  <option value={12}>12</option>
-                  <option value={24}>24</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={30}>30</option>
+                  <option value={50}>50</option>
                 </select>
               </div>
             </div>

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -34,9 +34,15 @@ interface SidebarProps {
 interface NavItem {
   name: string;
   path?: string;
+  activePaths?: string[];
   icon: any;
   permission?: PermissionRequirement;
-  subItems?: { name: string; path: string; permission?: PermissionRequirement }[];
+  subItems?: {
+    name: string;
+    path: string;
+    activePaths?: string[];
+    permission?: PermissionRequirement;
+  }[];
 }
 
 const navItems: NavItem[] = [
@@ -66,7 +72,7 @@ const navItems: NavItem[] = [
     icon: BarChart2,
     permission: ROUTE_PERMISSIONS.analytics,
   },
-  { name: "Plans", path: "/plans", icon: Gem, permission: ROUTE_PERMISSIONS.plans },
+  { name: "Plans", path: "/plans", activePaths: ["/plans", "/plan-creation"], icon: Gem, permission: ROUTE_PERMISSIONS.plans },
   { name: "Enquires", path: "/enquiries", icon: ShieldQuestionMark, permission: ROUTE_PERMISSIONS.enquiries },
   { name: "User Management", path: "/user-management", icon: ShieldUser, permission: ROUTE_PERMISSIONS.adminUsers },
   {
@@ -91,6 +97,7 @@ const navItems: NavItem[] = [
 ];
 
 export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
+  const location = useLocation();
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
     {}
   );
@@ -103,6 +110,9 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
     if (!permission || isSuperAdmin) return true;
     return hasPermissionRequirement(permissions, permission);
   };
+
+  const isPathActive = (path?: string, activePaths: string[] = []) =>
+    path === location.pathname || activePaths.includes(location.pathname);
 
   const toggleDropdown = (name: string) => {
     setOpenDropdowns((prev) => ({
@@ -148,10 +158,10 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 mt-6 space-y-1 overflow-y-auto custom-scrollbar pb-6">
-          {filteredNavItems.map(({ name, path, icon: Icon, subItems }) => {
+          {filteredNavItems.map(({ name, path, activePaths, icon: Icon, subItems }) => {
 
             const isSubItemActive = subItems?.some(
-              (sub) => sub.path === window.location.pathname
+              (sub) => isPathActive(sub.path, sub.activePaths)
             );
 
             if (subItems) {
@@ -186,7 +196,7 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
                         key={sub.name}
                         to={sub.path}
                         className={({ isActive }) =>
-                          `flex items-center gap-3 pl-12 py-2 text-sm transition-colors rounded-lg whitespace-nowrap ${isActive
+                          `flex items-center gap-3 pl-12 py-2 text-sm transition-colors rounded-lg whitespace-nowrap ${isActive || isPathActive(sub.path, sub.activePaths)
                             ? "bg-[#081A30] text-[#237BE6] "
                             : "text-gray-300 hover:bg-blue-700 hover:text-white"
                           }`
@@ -206,7 +216,7 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
                 key={name}
                 to={path!}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-6 py-3 text-sm transition-colors rounded-lg whitespace-nowrap ${isActive
+                  `flex items-center gap-3 px-6 py-3 text-sm transition-colors rounded-lg whitespace-nowrap ${isActive || isPathActive(path, activePaths)
                     ? "bg-blue-600 text-white"
                     : "text-gray-300 hover:bg-blue-800 hover:text-white"
                   }`

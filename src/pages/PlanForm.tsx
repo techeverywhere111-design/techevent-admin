@@ -308,7 +308,7 @@ export default function CreatePlanRedesign() {
         return { isEdit: false, id: result?.id };
       }
     },
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       toast.success(
         result.isEdit
           ? "Plan updated successfully!"
@@ -324,7 +324,13 @@ export default function CreatePlanRedesign() {
         setPriceErrors({ naira: "", usd: "" });
         setSelectAll(false);
       }
-      queryClient.invalidateQueries({ queryKey: ["plan"] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["plan"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["plans"],
+          refetchType: "all",
+        }),
+      ]);
       navigate("/plans");
     },
     onError: (err: any) => {
@@ -361,14 +367,14 @@ export default function CreatePlanRedesign() {
 
   if (queryLoading && editing) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-gray-600 dark:text-gray-400">Loading plan data...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 p-4 sm:p-5">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-6 pb-16">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <button
@@ -385,8 +391,8 @@ export default function CreatePlanRedesign() {
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="space-y-6">
+        <div className="rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm p-5 sm:p-6 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Type
@@ -395,7 +401,7 @@ export default function CreatePlanRedesign() {
                 type="text"
                 value={planType}
                 readOnly
-                className="w-full bg-gray-100 dark:bg-gray-700 dark:text-gray-300 rounded-lg p-3 text-sm outline-none text-gray-500 dark:text-gray-400"
+                className="w-full bg-gray-50 dark:bg-gray-800 dark:text-gray-300 rounded-lg p-3 text-sm outline-none text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700"
               />
             </div>
             <div>
@@ -407,10 +413,10 @@ export default function CreatePlanRedesign() {
                 placeholder="Enter plan name"
                 value={planName}
                 onChange={(e) => setPlanName(e.target.value)}
-                className={`w-full bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:placeholder-gray-500 rounded-lg p-3 text-sm outline-none border ${
+                className={`w-full bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 rounded-lg p-3 text-sm outline-none border focus:ring-2 focus:ring-blue-500/20 ${
                   nameError
                     ? "border-red-500 dark:border-red-400"
-                    : "border-gray-200 dark:border-gray-600"
+                    : "border-gray-200 dark:border-gray-700 focus:border-blue-500"
                 }`}
               />
               {nameError && (
@@ -431,10 +437,10 @@ export default function CreatePlanRedesign() {
                 onChange={(e) =>
                   handlePriceChange(e.target.value, setPriceNaira, "naira")
                 }
-                className={`w-full bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:placeholder-gray-500 rounded-lg p-3 text-sm outline-none border ${
+                className={`w-full bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 rounded-lg p-3 text-sm outline-none border focus:ring-2 focus:ring-blue-500/20 ${
                   priceErrors.naira
                     ? "border-red-500 dark:border-red-400"
-                    : "border-gray-200 dark:border-gray-600"
+                    : "border-gray-200 dark:border-gray-700 focus:border-blue-500"
                 }`}
               />
               {priceErrors.naira && (
@@ -443,32 +449,31 @@ export default function CreatePlanRedesign() {
                 </p>
               )}
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Price (US Dollar)
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="0"
+                value={priceUSD}
+                onChange={(e) =>
+                  handlePriceChange(e.target.value, setPriceUSD, "usd")
+                }
+                className={`w-full bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 rounded-lg p-3 text-sm outline-none border focus:ring-2 focus:ring-blue-500/20 ${
+                  priceErrors.usd
+                    ? "border-red-500 dark:border-red-400"
+                    : "border-gray-200 dark:border-gray-700 focus:border-blue-500"
+                }`}
+              />
+              {priceErrors.usd && (
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                  {priceErrors.usd}
+                </p>
+              )}
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Price (US Dollar)
-            </label>
-            <input
-              type="text"
-              inputMode="numeric"
-              placeholder="0"
-              value={priceUSD}
-              onChange={(e) =>
-                handlePriceChange(e.target.value, setPriceUSD, "usd")
-              }
-              className={`w-full bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:placeholder-gray-500 rounded-lg p-3 text-sm outline-none border ${
-                priceErrors.usd
-                  ? "border-red-500 dark:border-red-400"
-                  : "border-gray-200 dark:border-gray-600"
-              }`}
-            />
-            {priceErrors.usd && (
-              <p className="text-red-500 dark:text-red-400 text-xs mt-1">
-                {priceErrors.usd}
-              </p>
-            )}
-          </div>
-          <div></div>
         </div>
 
         <div className="flex items-center justify-between mb-1">
@@ -494,7 +499,7 @@ export default function CreatePlanRedesign() {
         </div>
         <div className="mb-4" />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {Object.entries(features).map(([key, value]) => (
             <FeatureCard
               key={key}
@@ -520,23 +525,25 @@ export default function CreatePlanRedesign() {
           ))}
         </div>
 
-        <button
-          onClick={handleSubmit}
-          disabled={isSubmitLoading}
-          className={`mt-12 px-8 py-3 rounded-lg float-right transition-colors text-white ${
-            isSubmitLoading
-              ? "bg-blue-400 dark:bg-blue-500 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
-          }`}
-        >
-          {isSubmitLoading
-            ? editing
-              ? "Updating..."
-              : "Creating..."
-            : editing
-              ? "Update"
-              : "Create"}
-        </button>
+        <div className="flex justify-end pt-8 pb-10">
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitLoading}
+            className={`min-w-32 px-8 py-3 rounded-lg transition-colors text-white shadow-sm ${
+              isSubmitLoading
+                ? "bg-blue-400 dark:bg-blue-500 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+            }`}
+          >
+            {isSubmitLoading
+              ? editing
+                ? "Updating..."
+                : "Creating..."
+              : editing
+                ? "Update"
+                : "Create"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -564,7 +571,7 @@ function FeatureCard({
   cat,
 }: FeatureCardProps) {
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-5 bg-gray-50 dark:bg-gray-800">
+    <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-5 bg-white dark:bg-gray-900 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 capitalize">
           {title}
@@ -598,10 +605,10 @@ function FeatureCard({
                   disabled={!enabled}
                   value={data[f.key]}
                   onChange={(e) => update(cat, f.key, e.target.value)}
-                  className={`w-full bg-white dark:bg-gray-700 dark:text-gray-300 dark:placeholder-gray-500 rounded-lg p-2 text-sm border ${
+                  className={`w-full bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 rounded-lg p-2 text-sm border ${
                     data.errors?.[f.key]
                       ? "border-red-500 dark:border-red-400"
-                      : "border-gray-200 dark:border-gray-600"
+                      : "border-gray-200 dark:border-gray-700"
                   } disabled:bg-gray-100 dark:disabled:bg-gray-900 disabled:cursor-not-allowed outline-none focus:border-blue-500 dark:focus:border-blue-400`}
                 />
                 {data.errors?.[f.key] && (
