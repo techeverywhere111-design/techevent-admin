@@ -8,6 +8,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { showErrorToast } from "@/lib/utils/toast";
 
 interface EnquiryRow {
   id: string;
@@ -59,7 +60,7 @@ const Enquiries: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["enquiries"] });
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Failed to update enquiry status");
+      showErrorToast(err.response?.data?.message || "Failed to update enquiry status");
     },
   });
 
@@ -70,7 +71,7 @@ const Enquiries: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["enquiries"] });
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Failed to update enquiry status");
+      showErrorToast(err.response?.data?.message || "Failed to update enquiry status");
     },
   });
 

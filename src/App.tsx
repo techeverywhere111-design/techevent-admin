@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { RouterProvider } from "react-router-dom";
 import { router } from "@/routes";
 import { AppProvider } from "@/context/AppContext";
@@ -6,8 +7,15 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { queryClient } from "@/lib/react-query";
+
+const ReactQueryDevtools = import.meta.env.DEV
+  ? lazy(() =>
+      import("@tanstack/react-query-devtools").then((module) => ({
+        default: module.ReactQueryDevtools,
+      }))
+    )
+  : null;
 
 export default function App() {
   return (
@@ -20,7 +28,11 @@ export default function App() {
           </ThemeProvider>
         </AuthProvider>
       </AppProvider>
-      <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+      {ReactQueryDevtools ? (
+        <Suspense fallback={null}>
+          <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+        </Suspense>
+      ) : null}
     </QueryClientProvider>
   );
 }

@@ -23,6 +23,7 @@ import Enquiries from "@/pages/Enquiries";
 import EnquiryDetails from "@/pages/EnquiryDetails";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PermissionGuard } from "@/components/PermissionGuard";
+import { ROUTE_PERMISSIONS } from "@/lib/permissions";
 import Permissions from "@/pages/Permissions";
 import Roles from "@/pages/Roles";
 import ErrorPage from "@/pages/ErrorPage";
@@ -51,29 +52,29 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
         children: [
-          { path: "dashboard", element: <PermissionGuard requires="view_dashboard"><Dashboard /></PermissionGuard> },
-          { path: "clients", element: <PermissionGuard requires="view_plans"><Plans /></PermissionGuard> },
-          // { path: "payments", element: <PermissionGuard requires="view_payments"><PaymentHistory /></PermissionGuard> },
-          { path: "analytics-and-insight", element: <PermissionGuard requires="view_analytics"><AnalyticsAndInsights /></PermissionGuard> },
-          { path: "plans", element: <PermissionGuard requires="view_plans"><Plans /></PermissionGuard> },
-          { path: "plan-creation", element: <PermissionGuard requires="view_plans"><PlanForm /></PermissionGuard> },
+          { path: "dashboard", element: <PermissionGuard requires={ROUTE_PERMISSIONS.dashboard}><Dashboard /></PermissionGuard> },
+          { path: "clients", element: <PermissionGuard requires={ROUTE_PERMISSIONS.plans}><Plans /></PermissionGuard> },
+          // { path: "payments", element: <PermissionGuard requires={ROUTE_PERMISSIONS.paymentHistory}><PaymentHistory /></PermissionGuard> },
+          { path: "analytics-and-insight", element: <PermissionGuard requires={ROUTE_PERMISSIONS.analytics}><AnalyticsAndInsights /></PermissionGuard> },
+          { path: "plans", element: <PermissionGuard requires={ROUTE_PERMISSIONS.plans}><Plans /></PermissionGuard> },
+          { path: "plan-creation", element: <PermissionGuard requires={ROUTE_PERMISSIONS.planCreation}><PlanForm /></PermissionGuard> },
 
-          { path: "client-management", element: <PermissionGuard requires="view_clients"><ClientManagement /></PermissionGuard> },
-          { path: "client-profile", element: <PermissionGuard requires="view_clients"><ClientProfile /></PermissionGuard> },
-          { path: "audit-logs", element: <PermissionGuard requires="view_audit_logs"><AuditLogs /></PermissionGuard> },
-          { path: "event-category", element: <PermissionGuard requires="view_events"><EventCategory /></PermissionGuard> },
+          { path: "client-management", element: <PermissionGuard requires={ROUTE_PERMISSIONS.clients}><ClientManagement /></PermissionGuard> },
+          { path: "client-profile", element: <PermissionGuard requires={ROUTE_PERMISSIONS.clientProfile}><ClientProfile /></PermissionGuard> },
+          { path: "audit-logs", element: <PermissionGuard requires={ROUTE_PERMISSIONS.auditLogs}><AuditLogs /></PermissionGuard> },
+          { path: "event-category", element: <PermissionGuard requires={ROUTE_PERMISSIONS.eventCategories}><EventCategory /></PermissionGuard> },
 
-          { path: "user-management", element: <PermissionGuard requires="view_users"><UserManagement /></PermissionGuard> },
-          { path: "user-profile", element: <PermissionGuard requires="view_users"><UserProfile /></PermissionGuard> },
-          { path: "promo-code", element: <PermissionGuard requires="view_discounts"><PromoCode /></PermissionGuard> },
+          { path: "user-management", element: <PermissionGuard requires={ROUTE_PERMISSIONS.adminUsers}><UserManagement /></PermissionGuard> },
+          { path: "user-profile", element: <PermissionGuard requires={ROUTE_PERMISSIONS.adminUserProfile}><UserProfile /></PermissionGuard> },
+          { path: "promo-code", element: <PermissionGuard requires={ROUTE_PERMISSIONS.promoCodes}><PromoCode /></PermissionGuard> },
           { path: "profile", element: <UserProfile /> },
-          { path: "promo-enquires", element: <PermissionGuard requires="view_discounts"><ViewPromoRegistration /></PermissionGuard> },
-          { path: "enquiries", element: <PermissionGuard requires="view_enquiries"><Enquiries /></PermissionGuard> },
-          { path: "enquiries/:id", element: <PermissionGuard requires="view_enquiries"><EnquiryDetails /></PermissionGuard> },
+          { path: "promo-enquires", element: <PermissionGuard requires={ROUTE_PERMISSIONS.promoCodeLogs}><ViewPromoRegistration /></PermissionGuard> },
+          { path: "enquiries", element: <PermissionGuard requires={ROUTE_PERMISSIONS.enquiries}><Enquiries /></PermissionGuard> },
+          { path: "enquiries/:id", element: <PermissionGuard requires={ROUTE_PERMISSIONS.enquiryDetails}><EnquiryDetails /></PermissionGuard> },
 
-          { path: "permissions", element: <PermissionGuard requires="view_roles"><Permissions /></PermissionGuard> },
-          { path: "roles", element: <PermissionGuard requires="view_roles"><Roles /></PermissionGuard> },
-          { path: "suspicious-users-activity", element: <PermissionGuard requires="view_security"><SuspiciousUsersActivity /></PermissionGuard> },
+          { path: "permissions", element: <PermissionGuard requires={ROUTE_PERMISSIONS.permissions}><Permissions /></PermissionGuard> },
+          { path: "roles", element: <PermissionGuard requires={ROUTE_PERMISSIONS.roles}><Roles /></PermissionGuard> },
+          { path: "suspicious-users-activity", element: <PermissionGuard requires={ROUTE_PERMISSIONS.suspiciousUsers}><SuspiciousUsersActivity /></PermissionGuard> },
         ],
       },
     ],

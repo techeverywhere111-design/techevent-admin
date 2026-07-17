@@ -20,6 +20,11 @@ import { useState } from "react";
 import Logo from "@/assets/PlutoEvent_Logo.png";
 import { useAuth } from "@/context/AuthContext";
 import { usePermissionStore } from "@/store/permissionStore";
+import {
+  hasPermissionRequirement,
+  ROUTE_PERMISSIONS,
+  type PermissionRequirement,
+} from "@/lib/permissions";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -30,62 +35,58 @@ interface NavItem {
   name: string;
   path?: string;
   icon: any;
-  permission?: string;
-  subItems?: { name: string; path: string; permission?: string }[];
+  permission?: PermissionRequirement;
+  subItems?: { name: string; path: string; permission?: PermissionRequirement }[];
 }
 
 const navItems: NavItem[] = [
-  { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard, permission: "view_dashboard" },
+  { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard, permission: ROUTE_PERMISSIONS.dashboard },
   {
     name: "Client Management",
     icon: Users,
-    permission: "view_clients",
     subItems: [
-      { name: "All Clients", path: "/client-management" },
+      { name: "All Clients", path: "/client-management", permission: ROUTE_PERMISSIONS.clients },
 
     ],
   },
   {
     name: "Audit Logs", path: "/audit-logs",
     icon: ClipboardPenLine,
-    permission: "view_audit_logs"
+    permission: ROUTE_PERMISSIONS.auditLogs
   },
   {
     name: "Event Management",
     icon: Calendar1,
-    permission: "view_events",
-    subItems: [{ name: "Category", path: "/event-category" }],
+    subItems: [{ name: "Category", path: "/event-category", permission: ROUTE_PERMISSIONS.eventCategories }],
   },
-  { name: "Payment History", path: "/payments", icon: CreditCard, permission: "view_payments" },
+  { name: "Payment History", path: "/payments", icon: CreditCard, permission: ROUTE_PERMISSIONS.paymentHistory },
   {
     name: "Analytics and Insight",
     path: "/analytics-and-insight",
     icon: BarChart2,
-    permission: "view_analytics",
+    permission: ROUTE_PERMISSIONS.analytics,
   },
-  { name: "Plans", path: "/plans", icon: Gem, permission: "view_plans" },
-  { name: "Enquires", path: "/enquiries", icon: ShieldQuestionMark, permission: "view_enquiries" },
-  { name: "User Management", path: "/user-management", icon: ShieldUser, permission: "view_users" },
+  { name: "Plans", path: "/plans", icon: Gem, permission: ROUTE_PERMISSIONS.plans },
+  { name: "Enquires", path: "/enquiries", icon: ShieldQuestionMark, permission: ROUTE_PERMISSIONS.enquiries },
+  { name: "User Management", path: "/user-management", icon: ShieldUser, permission: ROUTE_PERMISSIONS.adminUsers },
   {
     name: "Discount Management",
     icon: Percent,
-    permission: "view_discounts",
-    subItems: [{ name: "Promo Code", path: "/promo-code" }],
+    subItems: [{ name: "Promo Code", path: "/promo-code", permission: ROUTE_PERMISSIONS.promoCodes }],
   },
   {
     name: "Roles and Permission",
     icon: UserRoundCog,
-    permission: "view_roles",
     subItems: [
-      { name: "Roles", path: "/roles" },
-      { name: "Permission", path: "/permissions" }
+      { name: "Roles", path: "/roles", permission: ROUTE_PERMISSIONS.roles },
+      { name: "Permission", path: "/permissions", permission: ROUTE_PERMISSIONS.permissions }
     ],
   },
   {
     name: "Suspicious Users/Activity",
     path: "/suspicious-users-activity",
     icon: Shield,
-    permission: "view_security",
+    permission: ROUTE_PERMISSIONS.suspiciousUsers,
   },
 ];
 
@@ -98,9 +99,9 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
 
   const isSuperAdmin = user?.roleType === "SUPER_ADMIN";
 
-  const hasPermission = (permissionName?: string): boolean => {
-    if (!permissionName || isSuperAdmin) return true;
-    return permissions.some((p) => p.name === permissionName);
+  const hasPermission = (permission?: PermissionRequirement): boolean => {
+    if (!permission || isSuperAdmin) return true;
+    return hasPermissionRequirement(permissions, permission);
   };
 
   const toggleDropdown = (name: string) => {

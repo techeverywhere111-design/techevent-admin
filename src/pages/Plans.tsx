@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { showErrorToast } from "@/lib/utils/toast";
 import {
   Gem,
   Search,
@@ -145,7 +146,7 @@ export default function Plans() {
       }
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Action failed. Please try again.");
+      showErrorToast(err.response?.data?.message || "Action failed. Please try again.");
     },
   });
 

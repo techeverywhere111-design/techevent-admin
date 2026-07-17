@@ -11,6 +11,7 @@ import {
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
+import { showErrorToast } from "@/lib/utils/toast";
 
 interface PromoCode {
   id: string;
@@ -127,7 +128,7 @@ const ViewPromoRegistration: React.FC = () => {
       closeSettlementModal();
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Failed to update settlement status");
+      showErrorToast(err.response?.data?.message || "Failed to update settlement status");
     }
   });
   

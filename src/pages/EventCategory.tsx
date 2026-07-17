@@ -11,6 +11,7 @@ import {
   SearchEventCategory,
 } from "@/lib/api/EventManagement";
 import { toast } from "react-toastify";
+import { showErrorToast } from "@/lib/utils/toast";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
@@ -132,7 +133,7 @@ const EventCategory: React.FC = () => {
     },
     onError: (err: any) => {
       const errorMessage = err?.response?.data?.message || err?.message || "Failed to save category.";
-      toast.error(errorMessage);
+      showErrorToast(errorMessage);
     }
   });
 
@@ -160,7 +161,7 @@ const EventCategory: React.FC = () => {
       setCategoryToDelete(null);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Failed to delete category");
+      showErrorToast(err.response?.data?.message || "Failed to delete category");
     }
   });
 

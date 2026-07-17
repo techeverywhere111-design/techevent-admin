@@ -1,22 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import Cookies from "js-cookie";
 import Logo from "@/assets/PlutoEvent_Logo.png";
+import { CompleteAdminInvite, GetAdmin } from "@/lib/api/AdminEndpoint";
+import { showErrorToast } from "@/lib/utils/toast";
 
-interface InvitedUser {
-  firstName: string;
-  lastName: string;
-  email: string;
-  roleType: string;
-}
-
-type PageState = "loading" | "form" | "success" | "error";
+type PageState = "form" | "success" | "error";
 
 interface FormData {
   firstName: string;
   lastName: string;
+  email: string;
   password: string;
   confirmPassword: string;
 }
@@ -24,64 +21,109 @@ interface FormData {
 interface FormErrors {
   firstName?: string;
   lastName?: string;
+  email?: string;
   password?: string;
   confirmPassword?: string;
 }
 
+const getParam = (searchParams: URLSearchParams, ...keys: string[]) => {
+  for (const key of keys) {
+    const value = searchParams.get(key);
+    if (value) return value;
+  }
+  return "";
+};
+
 const CompleteRegistration: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
+  const inviteId = getParam(searchParams, "ixxd", "id");
+  const fallbackFirstName = getParam(searchParams, "firstName", "firstname");
+  const fallbackLastName = getParam(searchParams, "lastName", "lastname");
+  const fallbackEmail = getParam(searchParams, "email");
 
-  const [pageState, setPageState] = useState<PageState>("loading");
-  const [invitedUser, setInvitedUser] = useState<InvitedUser | null>(null);
+  const [pageState, setPageState] = useState<PageState>("form");
   const [errorMessage, setErrorMessage] = useState("");
-
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
+    email: "",
     password: "",
     confirmPassword: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
+  const [fetchingInvite, setFetchingInvite] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
-    if (!token) {
-      setErrorMessage("No invitation token found. Please check your email link.");
+    let isMounted = true;
+
+    Cookies.remove("PLUTO_EVENT_ADMIN_TOKEN", { path: "/" });
+    Cookies.remove("PLUTO_EVENT_ADMIN_USER", { path: "/" });
+
+    if (!inviteId) {
+      setErrorMessage("No invitation reference found. Please use the invite link from your email.");
       setPageState("error");
       return;
     }
 
-    const validateToken = async () => {
+    const hydrateInvite = async () => {
+      setFetchingInvite(true);
+      setErrorMessage("");
+      setPageState("form");
+      setErrors({});
+
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        const user: InvitedUser = {
-          firstName: "Alexander",
-          lastName: "Kovalski",
-          email: "alexander.kovalski@plutospace.com",
-          roleType: "SUPER_ADMIN",
-        };
-        setInvitedUser(user);
+        const admin = await GetAdmin(inviteId);
+        if (!isMounted) return;
+
         setFormData((prev) => ({
           ...prev,
-          firstName: user.firstName,
-          lastName: user.lastName,
+          firstName: admin.firstName || "",
+          lastName: admin.lastName || "",
+          email: admin.email,
+          password: "",
+          confirmPassword: "",
         }));
-        setPageState("form");
       } catch (err: any) {
-        const message =
+        if (!isMounted) return;
+
+        if (fallbackEmail) {
+          setFormData((prev) => ({
+            ...prev,
+            firstName: fallbackFirstName,
+            lastName: fallbackLastName,
+            email: fallbackEmail,
+            password: "",
+            confirmPassword: "",
+          }));
+          showErrorToast(
+            err.response?.data?.message ||
+              "Could not refresh invitation details. Please review the fields before continuing."
+          );
+          return;
+        }
+
+        setErrorMessage(
           err.response?.data?.message ||
-          "This invitation link is invalid or has expired.";
-        setErrorMessage(message);
+            "We could not find this invitation. Please use the latest invite link from your email."
+        );
         setPageState("error");
+      } finally {
+        if (isMounted) {
+          setFetchingInvite(false);
+        }
       }
     };
 
-    validateToken();
-  }, [token]);
+    hydrateInvite();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [fallbackEmail, fallbackFirstName, fallbackLastName, inviteId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -98,6 +140,12 @@ const CompleteRegistration: React.FC = () => {
 
     if (!formData.lastName.trim()) {
       newErrors.lastName = "Last name is required.";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Enter a valid email.";
     }
 
     if (!formData.password.trim()) {
@@ -122,44 +170,54 @@ const CompleteRegistration: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!inviteId) {
+      setErrorMessage("No invitation reference found. Please use the invite link from your email.");
+      setPageState("error");
+      return;
+    }
+
     if (!validateForm()) return;
 
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await CompleteAdminInvite({
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+      });
+
       setPageState("success");
-      toast.success("Account activated successfully!");
+      toast.success(response.message || "Account activated successfully!");
       setTimeout(() => navigate("/"), 3000);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Activation failed. Please try again.");
+      showErrorToast(
+        err.response?.data?.message || "Activation failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const inputClass = (field: keyof FormErrors) =>
-    `w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent ${errors[field] ? "border-red-500 focus:ring-red-500" : "border-gray-300"
+    `w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent ${
+      errors[field] ? "border-red-500 focus:ring-red-500" : "border-gray-300"
     }`;
 
-  // Loading state
-  if (pageState === "loading") {
+  if (pageState === "success") {
     return (
       <div className="flex flex-col md:flex-row h-screen overflow-hidden">
-        <div className="hidden md:flex relative w-1/2 flex-col justify-center items-center text-white bg-[#0B1739] clip-path-custom">
-          <div className="text-center space-y-2">
-            <img src={Logo} alt="Logo" className="h-20 w-auto mx-auto" />
-            <p className="text-gray-300 italic text-sm tracking-wide">
-              Manage. Monitor. Control.
-            </p>
-          </div>
-        </div>
+        <BrandPanel />
         <div className="flex w-full md:w-1/2 justify-center items-center bg-white p-6 md:p-12">
-          <div className="flex flex-col items-center gap-3 text-center">
-            <Loader2 size={36} className="text-sky-500 animate-spin" />
-            <h3 className="text-lg font-semibold text-gray-800">Verifying Invitation</h3>
-            <p className="text-gray-500 text-sm max-w-xs">
-              Checking your invitation link. Please wait...
+          <div className="w-full max-w-xs sm:max-w-sm text-center space-y-4">
+            <h2 className="text-xl sm:text-2xl font-semibold text-green-600">
+              Account Activated
+            </h2>
+            <p className="text-gray-500 text-sm">
+              Your administrator account is ready. Redirecting to sign in...
             </p>
+            <Loader2 size={20} className="text-sky-500 animate-spin mx-auto" />
           </div>
         </div>
       </div>
@@ -169,17 +227,12 @@ const CompleteRegistration: React.FC = () => {
   if (pageState === "error") {
     return (
       <div className="flex flex-col md:flex-row h-screen overflow-hidden">
-        <div className="hidden md:flex relative w-1/2 flex-col justify-center items-center text-white bg-[#0B1739] clip-path-custom">
-          <div className="text-center space-y-2">
-            <img src={Logo} alt="Logo" className="h-20 w-auto mx-auto" />
-            <p className="text-gray-300 italic text-sm tracking-wide">
-              Manage. Monitor. Control.
-            </p>
-          </div>
-        </div>
+        <BrandPanel />
         <div className="flex w-full md:w-1/2 justify-center items-center bg-white p-6 md:p-12">
           <div className="w-full max-w-xs sm:max-w-sm text-center space-y-4">
-            <h2 className="text-xl sm:text-2xl font-semibold">Invalid or Expired Link</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold">
+              Invalid Invitation Link
+            </h2>
             <p className="text-gray-500 text-sm">{errorMessage}</p>
             <button
               onClick={() => navigate("/")}
@@ -193,44 +246,11 @@ const CompleteRegistration: React.FC = () => {
     );
   }
 
-  if (pageState === "success") {
-    return (
-      <div className="flex flex-col md:flex-row h-screen overflow-hidden">
-        <div className="hidden md:flex relative w-1/2 flex-col justify-center items-center text-white bg-[#0B1739] clip-path-custom">
-          <div className="text-center space-y-2">
-            <img src={Logo} alt="Logo" className="h-20 w-auto mx-auto" />
-            <p className="text-gray-300 italic text-sm tracking-wide">
-              Manage. Monitor. Control.
-            </p>
-          </div>
-        </div>
-        <div className="flex w-full md:w-1/2 justify-center items-center bg-white p-6 md:p-12">
-          <div className="w-full max-w-xs sm:max-w-sm text-center space-y-4">
-            <h2 className="text-xl sm:text-2xl font-semibold text-green-600">
-              Account Activated!
-            </h2>
-            <p className="text-gray-500 text-sm">
-              Your administrator account is ready. Redirecting to sign in...
-            </p>
-            <Loader2 size={20} className="text-sky-500 animate-spin mx-auto" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden">
-      <div className="hidden md:flex relative w-1/2 flex-col justify-center items-center text-white bg-[#0B1739] clip-path-custom">
-        <div className="text-center space-y-2">
-          <img src={Logo} alt="Logo" className="h-20 w-auto mx-auto" />
-          <p className="text-gray-300 italic text-sm tracking-wide">
-            Manage. Monitor. Control.
-          </p>
-        </div>
-      </div>
+      <BrandPanel />
 
-      <div className="flex w-full md:w-1/2 justify-center items-start md:items-center bg-white p-6 md:p-12">
+      <div className="flex w-full md:w-1/2 justify-center items-start md:items-center bg-white p-6 md:p-12 overflow-y-auto">
         <div className="w-full max-w-xs sm:max-w-sm">
           <div className="flex flex-col items-center mb-6 md:hidden">
             <img
@@ -244,10 +264,11 @@ const CompleteRegistration: React.FC = () => {
           </div>
 
           <h2 className="text-xl sm:text-2xl font-semibold text-center mb-2">
-            Complete Registration
+            Complete Invitation
           </h2>
           <p className="text-center text-gray-500 mb-4 sm:mb-6 text-sm">
-            Set your password to activate your admin account.
+            Use the email address that received the invite and set your
+            password.
           </p>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -264,9 +285,12 @@ const CompleteRegistration: React.FC = () => {
                   className={inputClass("firstName")}
                 />
                 {errors.firstName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.firstName}
+                  </p>
                 )}
               </div>
+
               <div>
                 <label className="block text-sm font-medium mb-1 text-gray-700">
                   Last Name
@@ -279,7 +303,9 @@ const CompleteRegistration: React.FC = () => {
                   className={inputClass("lastName")}
                 />
                 {errors.lastName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.lastName}
+                  </p>
                 )}
               </div>
             </div>
@@ -290,10 +316,15 @@ const CompleteRegistration: React.FC = () => {
               </label>
               <input
                 type="email"
-                value={invitedUser?.email || ""}
+                name="email"
+                value={formData.email}
                 readOnly
-                className="w-full border border-gray-200 rounded-md px-3 py-2 bg-gray-50 text-gray-500 cursor-not-allowed focus:outline-none"
+                aria-readonly="true"
+                className={`${inputClass("email")} bg-gray-100 text-gray-600 cursor-not-allowed`}
               />
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+              )}
             </div>
 
             <div>
@@ -340,20 +371,30 @@ const CompleteRegistration: React.FC = () => {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                 >
-                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showConfirmPassword ? (
+                    <EyeOff size={18} />
+                  ) : (
+                    <Eye size={18} />
+                  )}
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.confirmPassword}
+                </p>
               )}
             </div>
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || fetchingInvite}
               className="w-full bg-sky-500 hover:bg-sky-600 text-white py-2 rounded-md transition disabled:opacity-70"
             >
-              {loading ? "Activating..." : "Activate Account"}
+              {fetchingInvite
+                ? "Loading invite..."
+                : loading
+                  ? "Activating..."
+                  : "Activate Account"}
             </button>
 
             <p className="text-center text-sm text-gray-500">
@@ -372,5 +413,16 @@ const CompleteRegistration: React.FC = () => {
     </div>
   );
 };
+
+const BrandPanel = () => (
+  <div className="hidden md:flex relative w-1/2 flex-col justify-center items-center text-white bg-[#0B1739] clip-path-custom">
+    <div className="text-center space-y-2">
+      <img src={Logo} alt="Logo" className="h-20 w-auto mx-auto" />
+      <p className="text-gray-300 italic text-sm tracking-wide">
+        Manage. Monitor. Control.
+      </p>
+    </div>
+  </div>
+);
 
 export default CompleteRegistration;

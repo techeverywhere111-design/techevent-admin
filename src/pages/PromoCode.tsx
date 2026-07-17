@@ -11,6 +11,7 @@ import {
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
+import { showErrorToast } from "@/lib/utils/toast";
 
 interface PromoCode {
   id: string;
@@ -363,7 +364,7 @@ const PromoCode: React.FC = () => {
       setSelectedPromoCode(null);
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Operation failed");
+      showErrorToast(error.response?.data?.message || "Operation failed");
     }
   });
 

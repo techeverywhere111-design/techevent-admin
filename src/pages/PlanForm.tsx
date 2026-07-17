@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { showErrorToast } from "@/lib/utils/toast";
 import { PlanCreate, PlanUpdate, PlanGet } from "@/lib/api/Plans";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -327,7 +328,7 @@ export default function CreatePlanRedesign() {
       navigate("/plans");
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Operation failed. Please try again.");
+      showErrorToast(err.response?.data?.message || "Operation failed. Please try again.");
     },
   });
 

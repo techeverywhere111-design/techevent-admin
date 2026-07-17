@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronDown } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GetEnquiryById, MarkAsTreated, MarkAsNotTreated } from "@/lib/api/EnquiriesEndpoint";
 import { toast } from "react-toastify";
+import { showErrorToast } from "@/lib/utils/toast";
 import AppLoader from "@/components/ui/AppLoader";
 
 const EnquiryDetails: React.FC = () => {
@@ -35,7 +36,7 @@ const EnquiryDetails: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["enquiries"] });
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Failed to update status");
+      showErrorToast(err.response?.data?.message || "Failed to update status");
     },
   });
 

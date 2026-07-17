@@ -5,6 +5,7 @@ import { GetRolePermissions, AssignPermissions, RemovePermissions } from "@/lib/
 import { GetPermissions } from "@/lib/api/PermissionEndpoint";
 import { ROLE_OPTIONS, type RoleType, type Permission } from "@/lib/schemas";
 import { toast } from "react-toastify";
+import { showErrorToast } from "@/lib/utils/toast";
 import { Search, X, ChevronRight, ChevronLeft, Shield, Loader2 } from "lucide-react";
 import AppLoader from "@/components/ui/AppLoader";
 
@@ -76,7 +77,7 @@ const Roles: React.FC = () => {
       setSelectedAvailable(new Set());
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Failed to assign permissions");
+      showErrorToast(err?.response?.data?.message || "Failed to assign permissions");
     },
   });
 
@@ -89,7 +90,7 @@ const Roles: React.FC = () => {
       setSelectedAssigned(new Set());
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Failed to remove permissions");
+      showErrorToast(err?.response?.data?.message || "Failed to remove permissions");
     },
   });
 
