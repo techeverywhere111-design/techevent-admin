@@ -75,15 +75,15 @@ const EnquiryDetails: React.FC = () => {
         <div className="bg-[#F3F7FA] dark:bg-gray-800 p-6 rounded-xl mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           <div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Name</p>
-            <p className="font-semibold text-gray-900 dark:text-white">{enquiry.name}</p>
+            <p className="font-semibold text-gray-900 dark:text-white whitespace-pre-wrap break-all">{enquiry.name}</p>
           </div>
           <div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Email</p>
-            <p className="font-semibold text-gray-900 dark:text-white">{enquiry.email}</p>
+            <p className="font-semibold text-gray-900 dark:text-white whitespace-pre-wrap break-all">{enquiry.email}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Subject</p>
-            <p className="font-semibold text-gray-900 dark:text-white">{enquiry.subject}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1 ">Subject</p>
+            <p className="font-semibold text-gray-900 dark:text-white whitespace-pre-wrap break-all">{enquiry.subject}</p>
           </div>
         
           <div>
