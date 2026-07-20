@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
 import { Search, Upload, X } from "lucide-react";
-import { GetEnquiries, SearchEnquiries, MarkAsTreated, MarkAsNotTreated } from "@/lib/api/EnquiriesEndpoint";
+import { GetEnquiries, GetPendingEnquiries, SearchEnquiries, MarkAsTreated, MarkAsNotTreated } from "@/lib/api/EnquiriesEndpoint";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -25,17 +25,20 @@ interface EnquiryRow {
 const Enquiries: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeSearchTerm, setActiveSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState<"all" | "pending">("all");
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data, isLoading: loading } = useQuery({
-    queryKey: ["enquiries", activeSearchTerm, page, itemsPerPage],
+    queryKey: ["enquiries", viewMode, activeSearchTerm, page, itemsPerPage],
     queryFn: async () => {
-      const response = activeSearchTerm
-        ? await SearchEnquiries(activeSearchTerm, page - 1, itemsPerPage)
-        : await GetEnquiries(page - 1, itemsPerPage);
+      const response = viewMode === "pending"
+        ? await GetPendingEnquiries(page - 1, itemsPerPage)
+        : activeSearchTerm
+          ? await SearchEnquiries(activeSearchTerm, page - 1, itemsPerPage)
+          : await GetEnquiries(page - 1, itemsPerPage);
 
       const mappedEnquiries: EnquiryRow[] = response.content.map((e) => ({
         id: e.id,
@@ -87,6 +90,16 @@ const Enquiries: React.FC = () => {
     setSearchTerm("");
     setActiveSearchTerm("");
     setPage(1);
+  };
+
+  const handleViewModeChange = (mode: "all" | "pending") => {
+    setViewMode(mode);
+    setPage(1);
+
+    if (mode === "pending") {
+      setSearchTerm("");
+      setActiveSearchTerm("");
+    }
   };
 
   const columns: Column[] = [
@@ -178,31 +191,56 @@ const Enquiries: React.FC = () => {
         </h1>
 
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex gap-2 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-64">
-              <input
-                type="text"
-                placeholder="Search"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-              />
-              {searchTerm && (
-                <button
-                  onClick={handleClear}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500"
-                >
-                  <X size={16} />
-                </button>
-              )}
+          <div className="w-full sm:w-auto">
+            <div className="flex gap-2 w-full sm:w-auto">
+              <div className="relative flex-1 sm:w-64">
+                <input
+                  type="text"
+                  placeholder="Search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={handleClear}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              <button
+                onClick={handleSearch}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                <Search size={20} />
+              </button>
             </div>
-            <button
-              onClick={handleSearch}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              <Search size={20} />
-            </button>
+
+            <div className="mt-3 ml-2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleViewModeChange("all")}
+                className={`px-4 py-2 rounded-full text-xs font-medium border transition ${viewMode === "all"
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                onClick={() => handleViewModeChange("pending")}
+                className={`px-4 py-2 rounded-full text-xs font-medium border transition ${viewMode === "pending"
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
+              >
+                Pending
+              </button>
+            </div>
           </div>
 
           <button

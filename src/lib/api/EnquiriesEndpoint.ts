@@ -19,6 +19,16 @@ export const GetEnquiries = async (
   return EnquiryListResponseSchema.parse(data);
 };
 
+export const GetPendingEnquiries = async (
+  pageNo: number,
+  pageSize: number
+): Promise<EnquiryResponse> => {
+  const { data } = await api.get("/api/v1/enquiries/pending", {
+    params: { pageNo, pageSize },
+  });
+  return EnquiryListResponseSchema.parse(data);
+};
+
 export const GetEnquiryById = async (id: string): Promise<Enquiry> => {
   const { data } = await api.get(`/api/v1/enquiries/${id}`);
   return EnquirySchema.parse(data);
