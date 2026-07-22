@@ -3,7 +3,15 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
 import { Search, Upload, X } from "lucide-react";
-import { GetEnquiries, GetPendingEnquiries, SearchEnquiries, MarkAsTreated, MarkAsNotTreated } from "@/lib/api/EnquiriesEndpoint";
+import {
+  GetEnquiries,
+  GetPendingEnquiries,
+  SearchEnquiries,
+  SearchPendingEnquiries,
+  MarkAsTreated,
+  MarkAsNotTreated,
+  ENQUIRY_CATEGORIES,
+} from "@/lib/api/EnquiriesEndpoint";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -25,32 +33,60 @@ interface EnquiryRow {
 const Enquiries: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeSearchTerm, setActiveSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [viewMode, setViewMode] = useState<"all" | "pending">("all");
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data, isLoading: loading } = useQuery({
-    queryKey: ["enquiries", viewMode, activeSearchTerm, page, itemsPerPage],
+  // Query overall total enquiries count from initial API so header badge stays consistent
+  const { data: initialTotalData } = useQuery({
+    queryKey: ["initialTotalEnquiriesCount"],
     queryFn: async () => {
-      const response = viewMode === "pending"
-        ? await GetPendingEnquiries(page - 1, itemsPerPage)
-        : activeSearchTerm
-          ? await SearchEnquiries(activeSearchTerm, page - 1, itemsPerPage)
-          : await GetEnquiries(page - 1, itemsPerPage);
+      const res = await GetEnquiries(0, 1);
+      return res.totalElements || 0;
+    },
+    staleTime: 60000,
+  });
 
-      const mappedEnquiries: EnquiryRow[] = response.content.map((e) => ({
-        id: e.id,
-        name: e.name,
-        businessName: e.businessName || "N/A",
-        email: e.email,
-        subject: e.subject || "N/A",
-        createdOn: new Date(e.createdOn).toLocaleString(),
-        treatedBy: e.treatedByUser ? `${e.treatedByUser.firstName || ""} ${e.treatedByUser.lastName || ""}`.trim() || e.treatedByUser.email : "N/A",
-        status: e.isTreated ? "TREATED" : "NOT TREATED",
-        original: e,
-      }));
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ["enquiries", viewMode, activeSearchTerm, selectedCategory, page, itemsPerPage],
+    queryFn: async () => {
+      const isSearching = !!activeSearchTerm;
+
+      let response;
+      if (viewMode === "pending") {
+        response = isSearching
+          ? await SearchPendingEnquiries(activeSearchTerm, page - 1, itemsPerPage, selectedCategory)
+          : await GetPendingEnquiries(page - 1, itemsPerPage, selectedCategory);
+      } else {
+        response = isSearching
+          ? await SearchEnquiries(activeSearchTerm, page - 1, itemsPerPage, selectedCategory)
+          : await GetEnquiries(page - 1, itemsPerPage, selectedCategory);
+      }
+
+      const mappedEnquiries: EnquiryRow[] = response.content.map((e) => {
+        let treatedByStr = "N/A";
+        if (e.treatedByUser) {
+          const fullName = [e.treatedByUser.firstName, e.treatedByUser.lastName].filter(Boolean).join(" ").trim();
+          treatedByStr = fullName || e.treatedByUser.email || "N/A";
+        } else if (e.treatedBy) {
+          treatedByStr = e.treatedBy;
+        }
+
+        return {
+          id: e.id,
+          name: e.name,
+          businessName: e.businessName || "N/A",
+          email: e.email,
+          subject: e.subject || "N/A",
+          createdOn: new Date(e.createdOn).toLocaleString(),
+          treatedBy: treatedByStr,
+          status: e.isTreated ? "TREATED" : "NOT TREATED",
+          original: e,
+        };
+      });
 
       return { enquiries: mappedEnquiries, totalElements: response.totalElements };
     },
@@ -61,6 +97,7 @@ const Enquiries: React.FC = () => {
     onSuccess: () => {
       toast.success("Enquiry marked as treated");
       queryClient.invalidateQueries({ queryKey: ["enquiries"] });
+      queryClient.invalidateQueries({ queryKey: ["initialTotalEnquiriesCount"] });
     },
     onError: (err: any) => {
       showErrorToast(err.response?.data?.message || "Failed to update enquiry status");
@@ -72,6 +109,7 @@ const Enquiries: React.FC = () => {
     onSuccess: () => {
       toast.success("Enquiry marked as not treated");
       queryClient.invalidateQueries({ queryKey: ["enquiries"] });
+      queryClient.invalidateQueries({ queryKey: ["initialTotalEnquiriesCount"] });
     },
     onError: (err: any) => {
       showErrorToast(err.response?.data?.message || "Failed to update enquiry status");
@@ -79,7 +117,8 @@ const Enquiries: React.FC = () => {
   });
 
   const enquiries = data?.enquiries || [];
-  const totalCount = data?.totalElements || 0;
+  const currentTotalElements = data?.totalElements || 0;
+  const overallTotalCount = initialTotalData !== undefined ? initialTotalData : currentTotalElements;
 
   const handleSearch = () => {
     setActiveSearchTerm(searchTerm);
@@ -89,6 +128,7 @@ const Enquiries: React.FC = () => {
   const handleClear = () => {
     setSearchTerm("");
     setActiveSearchTerm("");
+    setSelectedCategory("");
     setPage(1);
   };
 
@@ -117,6 +157,11 @@ const Enquiries: React.FC = () => {
       key: "subject",
       label: "Subject",
       render: (v) => <span className="text-gray-600 dark:text-gray-300" title={v as string}>{v}</span>,
+    },
+    {
+      key: "treatedBy",
+      label: "Treated By",
+      render: (v) => <span className="text-gray-600 dark:text-gray-300">{v as string}</span>,
     },
     {
       key: "status",
@@ -173,6 +218,7 @@ const Enquiries: React.FC = () => {
       Name: e.name,
       Email: e.email,
       Subject: e.subject,
+      "Treated By": e.treatedBy,
       Status: e.status,
     }));
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -186,9 +232,14 @@ const Enquiries: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-5 md:w-full">
       <div className="md:w-full">
-        <h1 className="text-xl sm:text-2xl font-semibold text-[#1F2937] dark:text-white mb-6">
-          Enquiries
-        </h1>
+        <div className="flex items-center gap-3 mb-6">
+          <h1 className="text-xl sm:text-2xl font-semibold text-[#1F2937] dark:text-white">
+            Enquiries
+          </h1>
+          <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full text-xs sm:text-sm font-medium">
+            Total: {overallTotalCount}
+          </span>
+        </div>
 
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="w-full sm:w-auto">
@@ -200,7 +251,7 @@ const Enquiries: React.FC = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                  className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 {searchTerm && (
                   <button
@@ -213,7 +264,7 @@ const Enquiries: React.FC = () => {
               </div>
               <button
                 onClick={handleSearch}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
               >
                 <Search size={20} />
               </button>
@@ -243,19 +294,37 @@ const Enquiries: React.FC = () => {
             </div>
           </div>
 
-          <button
-            onClick={handleExport}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition"
-          >
-            <Upload size={18} />
-            Export
-          </button>
+          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+            <select
+              value={selectedCategory}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setPage(1);
+              }}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+            >
+              <option value="">All Categories</option>
+              {ENQUIRY_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat} className="capitalize">
+                  {cat.replace(/_/g, " ")?.toLowerCase()}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={handleExport}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+            >
+              <Upload size={18} />
+              Export
+            </button>
+          </div>
         </div>
 
         <Table
           columns={columns}
           data={enquiries}
-          totalCount={totalCount}
+          totalCount={currentTotalElements}
           itemsPerPage={itemsPerPage}
           onPageChange={setPage}
           onPerPageChange={(newSize) => {

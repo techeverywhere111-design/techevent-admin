@@ -55,6 +55,20 @@ const EnquiryDetails: React.FC = () => {
     );
   }
 
+  const treatedByName = (() => {
+    if (enquiry?.treatedByUser) {
+      const fullName = [enquiry.treatedByUser.firstName, enquiry.treatedByUser.lastName]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+      return fullName || enquiry.treatedByUser.email || null;
+    }
+    if (enquiry?.treatedBy) {
+      return enquiry.treatedBy;
+    }
+    return null;
+  })();
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-5">
       <div className="max-w-7xl mx-auto">
@@ -72,27 +86,22 @@ const EnquiryDetails: React.FC = () => {
           <h2 className="text-lg font-medium text-[#1F2937] dark:text-white">View</h2>
         </div>
 
-        <div className="bg-[#F3F7FA] dark:bg-gray-800 p-6 rounded-xl mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          <div>
+        <div className="bg-[#F3F7FA] dark:bg-gray-800 p-6 rounded-xl mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 min-w-0 overflow-hidden">
+          <div className="min-w-0">
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Name</p>
             <p className="font-semibold text-gray-900 dark:text-white whitespace-pre-wrap break-all">{enquiry.name}</p>
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Email</p>
             <p className="font-semibold text-gray-900 dark:text-white whitespace-pre-wrap break-all">{enquiry.email}</p>
           </div>
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1 ">Subject</p>
-            <p className="font-semibold text-gray-900 dark:text-white whitespace-pre-wrap break-all">{enquiry.subject}</p>
-          </div>
-        
-          <div>
+          <div className="min-w-0">
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Status</p>
             <div className="relative">
               <select
                 value={enquiry.isTreated ? "Treated" : "Not Treated"}
                 onChange={(e) => updateStatusMutation.mutate(e.target.value as any)}
-                className="appearance-none w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 pr-10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                className="appearance-none w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 pr-10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer text-gray-900 dark:text-white"
               >
                 <option value="Not Treated">Not Treated</option>
                 <option value="Treated">Treated</option>
@@ -102,11 +111,25 @@ const EnquiryDetails: React.FC = () => {
               </div>
             </div>
           </div>
-       
+          {treatedByName && (
+            <div className="min-w-0">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Treated By</p>
+              <p className="font-semibold text-gray-900 dark:text-white whitespace-pre-wrap break-all">
+                {treatedByName}
+              </p>
+            </div>
+          )}
         </div>
 
-        <div className="bg-[#F3F7FA] dark:bg-gray-800 p-6 rounded-xl min-h-[200px]">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Message</p>
+        <div className="bg-[#F3F7FA] dark:bg-gray-800 p-6 rounded-xl mb-6 min-w-0 overflow-hidden">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 font-medium">Subject</p>
+          <p className="text-gray-900 dark:text-white font-semibold leading-relaxed whitespace-pre-wrap break-all">
+            {enquiry.subject || "N/A"}
+          </p>
+        </div>
+
+        <div className="bg-[#F3F7FA] dark:bg-gray-800 p-6 rounded-xl min-h-[200px] min-w-0 overflow-hidden">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 font-medium">Message</p>
           <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-all">
             {enquiry.message}
           </p>

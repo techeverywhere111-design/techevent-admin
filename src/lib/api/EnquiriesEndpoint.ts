@@ -11,20 +11,26 @@ export type EnquiryResponse = z.infer<typeof EnquiryListResponseSchema>;
 
 export const GetEnquiries = async (
   pageNo: number,
-  pageSize: number
+  pageSize: number,
+  category?: string
 ): Promise<EnquiryResponse> => {
+  const params: Record<string, any> = { pageNo, pageSize };
+  if (category) params.category = category;
   const { data } = await api.get("/api/v1/enquiries", {
-    params: { pageNo, pageSize },
+    params,
   });
   return EnquiryListResponseSchema.parse(data);
 };
 
 export const GetPendingEnquiries = async (
   pageNo: number,
-  pageSize: number
+  pageSize: number,
+  category?: string
 ): Promise<EnquiryResponse> => {
+  const params: Record<string, any> = { pageNo, pageSize };
+  if (category) params.category = category;
   const { data } = await api.get("/api/v1/enquiries/pending", {
-    params: { pageNo, pageSize },
+    params,
   });
   return EnquiryListResponseSchema.parse(data);
 };
@@ -34,13 +40,44 @@ export const GetEnquiryById = async (id: string): Promise<Enquiry> => {
   return EnquirySchema.parse(data);
 };
 
+export const ENQUIRY_CATEGORIES = [
+  "TECHNICAL",
+  "INCIDENT",
+  "BILLING",
+  "CHANGE_REQUEST",
+  "APPLICATION_ISSUE",
+  "NETWORK",
+  "SECURITY",
+  "PERFORMANCE",
+  "BUSINESS_IMPACT",
+  "PRE_REGISTRATION",
+  "OTHERS",
+] as const;
+
 export const SearchEnquiries = async (
   text: string,
   pageNo: number,
-  pageSize: number
+  pageSize: number,
+  category?: string
 ): Promise<EnquiryResponse> => {
+  const params: Record<string, any> = { pageNo, pageSize, text: text || "" };
+  if (category) params.category = category;
   const { data } = await api.get("/api/v1/enquiries/search", {
-    params: { text, pageNo, pageSize },
+    params,
+  });
+  return EnquiryListResponseSchema.parse(data);
+};
+
+export const SearchPendingEnquiries = async (
+  text: string,
+  pageNo: number,
+  pageSize: number,
+  category?: string
+): Promise<EnquiryResponse> => {
+  const params: Record<string, any> = { pageNo, pageSize, text: text || "" };
+  if (category) params.category = category;
+  const { data } = await api.get("/api/v1/enquiries/pending/search", {
+    params,
   });
   return EnquiryListResponseSchema.parse(data);
 };
