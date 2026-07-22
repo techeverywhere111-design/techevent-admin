@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
-import { Search, Upload, X } from "lucide-react";
+import { CheckCircle, Clock, Search, Upload, X } from "lucide-react";
 import {
   GetEnquiries,
   GetPendingEnquiries,
@@ -83,7 +83,7 @@ const Enquiries: React.FC = () => {
           subject: e.subject || "N/A",
           createdOn: new Date(e.createdOn).toLocaleString(),
           treatedBy: treatedByStr,
-          status: e.isTreated ? "TREATED" : "NOT TREATED",
+          status: e.isTreated ? <CheckCircle className="text-green-500" /> : <Clock className="text-gray-300" />,
           original: e,
         };
       });
