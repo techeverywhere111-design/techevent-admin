@@ -6,7 +6,7 @@ import Dashboard from "@/pages/Dashboard";
 import AnalyticsAndInsights from "@/pages/AnalyticsAndInsight";
 import Plans from "@/pages/Plans";
 import PlanForm from "@/pages/PlanForm";
-// import PaymentHistory from "@/pages/PaymentHistory";
+import PaymentHistory from "@/pages/PaymentHistory";
 import ViewPlans from "@/pages/ViewPlans";
 import ClientManagement from "@/pages/ClientManagement";
 import ClientProfile from "@/pages/ClientProfile";
@@ -46,33 +46,171 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
         children: [
-          { path: "dashboard", element: <PermissionGuard requires="view_dashboard"><Dashboard /></PermissionGuard> },
-          { path: "clients", element: <PermissionGuard requires="view_plans"><Plans /></PermissionGuard> },
-          // { path: "payments", element: <PermissionGuard requires="view_payments"><PaymentHistory /></PermissionGuard> },
-          { path: "analytics-and-insight", element: <PermissionGuard requires="view_analytics"><AnalyticsAndInsights /></PermissionGuard> },
-          { path: "plans", element: <PermissionGuard requires="view_plans"><Plans /></PermissionGuard> },
-          { path: "plan-creation", element: <PermissionGuard requires="view_plans"><PlanForm /></PermissionGuard> },
-          { path: "view-plans", element: <PermissionGuard requires="view_plans"><ViewPlans /></PermissionGuard> },
-          { path: "client-management", element: <PermissionGuard requires="view_clients"><ClientManagement /></PermissionGuard> },
-          { path: "client-profile", element: <PermissionGuard requires="view_clients"><ClientProfile /></PermissionGuard> },
-          { path: "audit-logs", element: <PermissionGuard requires="view_audit_logs"><AuditLogs /></PermissionGuard> },
-          { path: "event-category", element: <PermissionGuard requires="view_events"><EventCategory /></PermissionGuard> },
+          {
+            path: "dashboard",
+            element: (
+              <PermissionGuard requires="view_dashboard">
+                <Dashboard />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "clients",
+            element: (
+              <PermissionGuard requires="view_plans">
+                <Plans />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "payments",
+            element: (
+              <PermissionGuard requires="view_payments">
+                <PaymentHistory />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "analytics-and-insight",
+            element: (
+              <PermissionGuard requires="view_analytics">
+                <AnalyticsAndInsights />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "plans",
+            element: (
+              <PermissionGuard requires="view_plans">
+                <Plans />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "plan-creation",
+            element: (
+              <PermissionGuard requires="view_plans">
+                <PlanForm />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "view-plans",
+            element: (
+              <PermissionGuard requires="view_plans">
+                <ViewPlans />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "client-management",
+            element: (
+              <PermissionGuard requires="view_clients">
+                <ClientManagement />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "client-profile",
+            element: (
+              <PermissionGuard requires="view_clients">
+                <ClientProfile />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "audit-logs",
+            element: (
+              <PermissionGuard requires="view_audit_logs">
+                <AuditLogs />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "event-category",
+            element: (
+              <PermissionGuard requires="view_events">
+                <EventCategory />
+              </PermissionGuard>
+            ),
+          },
 
-          { path: "user-management", element: <PermissionGuard requires="view_users"><UserManagement /></PermissionGuard> },
-          { path: "user-profile", element: <PermissionGuard requires="view_users"><UserProfile /></PermissionGuard> },
-          { path: "promo-code", element: <PermissionGuard requires="view_discounts"><PromoCode /></PermissionGuard> },
+          {
+            path: "user-management",
+            element: (
+              <PermissionGuard requires="view_users">
+                <UserManagement />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "user-profile",
+            element: (
+              <PermissionGuard requires="view_users">
+                <UserProfile />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "promo-code",
+            element: (
+              <PermissionGuard requires="view_discounts">
+                <PromoCode />
+              </PermissionGuard>
+            ),
+          },
           { path: "profile", element: <UserProfile /> },
-          { path: "promo-enquires", element: <PermissionGuard requires="view_discounts"><ViewPromoRegistration /></PermissionGuard> },
-          { path: "enquiries", element: <PermissionGuard requires="view_enquiries"><Enquiries /></PermissionGuard> },
-          { path: "enquiries/:id", element: <PermissionGuard requires="view_enquiries"><EnquiryDetails /></PermissionGuard> },
+          {
+            path: "promo-enquires",
+            element: (
+              <PermissionGuard requires="view_discounts">
+                <ViewPromoRegistration />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "enquiries",
+            element: (
+              <PermissionGuard requires="view_enquiries">
+                <Enquiries />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "enquiries/:id",
+            element: (
+              <PermissionGuard requires="view_enquiries">
+                <EnquiryDetails />
+              </PermissionGuard>
+            ),
+          },
 
-          { path: "permissions", element: <PermissionGuard requires="view_roles"><Permissions /></PermissionGuard> },
-          { path: "roles", element: <PermissionGuard requires="view_roles"><Roles /></PermissionGuard> },
-          { path: "suspicious-users-activity", element: <PermissionGuard requires="view_security"><SuspiciousUsersActivity /></PermissionGuard> },
+          {
+            path: "permissions",
+            element: (
+              <PermissionGuard requires="view_roles">
+                <Permissions />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "roles",
+            element: (
+              <PermissionGuard requires="view_roles">
+                <Roles />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "suspicious-users-activity",
+            element: (
+              <PermissionGuard requires="view_security">
+                <SuspiciousUsersActivity />
+              </PermissionGuard>
+            ),
+          },
         ],
       },
     ],
   },
 ]);
-
-

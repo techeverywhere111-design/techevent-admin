@@ -76,6 +76,30 @@ export const PlanListResponseSchema = PaginationSchema.extend({
 
 export type PlanListResponse = z.infer<typeof PlanListResponseSchema>;
 
+// Plan Payment History Schemas
+export const PlanPaymentHistorySchema = z.object({
+  id: z.string(),
+  accountId: z.string().nullish(),
+  planId: z.string().nullish(),
+  planResponse: PlanSchema.nullish(),
+  planAmount: z.number().nullish(),
+  paidAmount: z.number().nullish(),
+  currency: z.string().nullish(),
+  channel: z.string().nullish(),
+  email: z.string().nullish(),
+  createdBy: z.string().nullish(),
+  accountOwnerResponse: AccountUserSchema.nullish(),
+  createdOn: z.string().nullish(),
+});
+
+export type PlanPaymentHistory = z.infer<typeof PlanPaymentHistorySchema>;
+
+export const PlanPaymentHistoryListResponseSchema = PaginationSchema.extend({
+  content: z.array(PlanPaymentHistorySchema),
+});
+
+export type PlanPaymentHistoryListResponse = z.infer<typeof PlanPaymentHistoryListResponseSchema>;
+
 // Promo Code Schemas
 export const PromoCodeSchema = z.object({
   id: z.string(),
