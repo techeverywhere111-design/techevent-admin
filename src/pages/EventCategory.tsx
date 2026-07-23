@@ -12,6 +12,7 @@ import {
 } from "@/lib/api/EventManagement";
 import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
+import { formatDateTime } from "@/lib/utils/date";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
@@ -185,7 +186,7 @@ const EventCategory: React.FC = () => {
     const exportData = categories.map((c) => ({
       Title: c.name,
       Description: c.description,
-      "Date Created": new Date(c.createdOn).toLocaleString(),
+      "Date Created": formatDateTime(c.createdOn),
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -220,7 +221,7 @@ const EventCategory: React.FC = () => {
       label: "Date Created",
       render: (v) => (
         <span className="text-gray-600 dark:text-gray-300">
-          {new Date(v).toLocaleString()}
+          {formatDateTime(v)}
         </span>
       ),
     },
@@ -256,23 +257,23 @@ const EventCategory: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-5">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+      <div className="mx-auto w-full min-w-0 max-w-7xl">
+        <div className="mb-8 flex items-center justify-between">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
             Event Categories
           </h1>
         </div>
 
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-          <div className="flex gap-2 flex-1 sm:flex-initial">
-            <div className="relative flex-1 sm:flex-initial">
+          <div className="flex w-full min-w-0 gap-2 sm:w-auto sm:flex-1">
+            <div className="relative min-w-0 flex-1 sm:max-w-64">
               <input
                 type="text"
                 placeholder="Search categories..."
                 value={searchTerm}
                 onChange={(e) => handleSearchInputChange(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="px-4 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-2 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
               />
               {searchTerm && (
                 <button
@@ -291,17 +292,17 @@ const EventCategory: React.FC = () => {
             </button>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex w-full flex-wrap gap-3 sm:w-auto sm:gap-4">
             <button
               onClick={openCreateModal}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700 sm:flex-none"
             >
               <Plus size={18} />
               Add Category
             </button>
             <button
               onClick={handleExport}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-white rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-100 px-4 py-2 text-blue-600 transition hover:bg-blue-200 dark:bg-blue-900 dark:text-white dark:hover:bg-blue-800 sm:flex-none"
             >
               <Upload size={18} />
               Export

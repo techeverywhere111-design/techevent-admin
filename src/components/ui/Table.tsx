@@ -156,9 +156,9 @@ const Table: React.FC<TableProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm relative transition-colors duration-300 w-[80vw] md:w-full">
-      <div className="overflow-x-auto w-[80vw] md:w-full">
-        <table className="w-full table-auto" style={{ minWidth: "900px" }}>
+    <div className="relative min-w-0 w-full overflow-hidden rounded-lg bg-white shadow-sm transition-colors duration-300 dark:bg-gray-800">
+      <div className="table-scrollbar w-full min-w-0 overflow-x-auto overscroll-x-contain">
+        <table className="min-w-[900px] w-full table-auto">
           <thead className="bg-blue-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
             <tr>
               {columns.map((column) => (
@@ -201,7 +201,7 @@ const Table: React.FC<TableProps> = ({
                   {columns.map((column) => (
                     <td
                       key={column.key}
-                      className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 max-w-xs md:max-w-sm break-words whitespace-normal"
+                      className="max-w-xs break-words whitespace-normal px-6 py-4 text-sm text-gray-900 dark:text-gray-100 md:max-w-sm"
                     >
                       {column.render
                         ? column.render(row[column.key], row)

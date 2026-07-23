@@ -1,6 +1,15 @@
 import { z } from "zod";
 import api from "../utils/api";
-import { AccountUserSchema, AccountUserListResponseSchema, type AccountUser, TotalCountResponseSchema, type TotalCountResponse, FeatureBreakdownResponseSchema, type FeatureBreakdownResponse } from "@/lib/schemas";
+import {
+  AccountUserSchema,
+  AccountUserListResponseSchema,
+  MessageResponseSchema,
+  type AccountUser,
+  TotalCountResponseSchema,
+  type TotalCountResponse,
+  FeatureBreakdownResponseSchema,
+  type FeatureBreakdownResponse,
+} from "@/lib/schemas";
 
 export type { AccountUser };
 export type AccountUsersResponse = z.infer<typeof AccountUserListResponseSchema>;
@@ -38,6 +47,16 @@ export const GetBulkAccountUsers = async (
     ids
   );
   return AccountUserSchema.array().parse(data);
+};
+
+export const ActivateAccountUser = async (id: string) => {
+  const { data } = await api.get(`/api/v1/account-users/${id}/activate`);
+  return MessageResponseSchema.parse(data);
+};
+
+export const DeactivateAccountUser = async (id: string) => {
+  const { data } = await api.get(`/api/v1/account-users/${id}/deactivate`);
+  return MessageResponseSchema.parse(data);
 };
 
 export const GetTotalAccounts = async (): Promise<TotalCountResponse> => {

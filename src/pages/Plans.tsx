@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
+import { formatDateTime } from "@/lib/utils/date";
 import {
   Gem,
   Search,
@@ -198,8 +199,8 @@ export default function Plans() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#020617] transition-colors duration-300 p-4 sm:p-5">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 transition-colors duration-300 dark:bg-[#020617] sm:p-5">
+      <div className="mx-auto w-full min-w-0 max-w-7xl">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
@@ -242,15 +243,15 @@ export default function Plans() {
 
         {/* Filter / Search Bar */}
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-          <div className="flex gap-2 flex-1 sm:flex-initial">
-            <div className="relative flex-1 sm:flex-initial">
+          <div className="flex w-full min-w-0 gap-2 sm:w-auto sm:flex-1">
+            <div className="relative min-w-0 flex-1 sm:max-w-64">
               <input
                 type="text"
                 placeholder="Search plans..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="px-4 py-2 pr-10 border border-gray-300 dark:border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 sm:w-64 bg-white dark:bg-[#0b1739] text-gray-900 dark:text-gray-100 placeholder-gray-400 text-sm"
+                className="w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-2 pr-10 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-800 dark:bg-[#0b1739] dark:text-gray-100"
               />
               {searchTerm && (
                 <button
@@ -380,7 +381,7 @@ export default function Plans() {
                       <span className="font-medium text-gray-500 dark:text-gray-500">
                         Created:
                       </span>{" "}
-                      {plan.createdOn || plan.createdAt ? new Date(plan.createdOn || plan.createdAt || "").toLocaleDateString() : "N/A"}
+                      {formatDateTime(plan.createdOn || plan.createdAt)}
                     </div>
                   </div>
 

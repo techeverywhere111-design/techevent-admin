@@ -1,6 +1,5 @@
 import axios from "axios";
 import Cookies from "js-cookie";
-import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
 
 // Configure Cookies to NOT encode characters like + and / which are common in your tokens
@@ -63,11 +62,9 @@ api.interceptors.response.use(
       customCookies.remove("PLUTO_EVENT_ADMIN_TOKEN", { path: "/" });
       customCookies.remove("PLUTO_EVENT_ADMIN_USER", { path: "/" });
 
-      if (!toast.isActive("session-expired")) {
-        toast.error(message || "Session expired. Please login again.", {
-          toastId: "session-expired",
-        });
-      }
+      showErrorToast(message || "Session expired. Please login again.", {
+        toastId: "session-expired",
+      });
 
       setTimeout(() => {
         window.location.replace("/");

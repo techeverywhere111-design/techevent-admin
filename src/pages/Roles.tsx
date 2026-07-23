@@ -185,8 +185,8 @@ const Roles: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-5">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 dark:bg-gray-900 sm:p-5">
+      <div className="mx-auto w-full min-w-0 max-w-7xl">
         <div className="flex items-center gap-3 mb-6">
           <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
             Role Permissions
@@ -194,7 +194,7 @@ const Roles: React.FC = () => {
         </div>
 
         {/* Role Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="mb-6 flex flex-wrap gap-2">
           {ROLE_OPTIONS.filter((r) => r !== "SUPER_ADMIN").map((role) => (
             <button
               key={role}

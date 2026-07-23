@@ -12,6 +12,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
+import { formatDateTime } from "@/lib/utils/date";
 
 interface PromoCode {
   id: string;
@@ -50,19 +51,6 @@ const ViewPromoRegistration: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
   const queryClient = useQueryClient();
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleString("en-US", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
 
   const { data, isLoading: loading } = useQuery({
     queryKey: ["promoRegistrations", promoCode?.code, activeSearchTerm, page, itemsPerPage],
@@ -153,7 +141,7 @@ const ViewPromoRegistration: React.FC = () => {
       label: "Date | Time",
       render: (v) => (
         <span className="text-gray-600 dark:text-gray-300">
-          {formatDate(v)}
+          {formatDateTime(v)}
         </span>
       ),
     },
@@ -196,7 +184,7 @@ const ViewPromoRegistration: React.FC = () => {
 
     const exportData = registrations.map((reg) => ({
       Email: reg.userEmail,
-      "Date | Time": formatDate(reg.createdOn),
+      "Date | Time": formatDateTime(reg.createdOn),
       Status: reg.hasSettled ? "SETTLED" : "NOT SETTLED",
       "Paid Amount": reg.userPaidAmount,
       "Plan Amount": reg.planAmount,
@@ -220,8 +208,8 @@ const ViewPromoRegistration: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-5">
-      <div className="max-w-full mx-auto">
+    <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 transition-colors duration-300 dark:bg-gray-900 sm:p-5">
+      <div className="mx-auto w-full min-w-0 max-w-full">
         <div>
           <h1 className="text-xl mb-6 sm:text-2xl font-semibold text-gray-900 dark:text-white">
             Enquiries
@@ -273,7 +261,7 @@ const ViewPromoRegistration: React.FC = () => {
                 Start Date
               </p>
               <p className="text-sm sm:text-base font-medium text-gray-900 dark:text-gray-100 break-words">
-                {formatDate(promoCode.startTime)}
+                {formatDateTime(promoCode.startTime)}
               </p>
             </div>
             <div>
@@ -281,7 +269,7 @@ const ViewPromoRegistration: React.FC = () => {
                 End Date
               </p>
               <p className="text-sm sm:text-base font-medium text-gray-900 dark:text-gray-100 break-words">
-                {formatDate(promoCode.endTime)}
+                {formatDateTime(promoCode.endTime)}
               </p>
             </div>
           </div>
@@ -331,25 +319,19 @@ const ViewPromoRegistration: React.FC = () => {
             </button>
           </div>
 
-          <div className="overflow-x-auto -mx-4 sm:mx-0">
-            <div className="inline-block min-w-full align-middle">
-              <div className="overflow-hidden">
-                <Table
-                  columns={columns}
-                  data={registrations}
-                  totalCount={totalCount}
-                  itemsPerPage={itemsPerPage}
-                  onPageChange={(p) => setPage(p)}
-                  onPerPageChange={(newPerPage) => {
-                    setItemsPerPage(newPerPage);
-                    setPage(1);
-                  }}
-                  renderActions={renderActions}
-                  loading={loading}
-                />
-              </div>
-            </div>
-          </div>
+          <Table
+            columns={columns}
+            data={registrations}
+            totalCount={totalCount}
+            itemsPerPage={itemsPerPage}
+            onPageChange={(p) => setPage(p)}
+            onPerPageChange={(newPerPage) => {
+              setItemsPerPage(newPerPage);
+              setPage(1);
+            }}
+            renderActions={renderActions}
+            loading={loading}
+          />
         </div>
       </div>
 
@@ -361,7 +343,7 @@ const ViewPromoRegistration: React.FC = () => {
             onClick={closeSettlementModal}
           ></div>
 
-          <div className="relative w-112 md:w-96 rounded-lg overflow-hidden shadow-xl bg-white dark:bg-gray-800 transform transition-transform duration-300 scale-100">
+          <div className="relative w-[calc(100%-2rem)] max-w-md rounded-lg overflow-hidden shadow-xl bg-white dark:bg-gray-800 transform transition-transform duration-300 scale-100">
             <div className="flex items-center justify-between px-4 py-2 bg-[#0B1E36] dark:bg-blue-900">
               <h3 className="text-white font-semibold text-lg">
                 {selectedRegistration.hasSettled
@@ -377,8 +359,8 @@ const ViewPromoRegistration: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-6 py-16 text-center">
-              <p className="text-gray-800 dark:text-gray-200 mb-14">
+            <div className="p-6 text-center sm:py-12">
+              <p className="mb-8 text-gray-800 dark:text-gray-200 sm:mb-12">
                 Are you sure you want to mark{" "}
                 <span className="font-semibold">
                   {selectedRegistration.userEmail}
@@ -387,11 +369,11 @@ const ViewPromoRegistration: React.FC = () => {
                 ?
               </p>
 
-              <div className="flex justify-center gap-12">
+              <div className="flex flex-col-reverse justify-center gap-3 sm:flex-row sm:gap-6">
                 <button
                   onClick={closeSettlementModal}
                   disabled={settlementLoading}
-                  className="px-8 py-2 border border-red-500 text-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-md border border-red-500 px-6 py-2 text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-900/20 sm:w-auto"
                 >
                   Cancel
                 </button>
@@ -399,7 +381,7 @@ const ViewPromoRegistration: React.FC = () => {
                 <button
                   onClick={handleToggleSettlement}
                   disabled={settlementLoading}
-                  className="px-8 py-2 bg-blue-500 rounded-md text-white font-semibold hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-md bg-blue-500 px-6 py-2 font-semibold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700 sm:w-auto"
                 >
                   {settlementLoading ? "Processing..." : "Confirm"}
                 </button>

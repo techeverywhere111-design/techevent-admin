@@ -74,7 +74,7 @@ const Login: React.FC = () => {
     }`;
 
   return (
-    <div className="flex flex-col md:flex-row h-screen overflow-hidden">
+    <div className="flex min-h-screen min-w-0 flex-col overflow-y-auto md:h-screen md:flex-row md:overflow-hidden">
       <div className="hidden md:flex relative w-1/2 flex-col justify-center items-center text-white bg-[#0B1739] clip-path-custom">
         <div className="text-center space-y-2">
           <img src={Logo} alt="Logo" className="h-20 w-auto mx-auto" />

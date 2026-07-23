@@ -7,15 +7,20 @@ export const showErrorToast = (
   options?: ToastOptions
 ) => {
   const normalizedMessage = message || "Something went wrong.";
-  const toastId = `error:${normalizedMessage}`;
+  const messageKey = `error:${normalizedMessage}`;
+  const toastId = options?.toastId || `error:${normalizedMessage}`;
   const now = Date.now();
-  const lastShownAt = recentErrorMessages.get(toastId) || 0;
+  const lastShownAt = Math.max(
+    recentErrorMessages.get(messageKey) || 0,
+    recentErrorMessages.get(String(toastId)) || 0
+  );
 
   if (now - lastShownAt < 2500 || toast.isActive(toastId)) return;
 
-  recentErrorMessages.set(toastId, now);
+  recentErrorMessages.set(messageKey, now);
+  recentErrorMessages.set(String(toastId), now);
   toast.error(normalizedMessage, {
-    toastId,
     ...options,
+    toastId,
   });
 };

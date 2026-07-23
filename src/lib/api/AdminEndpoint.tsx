@@ -77,6 +77,16 @@ export const DeletePendingAdminUser = async (id: string) => {
   return MessageResponseSchema.parse(data);
 };
 
+export const ActivateAdminUser = async (id: string) => {
+  const { data } = await api.get(`/api/v1/admin-users/${id}/activate`);
+  return MessageResponseSchema.parse(data);
+};
+
+export const DeactivateAdminUser = async (id: string) => {
+  const { data } = await api.get(`/api/v1/admin-users/${id}/deactivate`);
+  return MessageResponseSchema.parse(data);
+};
+
 export const SearchAdminUsers = async (
   text: string,
   pageNo: number,

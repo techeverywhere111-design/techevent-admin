@@ -12,6 +12,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
+import { formatDateTime } from "@/lib/utils/date";
 
 interface PromoCode {
   id: string;
@@ -102,18 +103,6 @@ const PromoCode: React.FC = () => {
     return colors[index];
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString("en-US", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
   const parseDateTime = (isoString: string) => {
     const date = new Date(isoString);
     const dateStr = date.toISOString().split("T")[0];
@@ -168,7 +157,7 @@ const PromoCode: React.FC = () => {
       label: "Start Date",
       render: (v) => (
         <span className="text-gray-600 dark:text-gray-300">
-          {formatDate(v)}
+          {formatDateTime(v)}
         </span>
       ),
     },
@@ -177,7 +166,7 @@ const PromoCode: React.FC = () => {
       label: "End Date",
       render: (v) => (
         <span className="text-gray-600 dark:text-gray-300">
-          {formatDate(v)}
+          {formatDateTime(v)}
         </span>
       ),
     },
@@ -262,8 +251,8 @@ const PromoCode: React.FC = () => {
       Owner: c.owner,
       "Discount (%)": c.discountPercentage,
       "Settlement (%)": c.settlementPercentage,
-      "Start Date": formatDate(c.startTime),
-      "End Date": formatDate(c.endTime),
+      "Start Date": formatDateTime(c.startTime),
+      "End Date": formatDateTime(c.endTime),
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -279,6 +268,9 @@ const PromoCode: React.FC = () => {
     field: keyof PromoCodeFormState,
     value: string
   ) => {
+    if (field === "code") {
+      value = value.replace(/[^a-zA-Z0-9]/g, "");
+    }
     setPromoForm((prev) => ({ ...prev, [field]: value }));
     setPromoErrors((prev) => ({ ...prev, [field]: "" }));
   };
@@ -288,6 +280,8 @@ const PromoCode: React.FC = () => {
 
     if (modalMode === "create") {
       if (!promoForm.code.trim()) errors.code = "Code name is required";
+      else if (!/^[a-zA-Z0-9]+$/.test(promoForm.code))
+        errors.code = "Code name can only contain letters and numbers";
       if (!promoForm.owner.trim()) errors.owner = "Owner is required";
     }
 
@@ -405,8 +399,8 @@ const PromoCode: React.FC = () => {
   const isRenewMode = modalMode === "renew";
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-5 md:w-full sm:w-auto w-[95vw]">
-      <div className="md:w-full sm:w-auto w-[60vw]">
+    <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 transition-colors duration-300 dark:bg-gray-900 sm:p-5">
+      <div className="w-full min-w-0">
         <div className="flex items-center justify-between mb-6 sm:mb-8">
           <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
             Promo Code
@@ -414,15 +408,15 @@ const PromoCode: React.FC = () => {
         </div>
 
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-          <div className="flex gap-2 flex-1 sm:flex-initial">
-            <div className="relative flex-1 sm:flex-initial">
+          <div className="flex w-full min-w-0 gap-2 sm:w-auto sm:flex-1">
+            <div className="relative min-w-0 flex-1 sm:max-w-64">
               <input
                 type="text"
                 placeholder="Search"
                 value={searchTerm}
                 onChange={(e) => handleSearchInputChange(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="px-4 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+              className="w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-2 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 sm:w-64"
               />
               {searchTerm && (
                 <button
@@ -441,10 +435,10 @@ const PromoCode: React.FC = () => {
             </button>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex w-full flex-wrap gap-3 sm:w-auto sm:gap-4">
             <button
               onClick={openCreateModal}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700 sm:flex-none"
             >
               <Plus size={18} />
               Create Code
@@ -452,7 +446,7 @@ const PromoCode: React.FC = () => {
             <button
               onClick={handleExport}
               disabled={promoCodes.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-white rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-100 px-4 py-2 text-blue-600 transition hover:bg-blue-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-900 dark:text-white dark:hover:bg-blue-800 sm:flex-none"
             >
               <Upload size={18} />
               Export
@@ -515,10 +509,12 @@ const PromoCode: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter code name"
+                    placeholder="Enter letters and numbers only"
                     value={promoForm.code}
                     onChange={(e) => handlePromoChange("code", e.target.value)}
                     disabled={isRenewMode}
+                    pattern="[A-Za-z0-9]+"
+                    title="Code name can only contain letters and numbers"
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
                       isRenewMode
                         ? "opacity-50 cursor-not-allowed"

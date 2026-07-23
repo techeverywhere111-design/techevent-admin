@@ -12,6 +12,7 @@ export const AdminUserSchema = z.object({
   firstName: z.string().nullable().optional(),
   lastName: z.string().nullable().optional(),
   isPendingUser: z.boolean(),
+  isActive: z.boolean().nullable().optional(),
   roleType: RoleTypeEnum,
   lastLogin: z.string().nullable().optional(),
   createdOn: z.string(),
@@ -31,6 +32,7 @@ export const AccountUserSchema = z.object({
   imageUrl: z.string().nullable().optional(),
   createdOn: z.string(),
   lastLogin: z.string().nullable().optional(),
+  isActive: z.boolean().nullable().optional(),
 });
 
 export type AccountUser = z.infer<typeof AccountUserSchema>;

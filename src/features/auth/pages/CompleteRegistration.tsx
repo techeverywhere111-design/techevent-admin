@@ -207,7 +207,7 @@ const CompleteRegistration: React.FC = () => {
 
   if (pageState === "success") {
     return (
-      <div className="flex flex-col md:flex-row h-screen overflow-hidden">
+      <div className="flex min-h-screen min-w-0 flex-col overflow-y-auto md:h-screen md:flex-row md:overflow-hidden">
         <BrandPanel />
         <div className="flex w-full md:w-1/2 justify-center items-center bg-white p-6 md:p-12">
           <div className="w-full max-w-xs sm:max-w-sm text-center space-y-4">
@@ -226,7 +226,7 @@ const CompleteRegistration: React.FC = () => {
 
   if (pageState === "error") {
     return (
-      <div className="flex flex-col md:flex-row h-screen overflow-hidden">
+      <div className="flex min-h-screen min-w-0 flex-col overflow-y-auto md:h-screen md:flex-row md:overflow-hidden">
         <BrandPanel />
         <div className="flex w-full md:w-1/2 justify-center items-center bg-white p-6 md:p-12">
           <div className="w-full max-w-xs sm:max-w-sm text-center space-y-4">
@@ -247,7 +247,7 @@ const CompleteRegistration: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-screen overflow-hidden">
+    <div className="flex min-h-screen min-w-0 flex-col overflow-y-auto md:h-screen md:flex-row md:overflow-hidden">
       <BrandPanel />
 
       <div className="flex w-full md:w-1/2 justify-center items-start md:items-center bg-white p-6 md:p-12 overflow-y-auto">
@@ -272,7 +272,7 @@ const CompleteRegistration: React.FC = () => {
           </p>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium mb-1 text-gray-700">
                   First Name

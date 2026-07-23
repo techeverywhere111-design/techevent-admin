@@ -9,6 +9,7 @@ import { saveAs } from "file-saver";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
+import { formatDateTime } from "@/lib/utils/date";
 
 interface EnquiryRow {
   id: string;
@@ -43,7 +44,7 @@ const Enquiries: React.FC = () => {
         businessName: e.businessName || "N/A",
         email: e.email,
         subject: e.subject || "N/A",
-        createdOn: new Date(e.createdOn).toLocaleString(),
+        createdOn: formatDateTime(e.createdOn),
         treatedBy: e.treatedByUser ? `${e.treatedByUser.firstName || ""} ${e.treatedByUser.lastName || ""}`.trim() || e.treatedByUser.email : "N/A",
         status: e.isTreated ? "TREATED" : "NOT TREATED",
         original: e,
@@ -171,8 +172,8 @@ const Enquiries: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-5 md:w-full">
-      <div className="md:w-full">
+    <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 dark:bg-gray-900 sm:p-5">
+      <div className="w-full min-w-0">
         <h1 className="text-xl sm:text-2xl font-semibold text-[#1F2937] dark:text-white mb-6">
           Enquiries
         </h1>
