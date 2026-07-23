@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { GetBulkAdminUsers } from "@/lib/api/AdminEndpoint";
+import AppLoader from "@/components/ui/AppLoader";
 
 
 
@@ -54,11 +55,9 @@ const UserProfile: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-5">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
+          <AppLoader fullScreen={false} />
         </div>
       </div>
     );
@@ -66,7 +65,7 @@ const UserProfile: React.FC = () => {
 
   if (!displayUser) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-5">
         <div className="max-w-4xl mx-auto">
           <div className="text-center text-gray-600 dark:text-gray-400">
             User not found
@@ -77,7 +76,7 @@ const UserProfile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-5">
       <div className="max-w-4xl ">
         <div className="mb-6">
           {isViewingOtherUser ? (

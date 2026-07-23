@@ -5,7 +5,9 @@ import { GetRolePermissions, AssignPermissions, RemovePermissions } from "@/lib/
 import { GetPermissions } from "@/lib/api/PermissionEndpoint";
 import { ROLE_OPTIONS, type RoleType, type Permission } from "@/lib/schemas";
 import { toast } from "react-toastify";
+import { showErrorToast } from "@/lib/utils/toast";
 import { Search, X, ChevronRight, ChevronLeft, Shield, Loader2 } from "lucide-react";
+import AppLoader from "@/components/ui/AppLoader";
 
 const ROLE_LABELS: Record<RoleType, string> = {
   SUPER_ADMIN: "Super Admin",
@@ -22,7 +24,6 @@ const Roles: React.FC = () => {
 
   const queryClient = useQueryClient();
 
-  // Fetch all permissions (large page to get all)
   const { data: allPermissionsData, isLoading: loadingAll } = useQuery({
     queryKey: ["permissions", "all"],
     queryFn: () => GetPermissions(0, 500),
@@ -76,7 +77,7 @@ const Roles: React.FC = () => {
       setSelectedAvailable(new Set());
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Failed to assign permissions");
+      showErrorToast(err?.response?.data?.message || "Failed to assign permissions");
     },
   });
 
@@ -89,7 +90,7 @@ const Roles: React.FC = () => {
       setSelectedAssigned(new Set());
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Failed to remove permissions");
+      showErrorToast(err?.response?.data?.message || "Failed to remove permissions");
     },
   });
 
@@ -156,8 +157,8 @@ const Roles: React.FC = () => {
     <label
       key={permission.id}
       className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors rounded-lg ${isSelected
-          ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700"
-          : "hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-transparent"
+        ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700"
+        : "hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-transparent"
         }`}
     >
       <input
@@ -171,15 +172,21 @@ const Roles: React.FC = () => {
           {permission.name}
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-          {permission.module} · {permission.method} {permission.endpoint}
+          {permission.module}
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+          {permission.method}
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+          {permission.endpoint}
         </p>
       </div>
     </label>
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 dark:bg-gray-900 sm:p-5">
+      <div className="mx-auto w-full min-w-0 max-w-7xl">
         <div className="flex items-center gap-3 mb-6">
           <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
             Role Permissions
@@ -187,14 +194,14 @@ const Roles: React.FC = () => {
         </div>
 
         {/* Role Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="mb-6 flex flex-wrap gap-2">
           {ROLE_OPTIONS.filter((r) => r !== "SUPER_ADMIN").map((role) => (
             <button
               key={role}
               onClick={() => handleRoleChange(role)}
               className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${selectedRole === role
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                ? "bg-blue-600 text-white shadow-md"
+                : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                 }`}
             >
               {ROLE_LABELS[role]}
@@ -256,7 +263,7 @@ const Roles: React.FC = () => {
               <div className="flex-1 overflow-y-auto p-2 space-y-1">
                 {isLoading ? (
                   <div className="flex items-center justify-center h-32">
-                    <Loader2 className="animate-spin text-blue-500" size={24} />
+                    <AppLoader fullScreen={false} />
                   </div>
                 ) : filteredAvailable.length === 0 ? (
                   <p className="text-center text-gray-400 dark:text-gray-500 text-sm py-8">
@@ -340,7 +347,7 @@ const Roles: React.FC = () => {
               <div className="flex-1 overflow-y-auto p-2 space-y-1">
                 {isLoading ? (
                   <div className="flex items-center justify-center h-32">
-                    <Loader2 className="animate-spin text-blue-500" size={24} />
+                    <AppLoader fullScreen={false} />
                   </div>
                 ) : filteredAssigned.length === 0 ? (
                   <p className="text-center text-gray-400 dark:text-gray-500 text-sm py-8">

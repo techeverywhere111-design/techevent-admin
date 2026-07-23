@@ -43,7 +43,7 @@ export default function Navbar({ toggleSidebar }: NavbarProps) {
   };
 
   return (
-    <header className="flex items-center justify-between bg-white dark:bg-gray-800 px-4 py-3 border-b border-gray-200 dark:border-gray-700 relative">
+    <header className="relative flex min-w-0 items-center justify-between border-b border-gray-200 bg-white px-3 py-3 dark:border-gray-700 dark:bg-gray-800 sm:px-4">
       <div className="flex items-center gap-2">
         <button
           onClick={toggleSidebar}
@@ -53,16 +53,16 @@ export default function Navbar({ toggleSidebar }: NavbarProps) {
         </button>
       </div>
 
-      <div className="relative" ref={dropdownRef}>
+      <div className="relative min-w-0" ref={dropdownRef}>
         <button
           onClick={() => setDropdownOpen((prev) => !prev)}
-          className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
+          className="flex max-w-[calc(100vw-4rem)] items-center gap-2 rounded-md px-2 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 sm:max-w-none sm:px-4"
         >
-          <div className="text-right text-sm">
-            <p className="font-semibold">
+          <div className="min-w-0 text-right text-sm">
+            <p className="truncate font-semibold">
               {user?.firstName} {user?.lastName}
             </p>
-            <p className="text-gray-500 text-xs">{user?.email}</p>
+            <p className="truncate text-xs text-gray-500">{user?.email}</p>
           </div>
           <ChevronDown size={16} />
         </button>
@@ -101,7 +101,7 @@ export default function Navbar({ toggleSidebar }: NavbarProps) {
             onClick={() => setShowLogoutModal(false)}
           ></div>
 
-          <div className="relative w-112 md:w-96 rounded-lg overflow-hidden shadow-xl bg-white dark:bg-gray-800 transform transition-transform duration-300 scale-100">
+          <div className="relative w-[calc(100%-2rem)] max-w-md rounded-lg overflow-hidden shadow-xl bg-white dark:bg-gray-800 transform transition-transform duration-300 scale-100">
             <div className="flex items-center justify-between px-4 py-2 bg-[#0B1E36] dark:bg-blue-900">
               <h3 className="text-white font-semibold text-lg">Log Out?</h3>
               <button
@@ -112,22 +112,22 @@ export default function Navbar({ toggleSidebar }: NavbarProps) {
               </button>
             </div>
 
-            <div className="p-6 py-16 text-center">
-              <p className="text-gray-800 dark:text-gray-200 mb-14">
+            <div className="p-6 text-center sm:py-12">
+              <p className="mb-8 text-gray-800 dark:text-gray-200 sm:mb-12">
                 Are you sure you want to log out?
               </p>
 
-              <div className="flex justify-center gap-12">
+              <div className="flex flex-col-reverse justify-center gap-3 sm:flex-row sm:gap-6">
                 <button
                   onClick={() => setShowLogoutModal(false)}
-                  className="px-8 py-2 border border-red-500 text-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                  className="w-full rounded-md border border-red-500 px-6 py-2 text-red-500 transition hover:bg-red-50 dark:hover:bg-red-900/20 sm:w-auto"
                 >
                   Cancel
                 </button>
 
                 <button
                   onClick={handleLogout}
-                  className="px-8 py-2 bg-blue-500 rounded-md text-white font-semibold hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 transition"
+                  className="w-full rounded-md bg-blue-500 px-6 py-2 font-semibold text-white transition hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 sm:w-auto"
                 >
                   Log Out
                 </button>

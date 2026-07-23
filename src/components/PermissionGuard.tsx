@@ -1,28 +1,30 @@
 import { type ReactNode } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { usePermissionStore } from "@/store/permissionStore";
+import {
+  hasPermissionRequirement,
+  type PermissionRequirement,
+} from "@/lib/permissions";
 import { ShieldX } from "lucide-react";
 
+import AppLoader from "@/components/ui/AppLoader";
+
 interface PermissionGuardProps {
-  requires: string;
+  requires: PermissionRequirement;
   children: ReactNode;
 }
 
 export const PermissionGuard = ({ requires, children }: PermissionGuardProps) => {
   const { user } = useAuth();
   const hasPermission = usePermissionStore((s) =>
-    s.permissions.some((p) => p.name === requires)
+    hasPermissionRequirement(s.permissions, requires)
   );
   const isLoaded = usePermissionStore((s) => s.isLoaded);
 
   if (user?.roleType === "SUPER_ADMIN") return <>{children}</>;
 
   if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-      </div>
-    );
+    return <AppLoader fullScreen={false} />;
   }
 
   if (!hasPermission) {

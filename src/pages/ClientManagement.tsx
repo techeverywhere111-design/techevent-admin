@@ -3,9 +3,18 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
 import { User, Search, Download, X } from "lucide-react";
-import { GetAccountUsers, SearchAccountUsers } from "@/lib/api/UserEndPoint";
+import {
+  ActivateAccountUser,
+  DeactivateAccountUser,
+  GetAccountUsers,
+  SearchAccountUsers,
+} from "@/lib/api/UserEndPoint";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import { showErrorToast } from "@/lib/utils/toast";
+import { formatDateTime } from "@/lib/utils/date";
 
 interface Client {
   id: string;
@@ -13,19 +22,22 @@ interface Client {
   name: string;
   email: string | null | undefined;
   planType: "Personal" | "Business";
+  isActive: boolean;
   dateJoined: string;
   avatar: string | null | undefined;
 }
 
-
-import { useQuery } from "@tanstack/react-query";
 
 const ClientManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeSearchTerm, setActiveSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [pendingStatusAction, setPendingStatusAction] = useState<Client | null>(
+    null
+  );
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data, isLoading: loading } = useQuery({
     queryKey: ["clients", activeSearchTerm, page, itemsPerPage],
@@ -44,6 +56,7 @@ const ClientManagement: React.FC = () => {
           name: displayName,
           email: c.email,
           planType,
+          isActive: c.isActive ?? true,
           dateJoined: c.createdOn,
           avatar: c.imageUrl,
         };
@@ -55,6 +68,26 @@ const ClientManagement: React.FC = () => {
 
   const clients = data?.clients || [];
   const totalCount = data?.totalElements || 0;
+
+  const toggleActiveMutation = useMutation({
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+      isActive ? DeactivateAccountUser(id) : ActivateAccountUser(id),
+    onSuccess: async (response, variables) => {
+      toast.success(
+        response.message ||
+          (variables.isActive
+            ? "User deactivated successfully."
+            : "User activated successfully.")
+      );
+      await queryClient.invalidateQueries({ queryKey: ["clients"] });
+    },
+    onError: (error: any) => {
+      showErrorToast(
+        error.response?.data?.message ||
+          "Failed to update user active status."
+      );
+    },
+  });
 
   const handleSearch = () => {
     setActiveSearchTerm(searchTerm);
@@ -88,6 +121,16 @@ const ClientManagement: React.FC = () => {
   const handlePaymentHistory = (client: Client) =>
     navigate(`/clients/${client.id}/payments`);
 
+  const handleToggleActive = () => {
+    if (!pendingStatusAction) return;
+    toggleActiveMutation.mutate({
+      id: pendingStatusAction.id,
+      isActive: pendingStatusAction.isActive,
+    }, {
+      onSuccess: () => setPendingStatusAction(null),
+    });
+  };
+
 
   const columns: Column[] = [
     {
@@ -117,11 +160,26 @@ const ClientManagement: React.FC = () => {
     },
     { key: "planType", label: "Plan Type" },
     {
+      key: "isActive",
+      label: "Status",
+      render: (v) => (
+        <span
+          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+            v
+              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+          }`}
+        >
+          {v ? "Active" : "Inactive"}
+        </span>
+      ),
+    },
+    {
       key: "dateJoined",
       label: "Date Joined",
       render: (v) => (
         <span className="text-gray-600 dark:text-gray-300">
-          {new Date(v).toLocaleDateString()}
+          {formatDateTime(v)}
         </span>
       ),
     },
@@ -151,6 +209,22 @@ const ClientManagement: React.FC = () => {
         >
           Payment History
         </button>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            setPendingStatusAction(row);
+          }}
+          disabled={toggleActiveMutation.isPending}
+          className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed ${
+            row.isActive
+              ? "text-red-600 dark:text-red-400"
+              : "text-emerald-600 dark:text-emerald-400"
+          }`}
+        >
+          {row.isActive ? "Deactivate" : "Activate"}
+        </button>
       </>
     );
   };
@@ -162,7 +236,8 @@ const ClientManagement: React.FC = () => {
       Name: c.name,
       Email: c.email,
       "Plan Type": c.planType,
-      "Date Joined": new Date(c.dateJoined).toLocaleDateString(),
+      Status: c.isActive ? "Active" : "Inactive",
+      "Date Joined": formatDateTime(c.dateJoined),
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -177,8 +252,8 @@ const ClientManagement: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-8 md:w-full sm:w-auto w-[95vw]">
-      <div className="md:w-full sm:w-auto w-[60vw]">
+    <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 transition-colors duration-300 dark:bg-gray-900 sm:p-5">
+      <div className="w-full min-w-0">
         <div className="flex items-center justify-between mb-6 sm:mb-8">
           <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
             Clients Management
@@ -186,15 +261,15 @@ const ClientManagement: React.FC = () => {
         </div>
 
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-          <div className="flex gap-2 flex-1 sm:flex-initial">
-            <div className="relative flex-1 sm:flex-initial">
+          <div className="flex w-full min-w-0 gap-2 sm:w-auto sm:flex-1">
+            <div className="relative min-w-0 flex-1 sm:max-w-64">
               <input
                 type="text"
                 placeholder="Search clients..."
                 value={searchTerm}
                 onChange={(e) => handleSearchInputChange(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="px-4 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 sm:w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-2 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
               />
               {searchTerm && (
                 <button
@@ -215,7 +290,7 @@ const ClientManagement: React.FC = () => {
 
           <button
             onClick={handleExport}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-100 px-4 py-2 text-blue-600 transition hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800 sm:w-auto"
           >
             <Download size={18} />
             Export
@@ -236,6 +311,88 @@ const ClientManagement: React.FC = () => {
           loading={loading}
         />
       </div>
+
+      {pendingStatusAction && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center px-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !toggleActiveMutation.isPending) {
+              setPendingStatusAction(null);
+            }
+          }}
+        >
+          <div
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={() => {
+              if (!toggleActiveMutation.isPending) setPendingStatusAction(null);
+            }}
+          />
+
+          <div
+            className="relative w-full max-w-md rounded-lg overflow-hidden shadow-xl bg-white dark:bg-gray-800 z-[10001]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 bg-[#081A30] dark:bg-[#081A30]">
+              <h3 className="text-white font-semibold text-lg">
+                {pendingStatusAction.isActive ? "Deactivate User?" : "Activate User?"}
+              </h3>
+              <button
+                className="text-white hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setPendingStatusAction(null)}
+                disabled={toggleActiveMutation.isPending}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <p className="text-sm text-gray-600 dark:text-gray-300 leading-6">
+                {pendingStatusAction.isActive
+                  ? `This will deactivate ${pendingStatusAction.email}. They will not be able to access their account until reactivated.`
+                  : `This will reactivate ${pendingStatusAction.email} and restore their account access.`}
+              </p>
+
+              <div className="mt-6 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-3">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {pendingStatusAction.name}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 break-all">
+                  {pendingStatusAction.email}
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-6">
+                <button
+                  type="button"
+                  onClick={() => setPendingStatusAction(null)}
+                  disabled={toggleActiveMutation.isPending}
+                  className="px-5 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleToggleActive}
+                  disabled={toggleActiveMutation.isPending}
+                  className={`px-5 py-2 rounded-lg text-white transition disabled:opacity-70 disabled:cursor-not-allowed ${
+                    pendingStatusAction.isActive
+                      ? "bg-red-600 hover:bg-red-700"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
+                >
+                  {toggleActiveMutation.isPending
+                    ? pendingStatusAction.isActive
+                      ? "Deactivating..."
+                      : "Activating..."
+                    : pendingStatusAction.isActive
+                      ? "Deactivate"
+                      : "Activate"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -10,6 +10,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { Upload } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { formatDateTime } from "@/lib/utils/date";
 
 
 
@@ -55,7 +56,7 @@ const Permissions: React.FC = () => {
       Description: p.description,
       "Plan Feature": p.planFeature,
       General: p.isGeneral ? "Yes" : "No",
-      "Date Created": new Date(p.createdOn).toLocaleString(),
+      "Date Created": formatDateTime(p.createdOn),
     }));
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
@@ -124,7 +125,7 @@ const Permissions: React.FC = () => {
       label: "Created",
       render: (v) => (
         <span className="text-gray-500 dark:text-gray-400 text-sm">
-          {new Date(v).toLocaleDateString()}
+          {formatDateTime(v)}
         </span>
       ),
     },
@@ -134,8 +135,8 @@ const Permissions: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 dark:bg-gray-900 sm:p-5">
+      <div className="mx-auto w-full min-w-0 max-w-7xl">
         <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-6">
           Permissions
         </h1>

@@ -7,6 +7,7 @@ import { Eye, EyeOff } from "lucide-react";
 import Logo from "@/assets/PlutoEvent_Logo.png";
 import { AdminUserLogin, type AdminUserLoginPayload } from "@/lib/api/AdminEndpoint";
 import Cookies from "js-cookie";
+import { showErrorToast } from "@/lib/utils/toast";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -62,7 +63,7 @@ const Login: React.FC = () => {
       toast.success(`Welcome back, ${data.firstName}!`);
       navigate("/dashboard");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Login failed.");
+      showErrorToast(err.response?.data?.message || "Login failed.");
     } finally {
       setLoading(false);
     }
@@ -73,7 +74,7 @@ const Login: React.FC = () => {
     }`;
 
   return (
-    <div className="flex flex-col md:flex-row h-screen overflow-hidden">
+    <div className="flex min-h-screen min-w-0 flex-col overflow-y-auto md:h-screen md:flex-row md:overflow-hidden">
       <div className="hidden md:flex relative w-1/2 flex-col justify-center items-center text-white bg-[#0B1739] clip-path-custom">
         <div className="text-center space-y-2">
           <img src={Logo} alt="Logo" className="h-20 w-auto mx-auto" />

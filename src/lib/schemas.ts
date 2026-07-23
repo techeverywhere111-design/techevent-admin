@@ -12,6 +12,7 @@ export const AdminUserSchema = z.object({
   firstName: z.string().nullable().optional(),
   lastName: z.string().nullable().optional(),
   isPendingUser: z.boolean(),
+  isActive: z.boolean().nullable().optional(),
   roleType: RoleTypeEnum,
   lastLogin: z.string().nullable().optional(),
   createdOn: z.string(),
@@ -31,6 +32,7 @@ export const AccountUserSchema = z.object({
   imageUrl: z.string().nullable().optional(),
   createdOn: z.string(),
   lastLogin: z.string().nullable().optional(),
+  isActive: z.boolean().nullable().optional(),
 });
 
 export type AccountUser = z.infer<typeof AccountUserSchema>;
@@ -106,6 +108,7 @@ export const PromoCodeSchema = z.object({
   code: z.string(),
   owner: z.string(),
   discountPercentage: z.number(),
+  settlementPercentage: z.number(),
   startTime: z.string(),
   endTime: z.string(),
   createdOn: z.string(),
@@ -141,7 +144,7 @@ export const PromoRegistrationLogListResponseSchema = PaginationSchema.extend({
 export const EventCategorySchema = z.object({
   id: z.string(),
   name: z.string(),
-  description: z.string(),
+  description: z.string().nullable().optional(),
   createdOn: z.string(),
 });
 
@@ -180,7 +183,7 @@ export const EnquirySchema = z.object({
   name: z.string(),
   businessName: z.string().nullable().optional(),
   email: z.string(),
-  subject: z.string(),
+  subject: z.string().nullable().optional(),
   message: z.string(),
   isTreated: z.boolean(),
   treatedBy: z.string().nullable().optional(),

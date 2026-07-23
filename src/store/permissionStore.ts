@@ -1,6 +1,10 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import type { Permission } from "@/lib/schemas";
+import {
+  hasPermissionRequirement,
+  type PermissionRequirement,
+} from "@/lib/permissions";
 
 interface PermissionState {
   permissions: Permission[];
@@ -26,15 +30,21 @@ export const usePermissionStore = create<PermissionState>()(
   }))
 );
 
-export const useHasPermission = (permissionName: string): boolean => {
+export const useHasPermission = (
+  permissionRequirement: PermissionRequirement
+): boolean => {
   return usePermissionStore((s) =>
-    s.permissions.some((p) => p.name === permissionName)
+    hasPermissionRequirement(s.permissions, permissionRequirement)
   );
 };
 
-export const useHasAnyPermission = (permissionNames: string[]): boolean => {
+export const useHasAnyPermission = (
+  permissionRequirements: PermissionRequirement[]
+): boolean => {
   return usePermissionStore((s) =>
-    permissionNames.some((name) => s.permissions.some((p) => p.name === name))
+    permissionRequirements.some((permissionRequirement) =>
+      hasPermissionRequirement(s.permissions, permissionRequirement)
+    )
   );
 };
 

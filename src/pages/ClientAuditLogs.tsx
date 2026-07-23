@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+
 import Table, { type Column } from "@/components/ui/Table";
-import { Download, ArrowLeft, Filter, X } from "lucide-react";
+import { Download, Filter, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import {
@@ -9,6 +9,7 @@ import {
   type AuditLog,
 } from "@/lib/api/AuditLogEndpoint";
 import { useQuery } from "@tanstack/react-query";
+import { formatDateTime } from "@/lib/utils/date";
 
 const toLocalDatetimeString = (d: Date): string => {
   const pad = (n: number) => n.toString().padStart(2, "0");
@@ -45,7 +46,7 @@ const AuditLogs: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [dateError, setDateError] = useState("");
 
-  const navigate = useNavigate();
+
 
   const isValidRange = activeFilters.startTime < activeFilters.endTime;
 
@@ -113,7 +114,7 @@ const AuditLogs: React.FC = () => {
       "Action Performed": log.actionPerformedSummary || log.actionPerformed,
       Module: log.module,
       "Performed By": log.accountUser?.email || "Unknown",
-      "Date | Time": formatDate(log.createdOn),
+      "Date | Time": formatDateTime(log.createdOn),
       Location: log.location || "N/A",
     }));
 
@@ -124,24 +125,6 @@ const AuditLogs: React.FC = () => {
     const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
     const blob = new Blob([wbout], { type: "application/octet-stream" });
     saveAs(blob, `Audit_Logs_Export.xlsx`);
-  };
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const year = date.getFullYear();
-
-    let hours = date.getHours();
-    const minutes = date.getMinutes().toString().padStart(2, "0");
-    const ampm = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12;
-    hours = hours ? hours : 12;
-    const formattedHours = hours.toString().padStart(2, "0");
-
-    return `${day} - ${month} - ${year} ${formattedHours}:${minutes}${ampm}`;
   };
 
   const columns: Column[] = [
@@ -174,7 +157,7 @@ const AuditLogs: React.FC = () => {
       key: "createdOn",
       label: "Date | Time",
       render: (v) => (
-        <span className="text-gray-600 dark:text-gray-300">{formatDate(v)}</span>
+        <span className="text-gray-600 dark:text-gray-300">{formatDateTime(v)}</span>
       ),
     },
     {
@@ -187,17 +170,12 @@ const AuditLogs: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-8 md:w-full sm:w-auto w-[95vw]">
-      <div className="md:w-full sm:w-auto w-[60vw]">
+    <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 transition-colors duration-300 dark:bg-gray-900 sm:p-5">
+      <div className="w-full min-w-0">
 
         <div className="mb-6">
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
-            >
-              <ArrowLeft className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </button>
+
             <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
               Audit Logs
             </h1>
@@ -206,9 +184,9 @@ const AuditLogs: React.FC = () => {
 
         {/* Filter & Export row */}
         <div className="mb-6 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 flex-1">
+          <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-end lg:flex-1">
             {/* Module */}
-            <div className="flex flex-col gap-1">
+            <div className="flex w-full flex-col gap-1 sm:w-40">
               <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Module
               </label>
@@ -219,12 +197,12 @@ const AuditLogs: React.FC = () => {
                 value={module}
                 onChange={(e) => setModule(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleApplyFilter()}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-40 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm transition-shadow"
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition-shadow focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
               />
             </div>
 
             {/* Start Time */}
-            <div className="flex flex-col gap-1">
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
               <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Start Time
               </label>
@@ -233,12 +211,12 @@ const AuditLogs: React.FC = () => {
                 type="datetime-local"
                 value={startTime}
                 onChange={(e) => { setStartTime(e.target.value); setDateError(""); }}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm transition-shadow"
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition-shadow focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 sm:w-auto"
               />
             </div>
 
             {/* End Time */}
-            <div className="flex flex-col gap-1">
+            <div className="flex w-full flex-col gap-1 sm:w-auto">
               <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 End Time
               </label>
@@ -247,12 +225,12 @@ const AuditLogs: React.FC = () => {
                 type="datetime-local"
                 value={endTime}
                 onChange={(e) => { setEndTime(e.target.value); setDateError(""); }}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm transition-shadow"
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition-shadow focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 sm:w-auto"
               />
             </div>
 
             {/* Filter + Clear buttons */}
-            <div className="flex gap-2 self-end">
+            <div className="flex w-full gap-2 self-end sm:w-auto">
               <button
                 id="apply-filter-btn"
                 onClick={handleApplyFilter}
@@ -277,7 +255,7 @@ const AuditLogs: React.FC = () => {
           <button
             id="export-btn"
             onClick={handleExport}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 active:scale-95 transition-all text-sm font-medium"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-100 px-4 py-2 text-sm font-medium text-blue-600 transition-all hover:bg-blue-200 active:scale-95 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800 lg:w-auto"
           >
             <Download size={18} />
             Export

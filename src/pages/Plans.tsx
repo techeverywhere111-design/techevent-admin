@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { showErrorToast } from "@/lib/utils/toast";
+import { formatDateTime } from "@/lib/utils/date";
 import {
   Gem,
   Search,
@@ -16,10 +18,8 @@ import {
   BarChart3,
   Check,
   Edit3,
-  Sliders,
-  Loader2,
-  CalendarDays,
 } from "lucide-react";
+import AppLoader from "@/components/ui/AppLoader";
 import {
   PlanGetList,
   PlanSearch,
@@ -28,7 +28,6 @@ import {
 } from "@/lib/api/Plans";
 import type { Plan } from "@/lib/schemas";
 
-// Icon and color mapping for feature categories
 const featureCategories = [
   {
     key: "meetingFeature",
@@ -68,7 +67,6 @@ const featureCategories = [
   },
 ];
 
-// Friendly human-readable labels for plan nested fields
 const fieldLabels: Record<string, string> = {
   numberAllowed: "Number Allowed",
   canRecord: "Recording Support",
@@ -94,7 +92,7 @@ export default function Plans() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeSearchTerm, setActiveSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showCreateDropdown, setShowCreateDropdown] = useState(false);
   const [selectedPlanForDrawer, setSelectedPlanForDrawer] = useState<Plan | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -147,7 +145,7 @@ export default function Plans() {
       }
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Action failed. Please try again.");
+      showErrorToast(err.response?.data?.message || "Action failed. Please try again.");
     },
   });
 
@@ -201,20 +199,16 @@ export default function Plans() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#020617] transition-colors duration-300 p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 transition-colors duration-300 dark:bg-[#020617] sm:p-5">
+      <div className="mx-auto w-full min-w-0 max-w-7xl">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Subscription Plans
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Create, configure, and manage user subscription packages.
-            </p>
           </div>
 
-          {/* Action button */}
           <div className="relative">
             <button
               onClick={(e) => {
@@ -248,41 +242,39 @@ export default function Plans() {
         </div>
 
         {/* Filter / Search Bar */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1 max-w-md">
-            <input
-              type="text"
-              placeholder="Search plans..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="w-full pl-4 pr-10 py-2 border border-gray-300 dark:border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-[#0b1739] text-gray-900 dark:text-gray-100 placeholder-gray-400 text-sm"
-            />
-            {searchTerm && (
-              <button
-                onClick={handleClear}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
-              >
-                <X size={16} />
-              </button>
-            )}
+        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+          <div className="flex w-full min-w-0 gap-2 sm:w-auto sm:flex-1">
+            <div className="relative min-w-0 flex-1 sm:max-w-64">
+              <input
+                type="text"
+                placeholder="Search plans..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                className="w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-2 pr-10 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-800 dark:bg-[#0b1739] dark:text-gray-100"
+              />
+              {searchTerm && (
+                <button
+                  onClick={handleClear}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+            <button
+              onClick={handleSearch}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex-shrink-0 flex items-center justify-center"
+            >
+              <Search size={20} />
+            </button>
           </div>
-          <button
-            onClick={handleSearch}
-            className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2 font-medium text-sm"
-          >
-            <Search size={16} />
-            Search
-          </button>
         </div>
 
         {/* Loading State */}
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center">
-            <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-            <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-              Loading plans...
-            </p>
+          <div className="py-20">
+            <AppLoader fullScreen={false} />
           </div>
         ) : error ? (
           <div className="py-20 text-center border border-dashed border-red-300 dark:border-red-800/50 rounded-2xl bg-white dark:bg-[#0b1739] p-6">
@@ -316,62 +308,56 @@ export default function Plans() {
               {plans.map((plan) => (
                 <div
                   key={plan.id}
-                  className="bg-white dark:bg-[#0b1739] border border-gray-150 dark:border-gray-800/80 rounded-2xl shadow-sm hover:shadow-md dark:shadow-none hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden"
+                  className="bg-white dark:bg-[#0b1739] border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm hover:shadow-md dark:shadow-none transition-shadow duration-200 flex flex-col overflow-hidden"
                 >
                   {/* Card Header */}
-                  <div className="p-6 pb-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-start">
-                    <div>
+                  <div className="p-6 pb-5 border-b border-gray-100 dark:border-gray-800">
+                    <div className="flex items-start justify-between gap-4">
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider mb-2 ${
-                          plan.type?.toLowerCase() === "business"
-                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-                            : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-                        }`}
+                        className={`inline-flex px-3 py-1 rounded-md text-xs font-semibold uppercase tracking-wide ${plan.type?.toLowerCase() === "business"
+                          ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+                          : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                          }`}
                       >
                         {plan.type || "N/A"}
                       </span>
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1">
-                        {plan.name || "Unnamed Plan"}
-                      </h3>
-                    </div>
 
-                    {/* Active toggle */}
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`text-xs font-medium hidden sm:inline ${
-                          plan.isActive
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-xs font-medium ${plan.isActive
                             ? "text-green-600 dark:text-green-400"
                             : "text-gray-400"
-                        }`}
-                      >
-                        {plan.isActive ? "Active" : "Inactive"}
-                      </span>
-                      <button
-                        onClick={(e) => handleToggleActive(plan, e)}
-                        disabled={toggleActiveMutation.isPending}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none ${
-                          plan.isActive ? "bg-green-500" : "bg-gray-300 dark:bg-gray-700"
-                        } ${
-                          toggleActiveMutation.isPending
-                            ? "opacity-50 cursor-not-allowed"
-                            : "cursor-pointer"
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
-                            plan.isActive ? "translate-x-6" : "translate-x-1"
-                          }`}
-                        />
-                      </button>
+                            }`}
+                        >
+                          {plan.isActive ? "Active" : "Inactive"}
+                        </span>
+                        <button
+                          onClick={(e) => handleToggleActive(plan, e)}
+                          disabled={toggleActiveMutation.isPending}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none ${plan.isActive ? "bg-green-500" : "bg-gray-300 dark:bg-gray-700"
+                            } ${toggleActiveMutation.isPending
+                              ? "opacity-50 cursor-not-allowed"
+                              : "cursor-pointer"
+                            }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${plan.isActive ? "translate-x-6" : "translate-x-1"
+                              }`}
+                          />
+                        </button>
+                      </div>
                     </div>
+                    <h3 className="mt-4 text-xl font-semibold text-gray-950 dark:text-white line-clamp-1">
+                      {plan.name || "Unnamed Plan"}
+                    </h3>
                   </div>
 
                   {/* Card Body (Prices) */}
-                  <div className="p-6 py-4 flex-1">
-                    <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-3">
+                  <div className="p-6 py-5 flex-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold mb-3">
                       Pricing Tiers
                     </p>
-                    <div className="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-800/40 p-4 rounded-xl">
+                    <div className="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg">
                       <div>
                         <span className="text-xs text-gray-500 dark:text-gray-400 block mb-0.5">
                           Local (NGN)
@@ -391,29 +377,28 @@ export default function Plans() {
                     </div>
 
                     {/* Meta info */}
-                    <div className="flex items-center gap-2 text-xs text-gray-450 dark:text-gray-400 mt-4">
-                      <CalendarDays size={14} className="text-gray-400" />
-                      <span>
-                        Created: {plan.createdOn || plan.createdAt ? new Date(plan.createdOn || plan.createdAt || "").toLocaleDateString() : "N/A"}
-                      </span>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-5">
+                      <span className="font-medium text-gray-500 dark:text-gray-500">
+                        Created:
+                      </span>{" "}
+                      {formatDateTime(plan.createdOn || plan.createdAt)}
                     </div>
                   </div>
 
                   {/* Card Actions */}
-                  <div className="px-6 py-4 bg-gray-50/55 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3">
+                  <div className="px-6 py-4 bg-gray-50/60 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3">
                     <button
                       onClick={() => handleOpenDrawer(plan)}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium transition-colors"
+                      className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium transition-colors"
                     >
-                      <Sliders size={15} />
                       View Features
                     </button>
                     <button
                       onClick={() => navigate(`/plan-creation?id=${plan.id}`)}
-                      className="px-3 py-2 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium transition-colors"
+                      className="px-5 py-2.5 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium transition-colors"
                       title="Edit Plan"
                     >
-                      <Edit3 size={15} />
+                      Edit
                     </button>
                   </div>
                 </div>
@@ -421,25 +406,24 @@ export default function Plans() {
             </div>
 
             {/* Pagination */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8 border-t border-gray-200 dark:border-gray-850 pt-6">
-              <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-md">
-                Page {page} of {totalPages}
+            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <span className="px-3 py-1 rounded text-sm bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300">
+                {page} of {totalPages}
               </span>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap justify-center">
                 {totalPages > 1 &&
                   renderPagination().map((p, idx) => (
                     <button
                       key={idx}
                       onClick={() => typeof p === "number" && setPage(p)}
                       disabled={p === "..."}
-                      className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${
-                        p === page
-                          ? "bg-blue-600 text-white"
-                          : p === "..."
-                          ? "text-gray-400 cursor-default"
-                          : "bg-white dark:bg-[#0b1739] text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-                      }`}
+                      className={`min-w-[40px] px-3 py-1 rounded text-sm transition ${p === page
+                        ? "bg-blue-600 text-white"
+                        : p === "..."
+                          ? "text-gray-400 dark:text-gray-500 cursor-default bg-transparent"
+                          : "bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-gray-600"
+                        }`}
                     >
                       {p}
                     </button>
@@ -456,11 +440,12 @@ export default function Plans() {
                     setItemsPerPage(Number(e.target.value));
                     setPage(1);
                   }}
-                  className="px-3 h-9 rounded-lg border border-gray-350 dark:border-gray-800 bg-white dark:bg-[#0b1739] text-gray-700 dark:text-gray-300 text-sm focus:outline-none"
+                  className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value={6}>6</option>
-                  <option value={12}>12</option>
-                  <option value={24}>24</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={30}>30</option>
+                  <option value={50}>50</option>
                 </select>
               </div>
             </div>
@@ -474,16 +459,14 @@ export default function Plans() {
           {/* Drawer Overlay */}
           <div
             onClick={handleCloseDrawer}
-            className={`fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 z-45 ${
-              isDrawerOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
+            className={`fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 z-45 ${isDrawerOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+              }`}
           />
 
           {/* Drawer Body */}
           <div
-            className={`fixed inset-y-0 right-0 max-w-md w-full bg-white dark:bg-[#0b1739] shadow-2xl border-l border-gray-100 dark:border-gray-850 z-50 flex flex-col transition-transform duration-300 ease-out transform ${
-              isDrawerOpen ? "translate-x-0" : "translate-x-full"
-            }`}
+            className={`fixed inset-y-0 right-0 max-w-md w-full bg-white dark:bg-[#0b1739] shadow-2xl border-l border-gray-100 dark:border-gray-850 z-50 flex flex-col transition-transform duration-300 ease-out transform ${isDrawerOpen ? "translate-x-0" : "translate-x-full"
+              }`}
           >
             {/* Drawer Header */}
             <div className="p-6 border-b border-gray-100 dark:border-gray-850 flex items-center justify-between">
@@ -524,11 +507,10 @@ export default function Plans() {
                       Status
                     </span>
                     <span
-                      className={`font-semibold ${
-                        selectedPlanForDrawer.isActive
-                          ? "text-green-600 dark:text-green-400"
-                          : "text-red-500"
-                      }`}
+                      className={`font-semibold ${selectedPlanForDrawer.isActive
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-500"
+                        }`}
                     >
                       {selectedPlanForDrawer.isActive ? "Active" : "Inactive"}
                     </span>
@@ -590,9 +572,8 @@ export default function Plans() {
                           </div>
                           <ChevronDown
                             size={16}
-                            className={`text-gray-400 transition-transform duration-200 ${
-                              isOpen ? "rotate-180" : ""
-                            }`}
+                            className={`text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                              }`}
                           />
                         </button>
 

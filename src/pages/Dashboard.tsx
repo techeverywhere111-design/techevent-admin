@@ -14,6 +14,7 @@ import { GetTotalCreatedEvents } from "@/lib/api/EventManagement";
 import { GetFeatureUsageBreakdown } from "@/lib/api/AuditLogEndpoint";
 import { type FeatureBreakdownResponse } from "@/lib/schemas";
 import { type ChartData } from "@/types/chart";
+import AppLoader from "@/components/ui/AppLoader";
 
 const PLAN_COLORS = ["#84cc16", "#ec4899", "#3b82f6", "#f59e0b", "#8b5cf6"];
 
@@ -78,7 +79,7 @@ export default function Dashboard() {
   }, [featureUsageData]);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-5 space-y-5">
       <h1 className="text-xl font-semibold mb-4">Welcome back!</h1>
       <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
 
@@ -128,7 +129,7 @@ export default function Dashboard() {
           </h3>
           {featureUsageLoading ? (
             <div className="h-[250px] w-full flex items-center justify-center">
-              <div className="h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <AppLoader fullScreen={false} />
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={250}>

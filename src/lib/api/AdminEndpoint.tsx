@@ -1,5 +1,10 @@
 import api from "@/lib/utils/api";
-import { AdminUserSchema, AdminUserListResponseSchema, type AdminUser } from "@/lib/schemas";
+import {
+  AdminUserSchema,
+  AdminUserListResponseSchema,
+  MessageResponseSchema,
+  type AdminUser,
+} from "@/lib/schemas";
 
 export interface AdminUserPayload {
   firstName: string;
@@ -18,6 +23,21 @@ export interface AdminUserLoginPayload {
   password: string;
 }
 
+export interface AdminUserInvitePayload {
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+}
+
+export interface CompleteAdminInvitePayload {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 export const AdminUserLogin = async (
   payload: AdminUserLoginPayload
 ): Promise<AdminUserLoginResponse> => {
@@ -25,11 +45,46 @@ export const AdminUserLogin = async (
   return AdminUserSchema.parse(data);
 };
 
-export const AdminUserCreate = async (
-  payload: AdminUserPayload
+export const AdminUserInvite = async (
+  payload: AdminUserInvitePayload
 ): Promise<AdminUserResponse> => {
-  const { data } = await api.post("/api/v1/admin-users", payload);
+  const { data } = await api.post("/api/v1/admin-users/invite", payload);
   return AdminUserSchema.parse(data);
+};
+
+export const ReinviteAdminUsers = async (adminUserIds: string[]) => {
+  const { data } = await api.post(
+    "/api/v1/admin-users/reinvite",
+    adminUserIds
+  );
+  return MessageResponseSchema.parse(data);
+};
+
+export const CompleteAdminInvite = async (
+  payload: CompleteAdminInvitePayload
+) => {
+  const { data } = await api.put("/api/v1/admin-users/complete-invite", payload);
+  return MessageResponseSchema.parse(data);
+};
+
+export const GetAdmin = async (id: string): Promise<AdminUserResponse> => {
+  const { data } = await api.get(`/api/v1/admin-users/${id}`);
+  return AdminUserSchema.parse(data);
+};
+
+export const DeletePendingAdminUser = async (id: string) => {
+  const { data } = await api.delete(`/api/v1/admin-users/${id}`);
+  return MessageResponseSchema.parse(data);
+};
+
+export const ActivateAdminUser = async (id: string) => {
+  const { data } = await api.get(`/api/v1/admin-users/${id}/activate`);
+  return MessageResponseSchema.parse(data);
+};
+
+export const DeactivateAdminUser = async (id: string) => {
+  const { data } = await api.get(`/api/v1/admin-users/${id}/deactivate`);
+  return MessageResponseSchema.parse(data);
 };
 
 export const SearchAdminUsers = async (

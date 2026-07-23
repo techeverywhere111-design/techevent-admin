@@ -5,6 +5,7 @@ import { GetSuspiciousUsers, GetSuspiciousActivities } from "@/lib/api/Suspiciou
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { useQuery } from "@tanstack/react-query";
+import { formatDateTime } from "@/lib/utils/date";
 
 interface SelectedImageState {
   url: string;
@@ -95,11 +96,11 @@ const SuspiciousUsersActivity: React.FC = () => {
           "User Name": name || "N/A",
           "User Email": userDetails?.email || "N/A",
           "User Active Status": userDetails?.isActive ? "Active" : "Inactive",
-          "Last Login": userDetails?.lastLogin ? new Date(userDetails.lastLogin).toLocaleString() : "N/A",
+          "Last Login": formatDateTime(userDetails?.lastLogin),
           "Occurrences": u.numberOfOccurrences,
           "Blocked Status": u.isBlocked ? "Blocked" : "Active",
-          "Created On": new Date(u.createdOn).toLocaleString(),
-          "Updated On": u.updatedOn ? new Date(u.updatedOn).toLocaleString() : "N/A",
+          "Created On": formatDateTime(u.createdOn),
+          "Updated On": formatDateTime(u.updatedOn),
         };
       });
       const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -118,11 +119,11 @@ const SuspiciousUsersActivity: React.FC = () => {
           "User Name": name || "N/A",
           "User Email": userDetails?.email || "N/A",
           "User Active Status": userDetails?.isActive ? "Active" : "Inactive",
-          "Last Login": userDetails?.lastLogin ? new Date(userDetails.lastLogin).toLocaleString() : "N/A",
+          "Last Login": formatDateTime(userDetails?.lastLogin),
           "Action Performed": a.actionPerformed || "N/A",
           "Endpoint": a.endpoint || "N/A",
           "Method": a.method || "N/A",
-          "Created On": new Date(a.createdOn).toLocaleString(),
+          "Created On": formatDateTime(a.createdOn),
         };
       });
       const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -197,7 +198,7 @@ const SuspiciousUsersActivity: React.FC = () => {
         const lastLogin = row.accountUserResponse?.lastLogin;
         return (
           <span className="text-gray-500 dark:text-gray-400 text-sm">
-            {lastLogin ? new Date(lastLogin).toLocaleString() : "N/A"}
+            {formatDateTime(lastLogin)}
           </span>
         );
       },
@@ -223,7 +224,7 @@ const SuspiciousUsersActivity: React.FC = () => {
       label: "Created On",
       render: (v) => (
         <span className="text-gray-500 dark:text-gray-400 text-sm">
-          {new Date(v).toLocaleString()}
+          {formatDateTime(v)}
         </span>
       ),
     },
@@ -232,7 +233,7 @@ const SuspiciousUsersActivity: React.FC = () => {
       label: "Updated On",
       render: (v) => (
         <span className="text-gray-500 dark:text-gray-400 text-sm">
-          {v ? new Date(v).toLocaleString() : "N/A"}
+          {formatDateTime(v)}
         </span>
       ),
     },
@@ -270,7 +271,7 @@ const SuspiciousUsersActivity: React.FC = () => {
         const lastLogin = row.accountUserResponse?.lastLogin;
         return (
           <span className="text-gray-500 dark:text-gray-400 text-sm">
-            {lastLogin ? new Date(lastLogin).toLocaleString() : "N/A"}
+            {formatDateTime(lastLogin)}
           </span>
         );
       },
@@ -308,7 +309,7 @@ const SuspiciousUsersActivity: React.FC = () => {
       label: "Created On",
       render: (v) => (
         <span className="text-gray-500 dark:text-gray-400 text-sm">
-          {new Date(v).toLocaleString()}
+          {formatDateTime(v)}
         </span>
       ),
     },
@@ -320,14 +321,14 @@ const SuspiciousUsersActivity: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8 md:w-full">
-      <div className="md:w-full">
+    <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 dark:bg-gray-900 sm:p-5">
+      <div className="w-full min-w-0">
         <h1 className="text-xl sm:text-2xl font-semibold text-[#1F2937] dark:text-white mb-6">
           Suspicious Users & Activity
         </h1>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="mb-6 flex flex-wrap gap-2">
           {tabs.map((tab) => (
             <button
               key={tab.id}

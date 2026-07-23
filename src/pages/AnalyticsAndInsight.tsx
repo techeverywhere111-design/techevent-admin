@@ -36,13 +36,13 @@ const getMonthIndex = (feature: string): number => {
   const clean = feature.toLowerCase().trim();
   const monthsFull = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
   const monthsShort = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-  
+
   let idx = monthsShort.indexOf(clean.substring(0, 3));
   if (idx !== -1) return idx;
-  
+
   idx = monthsFull.indexOf(clean);
   if (idx !== -1) return idx;
-  
+
   const num = parseInt(clean, 10);
   if (!isNaN(num)) {
     if (num >= 1 && num <= 12) return num - 1;
@@ -218,11 +218,7 @@ export default function AnalyticsAndInsights() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-6 md:p-8 text-gray-800 dark:text-gray-100 transition-colors duration-300">
-      <div className="flex justify-end text-sm text-gray-600 dark:text-gray-400 mb-2">
-        Log out
-      </div>
-
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-5 text-gray-800 dark:text-gray-100 transition-colors duration-300">
       <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-6">
         Analytics and Insight
       </h2>

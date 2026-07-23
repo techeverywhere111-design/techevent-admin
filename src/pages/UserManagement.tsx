@@ -3,20 +3,31 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
-import { User, Search, Upload, Plus, X } from "lucide-react";
+import { User, Search, Upload, Plus, X, Loader2 } from "lucide-react";
 import {
   GetAdminUsers,
   SearchAdminUsers,
   GetBulkAdminUsers,
+  AdminUserInvite,
+  ReinviteAdminUsers,
+  DeletePendingAdminUser,
+  ActivateAdminUser,
+  DeactivateAdminUser,
 } from "@/lib/api/AdminEndpoint";
+import { ROLE_OPTIONS } from "@/lib/schemas";
+import { toast } from "react-toastify";
+import { showErrorToast } from "@/lib/utils/toast";
+import { formatDateTime } from "@/lib/utils/date";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-interface User {
+interface AdminTableUser {
   id: string;
   name: string;
   email: string;
   roleType: string;
+  isPendingUser: boolean;
+  isActive: boolean;
   dateJoined: string;
   avatar?: string | null;
 }
@@ -28,7 +39,15 @@ interface InviteFormState {
   role: string;
 }
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+type PendingAdminAction = {
+  type: "reinvite" | "delete" | "activate" | "deactivate";
+  user: AdminTableUser;
+} | null;
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+const getErrorMessage = (error: any, fallback: string) =>
+  error?.response?.data?.message || fallback;
 
 const UserManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -40,7 +59,8 @@ const UserManagement: React.FC = () => {
     role: "",
   });
   const [inviteErrors, setInviteErrors] = useState<Partial<InviteFormState>>({});
-  const [inviteLoading, setInviteLoading] = useState(false);
+  const [pendingAdminAction, setPendingAdminAction] =
+    useState<PendingAdminAction>(null);
 
   const [activeSearchTerm, setActiveSearchTerm] = useState("");
   const [page, setPage] = useState(1);
@@ -55,13 +75,16 @@ const UserManagement: React.FC = () => {
         ? await SearchAdminUsers(activeSearchTerm, page - 1, itemsPerPage)
         : await GetAdminUsers(page - 1, itemsPerPage);
 
-      const mappedUsers: User[] = response.content.map((c: any) => {
-        const displayName = `${c.firstName} ${c.lastName}`.trim();
+      const mappedUsers: AdminTableUser[] = response.content.map((c: any) => {
+        const displayName =
+          [c.firstName, c.lastName].filter(Boolean).join(" ") || c.email;
         return {
           id: c.id,
           name: displayName,
           email: c.email,
           roleType: c.roleType,
+          isPendingUser: c.isPendingUser,
+          isActive: c.isActive ?? true,
           dateJoined: c.createdOn,
           avatar: null,
         };
@@ -73,6 +96,33 @@ const UserManagement: React.FC = () => {
 
   const users = data?.users || [];
   const totalCount = data?.totalElements || 0;
+
+  const inviteMutation = useMutation({
+    mutationFn: AdminUserInvite,
+  });
+
+  const reinviteMutation = useMutation({
+    mutationFn: ReinviteAdminUsers,
+  });
+
+  const deletePendingMutation = useMutation({
+    mutationFn: DeletePendingAdminUser,
+  });
+
+  const activateMutation = useMutation({
+    mutationFn: ActivateAdminUser,
+  });
+
+  const deactivateMutation = useMutation({
+    mutationFn: DeactivateAdminUser,
+  });
+
+  const inviteLoading = inviteMutation.isPending;
+  const pendingActionLoading =
+    reinviteMutation.isPending ||
+    deletePendingMutation.isPending ||
+    activateMutation.isPending ||
+    deactivateMutation.isPending;
 
   const handleSearch = () => {
     setActiveSearchTerm(searchTerm);
@@ -101,7 +151,7 @@ const UserManagement: React.FC = () => {
     return colors[index];
   };
 
-  const handleViewProfile = async (user: User) => {
+  const handleViewProfile = async (user: AdminTableUser) => {
     try {
       const [adminUser] = await GetBulkAdminUsers([user.id]);
       navigate(`/user-profile?${user.id}`, { state: { user: adminUser } });
@@ -114,7 +164,7 @@ const UserManagement: React.FC = () => {
     {
       key: "name",
       label: "Name",
-      render: (value, _row: User) => (
+      render: (value, _row: AdminTableUser) => (
         <div className="flex items-center gap-3">
           <div
             className={`w-8 h-8 rounded-full ${getAvatarColor(
@@ -143,9 +193,111 @@ const UserManagement: React.FC = () => {
         <span className="text-gray-900 dark:text-gray-100">{v}</span>
       ),
     },
+    {
+      key: "isPendingUser",
+      label: "Status",
+      render: (_v, row: AdminTableUser) => {
+        const label = row.isPendingUser
+          ? "Invite Pending"
+          : row.isActive
+            ? "Active"
+            : "Inactive";
+        return (
+          <span
+            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+              row.isPendingUser
+              ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+              : row.isActive
+                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+            }`}
+          >
+            {label}
+          </span>
+        );
+      },
+    },
   ];
 
-  const renderActions = (row: User) => {
+  const openPendingActionModal = (
+    type: NonNullable<PendingAdminAction>["type"],
+    user: AdminTableUser
+  ) => {
+    setPendingAdminAction({ type, user });
+  };
+
+  const closePendingActionModal = () => {
+    if (pendingActionLoading) return;
+    setPendingAdminAction(null);
+  };
+
+  const handleConfirmPendingAction = async () => {
+    if (!pendingAdminAction) return;
+
+    const { type, user } = pendingAdminAction;
+    try {
+      if (type === "reinvite") {
+        const response = await reinviteMutation.mutateAsync([user.id]);
+        toast.success(response.message || "Invite sent again.");
+      } else if (type === "delete") {
+        const response = await deletePendingMutation.mutateAsync(user.id);
+        toast.success(response.message || "Pending admin deleted.");
+      } else if (type === "activate") {
+        const response = await activateMutation.mutateAsync(user.id);
+        toast.success(response.message || "Admin activated successfully.");
+      } else {
+        const response = await deactivateMutation.mutateAsync(user.id);
+        toast.success(response.message || "Admin deactivated successfully.");
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+      setPendingAdminAction(null);
+    } catch (error: any) {
+      showErrorToast(
+        getErrorMessage(
+          error,
+          type === "reinvite"
+            ? "Failed to re-invite admin user."
+            : type === "delete"
+              ? "Failed to delete pending admin."
+              : type === "activate"
+                ? "Failed to activate admin."
+                : "Failed to deactivate admin."
+        )
+      );
+    }
+  };
+
+  const renderActions = (row: AdminTableUser) => {
+    if (row.isPendingUser) {
+      return (
+        <>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              openPendingActionModal("reinvite", row);
+            }}
+            disabled={pendingActionLoading}
+            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Re-invite
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              openPendingActionModal("delete", row);
+            }}
+            disabled={pendingActionLoading}
+            className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Delete Pending
+          </button>
+        </>
+      );
+    }
+
     return (
       <>
         <button
@@ -158,6 +310,21 @@ const UserManagement: React.FC = () => {
         >
           View Profile
         </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            openPendingActionModal(row.isActive ? "deactivate" : "activate", row);
+          }}
+          disabled={pendingActionLoading}
+          className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed ${
+            row.isActive
+              ? "text-red-600 dark:text-red-400"
+              : "text-emerald-600 dark:text-emerald-400"
+          }`}
+        >
+          {row.isActive ? "Deactivate" : "Activate"}
+        </button>
       </>
     );
   };
@@ -169,7 +336,12 @@ const UserManagement: React.FC = () => {
       Name: c.name,
       Email: c.email,
       "Role Type": c.roleType,
-      "Date Joined": new Date(c.dateJoined).toLocaleDateString(),
+      Status: c.isPendingUser
+        ? "Invite Pending"
+        : c.isActive
+          ? "Active"
+          : "Inactive",
+      "Date Joined": formatDateTime(c.dateJoined),
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -225,8 +397,13 @@ const UserManagement: React.FC = () => {
     }
 
     try {
-      setInviteLoading(true);
-
+      const invitedUser = await inviteMutation.mutateAsync({
+        firstName: inviteForm.firstName.trim(),
+        lastName: inviteForm.lastName.trim(),
+        email: inviteForm.email.trim().toLowerCase(),
+        role: inviteForm.role,
+      });
+      toast.success(`Invite sent to ${invitedUser.email}.`);
       await queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
 
       setInviteForm({
@@ -236,15 +413,47 @@ const UserManagement: React.FC = () => {
         role: "",
       });
       setShowInviteModal(false);
-    } catch (error) {
-    } finally {
-      setInviteLoading(false);
+    } catch (error: any) {
+      showErrorToast(getErrorMessage(error, "Failed to send invite."));
     }
   };
 
+  const pendingActionIsDelete = pendingAdminAction?.type === "delete";
+  const pendingActionIsDeactivate = pendingAdminAction?.type === "deactivate";
+  const pendingActionIsActivate = pendingAdminAction?.type === "activate";
+  const pendingActionTitle = pendingActionIsDelete
+    ? "Delete Pending Invite?"
+    : pendingActionIsDeactivate
+      ? "Deactivate Admin?"
+      : pendingActionIsActivate
+        ? "Activate Admin?"
+        : "Re-invite Admin?";
+  const pendingActionDescription = pendingActionIsDelete
+    ? `This will remove the pending invite for ${pendingAdminAction?.user.email}. They will no longer be able to complete this invitation.`
+    : pendingActionIsDeactivate
+      ? `This will deactivate ${pendingAdminAction?.user.email}. They will not be able to access the admin dashboard until reactivated.`
+      : pendingActionIsActivate
+        ? `This will reactivate ${pendingAdminAction?.user.email} and restore their admin dashboard access.`
+        : `This will send a fresh invitation email to ${pendingAdminAction?.user.email}. Use this if the previous invitation expired.`;
+  const pendingActionButtonText = pendingActionLoading
+    ? pendingActionIsDelete
+      ? "Deleting..."
+      : pendingActionIsDeactivate
+        ? "Deactivating..."
+        : pendingActionIsActivate
+          ? "Activating..."
+          : "Sending..."
+    : pendingActionIsDelete
+      ? "Delete Pending"
+      : pendingActionIsDeactivate
+        ? "Deactivate"
+        : pendingActionIsActivate
+          ? "Activate"
+          : "Re-invite";
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-8 md:w-full sm:w-auto w-[95vw]">
-      <div className="md:w-full sm:w-auto w-[60vw]">
+    <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 transition-colors duration-300 dark:bg-gray-900 sm:p-5">
+      <div className="w-full min-w-0">
         <div className="flex items-center justify-between mb-6 sm:mb-8">
           <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
             User Management
@@ -252,15 +461,15 @@ const UserManagement: React.FC = () => {
         </div>
 
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-          <div className="flex gap-2 flex-1 sm:flex-initial">
-            <div className="relative flex-1 sm:flex-initial">
+          <div className="flex w-full min-w-0 gap-2 sm:w-auto sm:flex-1">
+            <div className="relative min-w-0 flex-1 sm:max-w-64">
               <input
                 type="text"
                 placeholder="Search by name or email"
                 value={searchTerm}
                 onChange={(e) => handleSearchInputChange(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="px-4 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-2 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
               />
               {searchTerm && (
                 <button
@@ -279,10 +488,10 @@ const UserManagement: React.FC = () => {
             </button>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex w-full flex-wrap gap-3 sm:w-auto sm:gap-4">
             <button
               onClick={openInviteModal}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700 sm:flex-none"
             >
               <Plus size={18} />
               Send Invite
@@ -290,7 +499,7 @@ const UserManagement: React.FC = () => {
             <button
               onClick={handleExport}
               disabled={users.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-white rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-100 px-4 py-2 text-blue-600 transition hover:bg-blue-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-900 dark:text-white dark:hover:bg-blue-800 sm:flex-none"
             >
               <Upload size={18} />
               Export
@@ -312,6 +521,82 @@ const UserManagement: React.FC = () => {
           loading={loading}
         />
       </div>
+
+      {/* PENDING ADMIN ACTION CONFIRMATION MODAL */}
+      {pendingAdminAction && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center px-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              closePendingActionModal();
+            }
+          }}
+        >
+          <div
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={closePendingActionModal}
+          />
+
+          <div
+            className="relative w-full max-w-md rounded-lg overflow-hidden shadow-xl bg-white dark:bg-gray-800 z-[10001]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 bg-[#081A30] dark:bg-[#081A30]">
+              <h3 className="text-white font-semibold text-lg">
+                {pendingActionTitle}
+              </h3>
+              <button
+                className="text-white hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={closePendingActionModal}
+                disabled={pendingActionLoading}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <p className="text-sm text-gray-600 dark:text-gray-300 leading-6">
+                {pendingActionDescription}
+              </p>
+
+              <div className="mt-6 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-3">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {pendingAdminAction.user.name}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 break-all">
+                  {pendingAdminAction.user.email}
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-6">
+                <button
+                  type="button"
+                  onClick={closePendingActionModal}
+                  disabled={pendingActionLoading}
+                  className="px-5 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmPendingAction}
+                  disabled={pendingActionLoading}
+                  className={`inline-flex items-center gap-2 px-5 py-2 rounded-lg text-white transition disabled:opacity-70 disabled:cursor-not-allowed ${
+                    pendingActionIsDelete || pendingActionIsDeactivate
+                      ? "bg-red-600 hover:bg-red-700"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
+                >
+                  {pendingActionLoading && (
+                    <Loader2 size={16} className="animate-spin" />
+                  )}
+                  {pendingActionButtonText}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* SEND INVITE MODAL */}
       {showInviteModal && (
@@ -444,9 +729,11 @@ const UserManagement: React.FC = () => {
                       }`}
                     >
                       <option value="">Select</option>
-                      <option value="ADMIN">Admin</option>
-                      <option value="SUPER_ADMIN">Super Admin</option>
-                      <option value="MANAGER">Manager</option>
+                      {ROLE_OPTIONS.map((role) => (
+                        <option key={role} value={role}>
+                          {role.replace(/_/g, " ")}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   {inviteErrors.role && (

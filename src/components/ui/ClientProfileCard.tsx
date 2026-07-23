@@ -1,5 +1,6 @@
 import React from "react";
 import { CircleUserRound } from "lucide-react";
+import { formatDateTime } from "@/lib/utils/date";
 
 export interface ClientInfoProps {
   firstName: string | null | undefined;
@@ -93,7 +94,7 @@ const ClientProfileCard: React.FC<ClientInfoProps> = ({
               Date Joined
             </p>
             <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              {dateJoined}
+              {formatDateTime(dateJoined)}
             </p>
           </div>
         </div>

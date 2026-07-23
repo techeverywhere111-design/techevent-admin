@@ -16,12 +16,14 @@ export interface CreatePromoCodePayload {
   code: string;
   owner: string;
   discountPercentage: number;
+  settlementPercentage: number;
   startTime: string;
   endTime: string;
 }
 
 export interface RenewPromoCodePayload {
   discountPercentage: number;
+  settlementPercentage: number;
   startTime: string;
   endTime: string;
 }
