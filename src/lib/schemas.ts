@@ -159,7 +159,7 @@ export const EnquirySchema = z.object({
   name: z.string(),
   businessName: z.string().nullable().optional(),
   email: z.string(),
-  subject: z.string(),
+  subject: z.string().nullable().optional(),
   message: z.string(),
   isTreated: z.boolean(),
   treatedBy: z.string().nullable().optional(),
