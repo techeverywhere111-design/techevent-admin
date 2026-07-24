@@ -1,5 +1,5 @@
 import React from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type { PieLabelRenderProps } from "recharts";
 import SkeletonLoader from "./SkeletonLoader";
 import { type ChartData } from "@/types/chart";
@@ -36,6 +36,10 @@ const renderPercentageLabel = (
     return null;
   }
 
+  if (percentNum < 0.04) {
+    return null;
+  }
+
   const RADIAN = Math.PI / 180;
   const radius = innerNum + (outerNum - innerNum) * 0.6;
   const x = cxNum + radius * Math.cos(-midAngleNum * RADIAN);
@@ -65,7 +69,7 @@ const PieChartCard: React.FC<PieChartCardProps> = ({
 }) => {
   return (
     <div className="bg-white dark:bg-[#0B1120] shadow rounded-lg p-4 border border-gray-200 dark:border-gray-700 flex flex-col transition-colors duration-300">
-      <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
         {title}
       </h3>
 
@@ -76,6 +80,7 @@ const PieChartCard: React.FC<PieChartCardProps> = ({
           <div style={{ width: "100%", height }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
+                <Tooltip cursor={{ fillOpacity: 0.12 }} />
                 <Pie
                   data={data}
                   dataKey="value"
@@ -98,17 +103,17 @@ const PieChartCard: React.FC<PieChartCardProps> = ({
             </ResponsiveContainer>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-y-2 text-xs sm:text-sm">
+          <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-3 text-xs sm:grid-cols-2 sm:text-sm">
             {data.map((entry, index) => (
               <div
                 key={entry.name}
-                className="flex items-center space-x-2 justify-start"
+                className="flex min-w-0 items-start gap-2"
               >
                 <span
-                  className="inline-block w-3 h-2 rounded-sm"
+                  className="mt-1.5 inline-block h-2 w-3 shrink-0 rounded-sm"
                   style={{ backgroundColor: colors[index % colors.length] }}
-                ></span>
-                <span className="text-gray-600 dark:text-gray-400">
+                />
+                <span className="min-w-0 break-words leading-5 text-gray-600 dark:text-gray-400">
                   {entry.name}
                 </span>
               </div>

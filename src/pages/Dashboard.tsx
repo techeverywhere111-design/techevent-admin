@@ -162,7 +162,7 @@ export default function Dashboard() {
               <BarChart data={chartData} layout="vertical">
                 <XAxis type="number" hide />
                 <YAxis type="category" dataKey="name" width={80} />
-                <Tooltip />
+                <Tooltip formatter={(value) => [value, "Usage"]} />
                 <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 4, 4]} />
               </BarChart>
             </ResponsiveContainer>
