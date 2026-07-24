@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
-import { Search, Upload, X } from "lucide-react";
+import { CheckCircle, Clock, Search, Upload, X } from "lucide-react";
 import {
   GetEnquiries,
   GetPendingEnquiries,
@@ -167,14 +167,24 @@ const Enquiries: React.FC = () => {
     {
       key: "status",
       label: "Status",
-      render: (v) => (
-        <span
-          className={`font-semibold text-xs uppercase ${v === "TREATED" ? "text-blue-600" : "text-gray-500"
+      render: (v) => {
+        const isTreated = v === "TREATED";
+        return (
+          <span
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold uppercase ${
+              isTreated
+                ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
+                : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
             }`}
-        >
-          {v}
-        </span>
-      ),
+          >
+            {isTreated ? (
+              <CheckCircle className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+            ) : (
+              <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+            )}
+          </span>
+        );
+      },
     },
   ];
 
@@ -302,7 +312,7 @@ const Enquiries: React.FC = () => {
                 setSelectedCategory(e.target.value);
                 setPage(1);
               }}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
               <option value="">All Categories</option>
               {ENQUIRY_CATEGORIES.map((cat) => (
@@ -316,7 +326,7 @@ const Enquiries: React.FC = () => {
               onClick={handleExport}
               className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition"
             >
-              <Upload size={18} />
+              <Upload size={15} />
               Export
             </button>
           </div>
