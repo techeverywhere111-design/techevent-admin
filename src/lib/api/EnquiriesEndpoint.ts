@@ -3,6 +3,7 @@ import api from "../utils/api";
 import {
   EnquiryListResponseSchema,
   EnquirySchema,
+  TopEnquiryCategorySchema,
   type Enquiry
 } from "@/lib/schemas";
 
@@ -88,4 +89,16 @@ export const MarkAsTreated = async (id: string): Promise<void> => {
 
 export const MarkAsNotTreated = async (id: string): Promise<void> => {
   await api.get(`/api/v1/enquiries/${id}/not-treated`);
+};
+
+export const GetTopEnquiryCategories = async (
+  noOfCategories: number,
+  startTime: string,
+  endTime: string
+) => {
+  const { data } = await api.get(
+    `/api/v1/enquiries/${noOfCategories}/top-requests`,
+    { params: { startTime, endTime } }
+  );
+  return TopEnquiryCategorySchema.array().parse(data);
 };

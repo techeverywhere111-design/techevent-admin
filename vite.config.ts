@@ -65,7 +65,10 @@ export default defineConfig({
             return "vendor-data";
           }
 
-          return "vendor-misc";
+          // Let Rollup keep feature-only dependencies with their lazy route.
+          // A catch-all vendor chunk forces unrelated packages into one large
+          // eagerly generated bundle.
+          return undefined;
         },
       },
     },

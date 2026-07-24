@@ -13,6 +13,7 @@ import {
   DeletePendingAdminUser,
   ActivateAdminUser,
   DeactivateAdminUser,
+  InitiateAdminPasswordReset,
 } from "@/lib/api/AdminEndpoint";
 import { ROLE_OPTIONS } from "@/lib/schemas";
 import { toast } from "react-toastify";
@@ -40,7 +41,7 @@ interface InviteFormState {
 }
 
 type PendingAdminAction = {
-  type: "reinvite" | "delete" | "activate" | "deactivate";
+  type: "reinvite" | "delete" | "activate" | "deactivate" | "resetPassword";
   user: AdminTableUser;
 } | null;
 
@@ -117,12 +118,17 @@ const UserManagement: React.FC = () => {
     mutationFn: DeactivateAdminUser,
   });
 
+  const resetPasswordMutation = useMutation({
+    mutationFn: InitiateAdminPasswordReset,
+  });
+
   const inviteLoading = inviteMutation.isPending;
   const pendingActionLoading =
     reinviteMutation.isPending ||
     deletePendingMutation.isPending ||
     activateMutation.isPending ||
-    deactivateMutation.isPending;
+    deactivateMutation.isPending ||
+    resetPasswordMutation.isPending;
 
   const handleSearch = () => {
     setActiveSearchTerm(searchTerm);
@@ -245,12 +251,17 @@ const UserManagement: React.FC = () => {
       } else if (type === "activate") {
         const response = await activateMutation.mutateAsync(user.id);
         toast.success(response.message || "Admin activated successfully.");
+      } else if (type === "resetPassword") {
+        const response = await resetPasswordMutation.mutateAsync(user.email);
+        toast.success(response.message || "Password reset link sent.");
       } else {
         const response = await deactivateMutation.mutateAsync(user.id);
         toast.success(response.message || "Admin deactivated successfully.");
       }
 
-      await queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+      if (type !== "resetPassword") {
+        await queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+      }
       setPendingAdminAction(null);
     } catch (error: any) {
       showErrorToast(
@@ -262,7 +273,9 @@ const UserManagement: React.FC = () => {
               ? "Failed to delete pending admin."
               : type === "activate"
                 ? "Failed to activate admin."
-                : "Failed to deactivate admin."
+                : type === "resetPassword"
+                  ? "Failed to send password reset link."
+                  : "Failed to deactivate admin."
         )
       );
     }
@@ -310,6 +323,19 @@ const UserManagement: React.FC = () => {
         >
           View Profile
         </button>
+        {row.isActive && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              openPendingActionModal("resetPassword", row);
+            }}
+            disabled={pendingActionLoading}
+            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Reset Password
+          </button>
+        )}
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -421,20 +447,26 @@ const UserManagement: React.FC = () => {
   const pendingActionIsDelete = pendingAdminAction?.type === "delete";
   const pendingActionIsDeactivate = pendingAdminAction?.type === "deactivate";
   const pendingActionIsActivate = pendingAdminAction?.type === "activate";
+  const pendingActionIsResetPassword =
+    pendingAdminAction?.type === "resetPassword";
   const pendingActionTitle = pendingActionIsDelete
     ? "Delete Pending Invite?"
     : pendingActionIsDeactivate
       ? "Deactivate Admin?"
       : pendingActionIsActivate
         ? "Activate Admin?"
-        : "Re-invite Admin?";
+        : pendingActionIsResetPassword
+          ? "Reset Admin Password?"
+          : "Re-invite Admin?";
   const pendingActionDescription = pendingActionIsDelete
     ? `This will remove the pending invite for ${pendingAdminAction?.user.email}. They will no longer be able to complete this invitation.`
     : pendingActionIsDeactivate
       ? `This will deactivate ${pendingAdminAction?.user.email}. They will not be able to access the admin dashboard until reactivated.`
       : pendingActionIsActivate
         ? `This will reactivate ${pendingAdminAction?.user.email} and restore their admin dashboard access.`
-        : `This will send a fresh invitation email to ${pendingAdminAction?.user.email}. Use this if the previous invitation expired.`;
+        : pendingActionIsResetPassword
+          ? `This will email a password reset link to ${pendingAdminAction?.user.email}.`
+          : `This will send a fresh invitation email to ${pendingAdminAction?.user.email}. Use this if the previous invitation expired.`;
   const pendingActionButtonText = pendingActionLoading
     ? pendingActionIsDelete
       ? "Deleting..."
@@ -449,7 +481,9 @@ const UserManagement: React.FC = () => {
         ? "Deactivate"
         : pendingActionIsActivate
           ? "Activate"
-          : "Re-invite";
+          : pendingActionIsResetPassword
+            ? "Send Reset Link"
+            : "Re-invite";
 
   return (
     <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 transition-colors duration-300 dark:bg-gray-900 sm:p-5">

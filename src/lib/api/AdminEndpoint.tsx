@@ -38,6 +38,13 @@ export interface CompleteAdminInvitePayload {
   confirmPassword: string;
 }
 
+export interface CompleteResetPasswordPayload {
+  email: string;
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 export const AdminUserLogin = async (
   payload: AdminUserLoginPayload
 ): Promise<AdminUserLoginResponse> => {
@@ -64,6 +71,25 @@ export const CompleteAdminInvite = async (
   payload: CompleteAdminInvitePayload
 ) => {
   const { data } = await api.put("/api/v1/admin-users/complete-invite", payload);
+  return MessageResponseSchema.parse(data);
+};
+
+export const InitiateAdminPasswordReset = async (email: string) => {
+  const { data } = await api.put(
+    "/api/v1/admin-users/initiate-reset-password",
+    undefined,
+    { params: { email } }
+  );
+  return MessageResponseSchema.parse(data);
+};
+
+export const CompleteAdminPasswordReset = async (
+  payload: CompleteResetPasswordPayload
+) => {
+  const { data } = await api.put(
+    "/api/v1/admin-users/complete-reset-password",
+    payload
+  );
   return MessageResponseSchema.parse(data);
 };
 

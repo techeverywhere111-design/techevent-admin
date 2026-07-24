@@ -12,11 +12,14 @@ import { useQuery } from "@tanstack/react-query";
 import { GetTotalCreatedAccounts, GetAccountPlanStatistics } from "@/lib/api/UserEndPoint";
 import { GetTotalCreatedEvents } from "@/lib/api/EventManagement";
 import { GetFeatureUsageBreakdown } from "@/lib/api/AuditLogEndpoint";
+import { GetTopEnquiryCategories } from "@/lib/api/EnquiriesEndpoint";
 import { type FeatureBreakdownResponse } from "@/lib/schemas";
 import { type ChartData } from "@/types/chart";
-import AppLoader from "@/components/ui/AppLoader";
+import SkeletonLoader from "@/components/ui/SkeletonLoader";
+import CustomShapeBarChart from "@/components/ui/CustomShapeBarChart";
 
 const PLAN_COLORS = ["#84cc16", "#ec4899", "#3b82f6", "#f59e0b", "#8b5cf6"];
+const TOP_ENQUIRY_CATEGORY_COUNT = 5;
 
 const mapBreakdownToChartData = (data?: FeatureBreakdownResponse, fallback: ChartData[] = []): ChartData[] => {
   const mapped = data?.columns.map((col) => ({ name: col.feature, value: col.totalCount })) ?? [];
@@ -35,6 +38,16 @@ const DEFAULT_FEATURE_USAGE: ChartData[] = [
   { name: "Polls", value: 0 },
   { name: "Others", value: 0 },
 ];
+
+const formatEnquiryCategory = (category: string | null) => {
+  if (!category) return "Uncategorized";
+
+  return category
+    .toLowerCase()
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
 
 export default function Dashboard() {
 
@@ -68,6 +81,12 @@ export default function Dashboard() {
     queryFn: () => GetFeatureUsageBreakdown(startTime, endTime),
   });
 
+  const { data: topEnquiryCategories = [], isLoading: topEnquiryCategoriesLoading } = useQuery({
+    queryKey: ["topEnquiryCategories", TOP_ENQUIRY_CATEGORY_COUNT, startTime, endTime],
+    queryFn: () =>
+      GetTopEnquiryCategories(TOP_ENQUIRY_CATEGORY_COUNT, startTime, endTime),
+  });
+
   const chartData = useMemo(() => {
     if (!featureUsageData || featureUsageData.columns.length === 0) {
       return DEFAULT_FEATURE_USAGE;
@@ -77,6 +96,15 @@ export default function Dashboard() {
       .sort((a, b) => b.value - a.value)
       .slice(0, 5);
   }, [featureUsageData]);
+
+  const topEnquiryCategoryChartData = useMemo<ChartData[]>(
+    () =>
+      topEnquiryCategories.map(({ enquiryCategory, count }) => ({
+        name: formatEnquiryCategory(enquiryCategory),
+        value: count,
+      })),
+    [topEnquiryCategories]
+  );
 
   return (
     <div className="p-4 sm:p-5 space-y-5">
@@ -128,9 +156,7 @@ export default function Dashboard() {
             Top 5 Most Used Features
           </h3>
           {featureUsageLoading ? (
-            <div className="h-[250px] w-full flex items-center justify-center">
-              <AppLoader fullScreen={false} />
-            </div>
+            <SkeletonLoader height="h-[250px]" />
           ) : (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={chartData} layout="vertical">
@@ -142,6 +168,20 @@ export default function Dashboard() {
             </ResponsiveContainer>
           )}
         </div>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold mb-1">Top Enquiry Categories</h3>
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">Last 30 days</p>
+        {topEnquiryCategoriesLoading ? (
+          <SkeletonLoader height="h-[320px]" />
+        ) : topEnquiryCategoryChartData.length === 0 ? (
+          <div className="flex h-[320px] items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+            No enquiries were recorded in this period.
+          </div>
+        ) : (
+          <CustomShapeBarChart data={topEnquiryCategoryChartData} />
+        )}
       </div>
     </div>
   );

@@ -197,6 +197,13 @@ export const EnquiryListResponseSchema = PaginationSchema.extend({
   content: z.array(EnquirySchema),
 });
 
+export const TopEnquiryCategorySchema = z.object({
+  enquiryCategory: z.string().nullable(),
+  count: z.number(),
+});
+
+export type TopEnquiryCategory = z.infer<typeof TopEnquiryCategorySchema>;
+
 // Permission Schemas
 export const PermissionSchema = z.object({
   id: z.string(),

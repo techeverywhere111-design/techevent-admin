@@ -1,33 +1,40 @@
 import { createBrowserRouter } from "react-router-dom";
-import Login from "@/features/auth/pages/Login";
-import CompleteRegistration from "@/features/auth/pages/CompleteRegistration";
+import { lazy } from "react";
 import Layout from "@/components/layout/Layout";
 import RootLayout from "@/components/layout/RootLayout";
-import Dashboard from "@/pages/Dashboard";
-import AnalyticsAndInsights from "@/pages/AnalyticsAndInsight";
-import Plans from "@/pages/Plans";
-import PlanForm from "@/pages/PlanForm";
-import PaymentHistory from "@/pages/PaymentHistory";
-
-import ClientManagement from "@/pages/ClientManagement";
-import ClientProfile from "@/pages/ClientProfile";
-import AuditLogs from "@/pages/ClientAuditLogs";
-
 import { PrivateRoute } from "@/components/PrivateRoute";
-import EventCategory from "@/pages/EventCategory";
-import UserManagement from "@/pages/UserManagement";
-import UserProfile from "@/pages/UserProfile";
-import PromoCode from "@/pages/PromoCode";
-import ViewPromoRegistration from "@/pages/ViewPromoRegistration";
-import Enquiries from "@/pages/Enquiries";
-import EnquiryDetails from "@/pages/EnquiryDetails";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PermissionGuard } from "@/components/PermissionGuard";
 import { ROUTE_PERMISSIONS } from "@/lib/permissions";
-import Permissions from "@/pages/Permissions";
-import Roles from "@/pages/Roles";
 import ErrorPage from "@/pages/ErrorPage";
-import SuspiciousUsersActivity from "@/pages/SuspiciousUsersActivity";
+
+const Login = lazy(() => import("@/features/auth/pages/Login"));
+const CompleteRegistration = lazy(
+  () => import("@/features/auth/pages/CompleteRegistration")
+);
+const CompleteResetPassword = lazy(
+  () => import("@/features/auth/pages/CompleteResetPassword")
+);
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const AnalyticsAndInsights = lazy(() => import("@/pages/AnalyticsAndInsight"));
+const Plans = lazy(() => import("@/pages/Plans"));
+const PlanForm = lazy(() => import("@/pages/PlanForm"));
+const PaymentHistory = lazy(() => import("@/pages/PaymentHistory"));
+const ClientManagement = lazy(() => import("@/pages/ClientManagement"));
+const ClientProfile = lazy(() => import("@/pages/ClientProfile"));
+const AuditLogs = lazy(() => import("@/pages/ClientAuditLogs"));
+const EventCategory = lazy(() => import("@/pages/EventCategory"));
+const UserManagement = lazy(() => import("@/pages/UserManagement"));
+const UserProfile = lazy(() => import("@/pages/UserProfile"));
+const PromoCode = lazy(() => import("@/pages/PromoCode"));
+const ViewPromoRegistration = lazy(() => import("@/pages/ViewPromoRegistration"));
+const Enquiries = lazy(() => import("@/pages/Enquiries"));
+const EnquiryDetails = lazy(() => import("@/pages/EnquiryDetails"));
+const Permissions = lazy(() => import("@/pages/Permissions"));
+const Roles = lazy(() => import("@/pages/Roles"));
+const SuspiciousUsersActivity = lazy(
+  () => import("@/pages/SuspiciousUsersActivity")
+);
 
 export const router = createBrowserRouter([
   {
@@ -41,6 +48,10 @@ export const router = createBrowserRouter([
       {
         path: "complete-registration",
         element: <CompleteRegistration />,
+      },
+      {
+        path: "complete-reset-password",
+        element: <CompleteResetPassword />,
       },
       {
         path: "/",

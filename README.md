@@ -122,7 +122,7 @@ Important API modules include:
 - `UserEndPoint.tsx` for client/account users and account statistics.
 - `EventManagement.tsx` for event categories and event statistics.
 - `DiscountManagement.tsx` for promo codes and promo registration logs.
-- `EnquiriesEndpoint.ts` for enquiry listing, details, and status updates.
+- `EnquiriesEndpoint.ts` for enquiry listing, details, status updates, and top-category reporting.
 - `AuditLogEndpoint.ts` for audit logs and feature usage analytics.
 - `SuspiciousUsersEndpoint.ts` for suspicious users and suspicious activity records.
 - `PlanPaymentEndpoint.ts` for plan payment and subscription analytics.
@@ -167,6 +167,17 @@ For example, the plans page uses:
 - Events created over the last 30 days.
 - New accounts by plan.
 - Top feature usage.
+- Top five enquiry categories by request volume.
+
+#### Dashboard enquiry-category report
+
+The dashboard uses the reusable `CustomShapeBarChart` component, which accepts normalized `{ name, value }` data and has no enquiry-specific API or presentation logic. Its curved triangle-shaped bars and category-specific colours can therefore be reused for any similarly shaped dashboard dataset. The enquiry report maps its response into this generic data shape before rendering.
+
+```text
+GET /api/v1/enquiries/5/top-requests?startTime={ISO-8601}&endTime={ISO-8601}
+```
+
+Its `startTime` and `endTime` reuse the dashboard's default rolling 30-day window. The API response is validated as an array of `{ enquiryCategory, count }` records before the chart renders. A missing (`null`) category is displayed as **Uncategorized**. Categories with no returned records display an empty-state message, while requests in progress show the dashboard loader.
 
 ### Analytics And Insight
 

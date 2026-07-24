@@ -8,6 +8,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
+import AppLoader from "@/components/ui/AppLoader";
 
 const ReactQueryDevtools = import.meta.env.DEV
   ? lazy(() =>
@@ -23,7 +24,9 @@ export default function App() {
       <AppProvider>
         <AuthProvider>
           <ThemeProvider>
-            <RouterProvider router={router} />
+            <Suspense fallback={<AppLoader />}>
+              <RouterProvider router={router} />
+            </Suspense>
             <ToastContainer position="top-right" autoClose={3000} style={{ zIndex: 99999 }} />
           </ThemeProvider>
         </AuthProvider>

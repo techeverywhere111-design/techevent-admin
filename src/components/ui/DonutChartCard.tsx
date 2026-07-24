@@ -17,7 +17,6 @@ const renderPercentageLabel = (
 ): React.ReactElement | null => {
   const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
 
-  // ✅ Convert everything safely to numbers or bail early
   const cxNum = Number(cx ?? 0);
   const cyNum = Number(cy ?? 0);
   const midAngleNum = Number(midAngle ?? 0);
