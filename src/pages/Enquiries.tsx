@@ -168,14 +168,14 @@ const Enquiries: React.FC = () => {
       render: (v) => <span className="text-gray-600 dark:text-gray-300">{v}</span>,
     },
     {
-      key: "category",
-      label: "Category",
-      render: (v) => <span className="text-gray-600 dark:text-gray-300 font-medium">{v as string}</span>,
-    },
-    {
       key: "subject",
       label: "Subject",
       render: (v) => <span className="text-gray-600 dark:text-gray-300" title={v as string}>{v}</span>,
+    },
+    {
+      key: "category",
+      label: "Category",
+      render: (v) => <span className="text-gray-600 dark:text-gray-300 font-medium">{v as string}</span>,
     },
     {
       key: "treatedBy",
