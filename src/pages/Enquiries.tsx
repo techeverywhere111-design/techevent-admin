@@ -19,11 +19,21 @@ import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
 import { formatDateTime } from "@/lib/utils/date";
 
+const formatCategory = (cat?: string | null) => {
+  if (!cat) return "N/A";
+  return cat
+    .toLowerCase()
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
 interface EnquiryRow {
   id: string;
   name: string;
   businessName: string;
   email: string;
+  category: string;
   subject: string;
   createdOn: string;
   treatedBy: string;
@@ -76,11 +86,14 @@ const Enquiries: React.FC = () => {
           treatedByStr = e.treatedBy;
         }
 
+        const rawCategory = e.enquiryCategory || e.category;
+
         return {
           id: e.id,
           name: e.name,
           businessName: e.businessName || "N/A",
           email: e.email,
+          category: formatCategory(rawCategory),
           subject: e.subject || "N/A",
           createdOn: formatDateTime(e.createdOn),
           treatedBy: treatedByStr,
@@ -153,6 +166,11 @@ const Enquiries: React.FC = () => {
       key: "email",
       label: "Email",
       render: (v) => <span className="text-gray-600 dark:text-gray-300">{v}</span>,
+    },
+    {
+      key: "category",
+      label: "Category",
+      render: (v) => <span className="text-gray-600 dark:text-gray-300 font-medium">{v as string}</span>,
     },
     {
       key: "subject",
@@ -228,6 +246,7 @@ const Enquiries: React.FC = () => {
     const exportData = enquiries.map((e) => ({
       Name: e.name,
       Email: e.email,
+      Category: e.category,
       Subject: e.subject,
       "Treated By": e.treatedBy,
       Status: e.status,

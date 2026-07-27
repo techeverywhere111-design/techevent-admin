@@ -189,6 +189,8 @@ export const EnquirySchema = z.object({
   treatedBy: z.string().nullable().optional(),
   treatedByUser: AdminUserSchema.nullable().optional(),
   createdOn: z.string(),
+  enquiryCategory: z.string().nullable().optional(),
+  category: z.string().nullable().optional(),
 });
 
 export type Enquiry = z.infer<typeof EnquirySchema>;

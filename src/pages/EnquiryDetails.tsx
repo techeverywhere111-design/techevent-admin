@@ -7,6 +7,15 @@ import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
 import AppLoader from "@/components/ui/AppLoader";
 
+const formatCategory = (cat?: string | null) => {
+  if (!cat) return "N/A";
+  return cat
+    .toLowerCase()
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
 const EnquiryDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -94,6 +103,12 @@ const EnquiryDetails: React.FC = () => {
           <div className="min-w-0">
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Email</p>
             <p className="font-semibold text-gray-900 dark:text-white whitespace-pre-wrap break-all">{enquiry.email}</p>
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Category</p>
+            <p className="font-semibold text-gray-900 dark:text-white whitespace-pre-wrap break-all">
+              {formatCategory(enquiry.enquiryCategory || enquiry.category)}
+            </p>
           </div>
           <div className="min-w-0">
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Status</p>
