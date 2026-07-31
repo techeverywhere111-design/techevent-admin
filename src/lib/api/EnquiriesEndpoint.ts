@@ -65,6 +65,7 @@ export const SearchEnquiries = async (
   if (category) params.category = category;
   const { data } = await api.get("/api/v1/enquiries/search", {
     params,
+    headers: { "x-show-error-toast": "true" },
   });
   return EnquiryListResponseSchema.parse(data);
 };
@@ -79,16 +80,21 @@ export const SearchPendingEnquiries = async (
   if (category) params.category = category;
   const { data } = await api.get("/api/v1/enquiries/pending/search", {
     params,
+    headers: { "x-show-error-toast": "true" },
   });
   return EnquiryListResponseSchema.parse(data);
 };
 
 export const MarkAsTreated = async (id: string): Promise<void> => {
-  await api.get(`/api/v1/enquiries/${id}/treated`);
+  await api.get(`/api/v1/enquiries/${id}/treated`, {
+    headers: { "x-show-error-toast": "true" },
+  });
 };
 
 export const MarkAsNotTreated = async (id: string): Promise<void> => {
-  await api.get(`/api/v1/enquiries/${id}/not-treated`);
+  await api.get(`/api/v1/enquiries/${id}/not-treated`, {
+    headers: { "x-show-error-toast": "true" },
+  });
 };
 
 export const GetTopEnquiryCategories = async (
@@ -98,7 +104,7 @@ export const GetTopEnquiryCategories = async (
 ) => {
   const { data } = await api.get(
     `/api/v1/enquiries/${noOfCategories}/top-requests`,
-    { params: { startTime, endTime } }
+    { params: { startTime, endTime }, headers: { "x-skip-error-toast": "true" } }
   );
   return TopEnquiryCategorySchema.array().parse(data);
 };

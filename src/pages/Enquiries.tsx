@@ -18,6 +18,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
 import { formatDateTime } from "@/lib/utils/date";
+import { isPermissionDeniedError } from "@/lib/utils/api";
 
 const formatCategory = (cat?: string | null) => {
   if (!cat) return "N/A";
@@ -61,20 +62,32 @@ const Enquiries: React.FC = () => {
     staleTime: 60000,
   });
 
-  const { data, isLoading: loading } = useQuery({
+  const { data, isLoading: loading, error } = useQuery({
     queryKey: ["enquiries", viewMode, activeSearchTerm, selectedCategory, page, itemsPerPage],
     queryFn: async () => {
       const isSearching = !!activeSearchTerm;
 
       let response;
       if (viewMode === "pending") {
-        response = isSearching
-          ? await SearchPendingEnquiries(activeSearchTerm, page - 1, itemsPerPage, selectedCategory)
-          : await GetPendingEnquiries(page - 1, itemsPerPage, selectedCategory);
+        if (isSearching) {
+          try {
+            response = await SearchPendingEnquiries(activeSearchTerm, page - 1, itemsPerPage, selectedCategory);
+          } catch (_err) {
+            response = await GetPendingEnquiries(page - 1, itemsPerPage, selectedCategory);
+          }
+        } else {
+          response = await GetPendingEnquiries(page - 1, itemsPerPage, selectedCategory);
+        }
       } else {
-        response = isSearching
-          ? await SearchEnquiries(activeSearchTerm, page - 1, itemsPerPage, selectedCategory)
-          : await GetEnquiries(page - 1, itemsPerPage, selectedCategory);
+        if (isSearching) {
+          try {
+            response = await SearchEnquiries(activeSearchTerm, page - 1, itemsPerPage, selectedCategory);
+          } catch (_err) {
+            response = await GetEnquiries(page - 1, itemsPerPage, selectedCategory);
+          }
+        } else {
+          response = await GetEnquiries(page - 1, itemsPerPage, selectedCategory);
+        }
       }
 
       const mappedEnquiries: EnquiryRow[] = response.content.map((e) => {
@@ -363,6 +376,7 @@ const Enquiries: React.FC = () => {
           }}
           renderActions={renderActions}
           loading={loading}
+          isUnauthorized={isPermissionDeniedError(error)}
         />
       </div>
     </div>

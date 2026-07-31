@@ -13,6 +13,7 @@ import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
 import { formatDateTime } from "@/lib/utils/date";
+import { isPermissionDeniedError } from "@/lib/utils/api";
 
 interface PromoCode {
   id: string;
@@ -52,14 +53,24 @@ const ViewPromoRegistration: React.FC = () => {
   
   const queryClient = useQueryClient();
 
-  const { data, isLoading: loading } = useQuery({
+  const { data, isLoading: loading, error } = useQuery({
     queryKey: ["promoRegistrations", promoCode?.code, activeSearchTerm, page, itemsPerPage],
     queryFn: async () => {
       if (!promoCode?.code) throw new Error("No promo code provided");
       
-      const response = activeSearchTerm
-        ? await SearchPromoCodeRegistrationLogs(activeSearchTerm, promoCode.code, page - 1, itemsPerPage)
-        : await GetPromoCodeRegistrationLogs(promoCode.code, page - 1, itemsPerPage);
+      let response;
+      if (activeSearchTerm) {
+        try {
+          response = await SearchPromoCodeRegistrationLogs(activeSearchTerm, promoCode.code, page - 1, itemsPerPage);
+        } catch (_err) {
+          response = await GetPromoCodeRegistrationLogs(promoCode.code, page - 1, itemsPerPage);
+        }
+      } else {
+        response = await GetPromoCodeRegistrationLogs(promoCode.code, page - 1, itemsPerPage);
+      }
+
+
+
         
       return { registrations: response.content, totalElements: response.totalElements };
     },
@@ -331,6 +342,7 @@ const ViewPromoRegistration: React.FC = () => {
             }}
             renderActions={renderActions}
             loading={loading}
+            isUnauthorized={isPermissionDeniedError(error)}
           />
         </div>
       </div>

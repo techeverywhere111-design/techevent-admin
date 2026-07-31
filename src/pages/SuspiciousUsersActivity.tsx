@@ -6,6 +6,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { useQuery } from "@tanstack/react-query";
 import { formatDateTime } from "@/lib/utils/date";
+import { isPermissionDeniedError } from "@/lib/utils/api";
 
 interface SelectedImageState {
   url: string;
@@ -20,13 +21,13 @@ const SuspiciousUsersActivity: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedImage, setSelectedImage] = useState<SelectedImageState | null>(null);
 
-  const { data: usersData, isLoading: loadingUsers } = useQuery({
+  const { data: usersData, isLoading: loadingUsers, error: usersError } = useQuery({
     queryKey: ["suspicious-users", page, itemsPerPage],
     queryFn: () => GetSuspiciousUsers(page - 1, itemsPerPage),
     enabled: activeTab === "users",
   });
 
-  const { data: activitiesData, isLoading: loadingActivities } = useQuery({
+  const { data: activitiesData, isLoading: loadingActivities, error: activitiesError } = useQuery({
     queryKey: ["suspicious-activities", page, itemsPerPage],
     queryFn: () => GetSuspiciousActivities(page - 1, itemsPerPage),
     enabled: activeTab === "activities",
@@ -400,6 +401,9 @@ const SuspiciousUsersActivity: React.FC = () => {
             setPage(1);
           }}
           loading={loading}
+          isUnauthorized={isPermissionDeniedError(
+            activeTab === "users" ? usersError : activitiesError
+          )}
         />
       </div>
 

@@ -12,11 +12,13 @@ import { GetTotalMeetings } from "@/lib/api/MeetingEndpoint";
 import { GetCoreFeatureBreakdown } from "@/lib/api/AuditLogEndpoint";
 import { GetPlanTypeBreakdown, GetPlanSubscriptionYearOnYear } from "@/lib/api/PlanPaymentEndpoint";
 import { type FeatureBreakdownResponse } from "@/lib/schemas";
+import { isPermissionDeniedError } from "@/lib/utils/api";
 
 interface Stat {
   title: string;
   value: string | number;
   loading: boolean;
+  isUnauthorized?: boolean;
 }
 
 interface LineData {
@@ -101,52 +103,52 @@ export default function AnalyticsAndInsights() {
     };
   }, []);
 
-  const { data: totalAccountsData, isLoading: totalAccountsLoading } = useQuery({
+  const { data: totalAccountsData, isLoading: totalAccountsLoading, error: totalAccountsError } = useQuery({
     queryKey: ["totalAccounts"],
     queryFn: GetTotalAccounts,
   });
 
-  const { data: totalEventsData, isLoading: totalEventsLoading } = useQuery({
+  const { data: totalEventsData, isLoading: totalEventsLoading, error: totalEventsError } = useQuery({
     queryKey: ["totalEvents"],
     queryFn: GetTotalEvents,
   });
 
-  const { data: totalAccountUsersData, isLoading: totalAccountUsersLoading } = useQuery({
+  const { data: totalAccountUsersData, isLoading: totalAccountUsersLoading, error: totalAccountUsersError } = useQuery({
     queryKey: ["totalAccountUsers"],
     queryFn: GetTotalAccountUsers,
   });
 
-  const { data: totalMeetingsData, isLoading: totalMeetingsLoading } = useQuery({
+  const { data: totalMeetingsData, isLoading: totalMeetingsLoading, error: totalMeetingsError } = useQuery({
     queryKey: ["totalMeetings"],
     queryFn: GetTotalMeetings,
   });
 
-  const { data: freeVsPaidData, isLoading: freeVsPaidLoading } = useQuery({
+  const { data: freeVsPaidData, isLoading: freeVsPaidLoading, error: freeVsPaidError } = useQuery({
     queryKey: ["freeVsPaidAccounts"],
     queryFn: GetFreeVsPaidAccounts,
   });
 
-  const { data: coreBreakdownData, isLoading: coreBreakdownLoading } = useQuery({
+  const { data: coreBreakdownData, isLoading: coreBreakdownLoading, error: coreBreakdownError } = useQuery({
     queryKey: ["coreFeatureBreakdown", startTime, endTime],
     queryFn: () => GetCoreFeatureBreakdown(startTime, endTime),
   });
 
-  const { data: planTypeData, isLoading: planTypeLoading } = useQuery({
+  const { data: planTypeData, isLoading: planTypeLoading, error: planTypeError } = useQuery({
     queryKey: ["planTypeBreakdown", startTime, endTime],
     queryFn: () => GetPlanTypeBreakdown(startTime, endTime),
   });
 
-  const { data: accountPlanData, isLoading: accountPlanLoading } = useQuery({
+  const { data: accountPlanData, isLoading: accountPlanLoading, error: accountPlanError } = useQuery({
     queryKey: ["accountPlanStatistics"],
     queryFn: GetAccountPlanStatistics,
   });
 
-  const { data: eventTypeData, isLoading: eventTypeLoading } = useQuery({
+  const { data: eventTypeData, isLoading: eventTypeLoading, error: eventTypeError } = useQuery({
     queryKey: ["eventTypeBreakdown", startTime, endTime],
     queryFn: () => GetEventTypeBreakdown(startTime, endTime),
   });
 
-  const { data: yearOnYearData, isLoading: yearOnYearLoading } = useQuery({
+  const { data: yearOnYearData, isLoading: yearOnYearLoading, error: yearOnYearError } = useQuery({
     queryKey: ["planSubscriptionYearOnYear", selectedComparisonYear],
     queryFn: () => {
       const now = new Date();
@@ -197,25 +199,27 @@ export default function AnalyticsAndInsights() {
       title: "Total Accounts",
       value: totalAccountsData ? totalAccountsData.totalCount.toLocaleString() : "0",
       loading: totalAccountsLoading,
+      isUnauthorized: isPermissionDeniedError(totalAccountsError),
     },
     {
       title: "Total Users Registered",
       value: totalAccountUsersData ? totalAccountUsersData.totalCount.toLocaleString() : "0",
       loading: totalAccountUsersLoading,
+      isUnauthorized: isPermissionDeniedError(totalAccountUsersError),
     },
     {
       title: "Total Events Created",
       value: totalEventsData ? totalEventsData.totalCount.toLocaleString() : "0",
       loading: totalEventsLoading,
+      isUnauthorized: isPermissionDeniedError(totalEventsError),
     },
     {
       title: "Total Meetings Created",
       value: totalMeetingsData ? totalMeetingsData.totalCount.toLocaleString() : "0",
       loading: totalMeetingsLoading,
+      isUnauthorized: isPermissionDeniedError(totalMeetingsError),
     },
   ];
-
-
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-5 text-gray-800 dark:text-gray-100 transition-colors duration-300">
@@ -231,6 +235,7 @@ export default function AnalyticsAndInsights() {
             title={item.title}
             value={item.value}
             loading={item.loading}
+            isUnauthorized={item.isUnauthorized}
           />
         ))}
       </div>
@@ -241,18 +246,21 @@ export default function AnalyticsAndInsights() {
           data={mapBreakdownToChartData(freeVsPaidData, DEFAULT_FREE_VS_PAID)}
           colors={["#3b82f6", "#60a5fa"]}
           loading={freeVsPaidLoading}
+          isUnauthorized={isPermissionDeniedError(freeVsPaidError)}
         />
         <DonutChartCard
           title="Frequency of Polls, Q&A, Meetings, Events"
           data={mapBreakdownToChartData(coreBreakdownData, DEFAULT_CORE_FEATURES)}
           colors={donutColors}
           loading={coreBreakdownLoading}
+          isUnauthorized={isPermissionDeniedError(coreBreakdownError)}
         />
         <PieChartCard
           title="Revenue Spread Across Subscription Plans"
           data={mapBreakdownToChartData(planTypeData, DEFAULT_PLAN_TYPE)}
           colors={["#f43f5e", "#10b981", "#3b82f6", "#f59e0b"]}
           loading={planTypeLoading}
+          isUnauthorized={isPermissionDeniedError(planTypeError)}
         />
       </div>
 
@@ -267,6 +275,7 @@ export default function AnalyticsAndInsights() {
           colors={barColors1}
           yAxisLabel="Number of Accounts"
           loading={accountPlanLoading}
+          isUnauthorized={isPermissionDeniedError(accountPlanError)}
           chartType="Plan Type"
         />
         <BarChartCard
@@ -278,6 +287,7 @@ export default function AnalyticsAndInsights() {
           colors={barColors2}
           yAxisLabel="Number of Events"
           loading={eventTypeLoading}
+          isUnauthorized={isPermissionDeniedError(eventTypeError)}
           chartType="Event Type"
         />
       </div>
@@ -286,6 +296,7 @@ export default function AnalyticsAndInsights() {
         title="Subscription Payment Flow"
         data={lineData}
         loading={yearOnYearLoading}
+        isUnauthorized={isPermissionDeniedError(yearOnYearError)}
         selectedYear={selectedComparisonYear}
         onYearChange={setSelectedComparisonYear}
         comparisonYears={comparisonYears}

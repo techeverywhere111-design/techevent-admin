@@ -16,7 +16,7 @@ interface PermissionState {
 export const usePermissionStore = create<PermissionState>()(
   immer((set) => ({
     permissions: [],
-    isLoaded: false,
+    isLoaded: true,
     setPermissions: (permissions) =>
       set((s) => {
         s.permissions = permissions;

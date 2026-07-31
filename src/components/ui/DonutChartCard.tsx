@@ -2,6 +2,7 @@ import React from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import type { PieLabelRenderProps } from "recharts";
 import SkeletonLoader from "./SkeletonLoader";
+import { ShieldX } from "lucide-react";
 import { type ChartData } from "@/types/chart";
 
 interface DonutChartCardProps {
@@ -9,6 +10,7 @@ interface DonutChartCardProps {
   data?: ChartData[];
   colors?: string[];
   loading: boolean;
+  isUnauthorized?: boolean;
   height?: number;
 }
 
@@ -60,6 +62,7 @@ const DonutChartCard: React.FC<DonutChartCardProps> = ({
   data = [],
   colors = [],
   loading,
+  isUnauthorized = false,
   height = 200,
 }) => {
   return (
@@ -70,6 +73,13 @@ const DonutChartCard: React.FC<DonutChartCardProps> = ({
 
       {loading ? (
         <SkeletonLoader height="h-48" />
+      ) : isUnauthorized ? (
+        <div className="flex flex-col items-center justify-center h-48 text-center p-4">
+          <ShieldX size={32} className="text-red-500 mb-2" />
+          <p className="text-xs font-medium text-red-500">
+            This user is not authorized to view this
+          </p>
+        </div>
       ) : (
         <>
           <div style={{ width: "100%", height }}>

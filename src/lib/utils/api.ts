@@ -2,7 +2,6 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { showErrorToast } from "@/lib/utils/toast";
 
-// Configure Cookies to NOT encode characters like + and / which are common in your tokens
 const customCookies = Cookies.withConverter({
   write: (value) => value,
   read: (value) => value,
@@ -21,12 +20,23 @@ const cookieConfig = {
   path: "/",
 };
 
-const isPermissionDeniedMessage = (message: string) =>
+export const isPermissionDeniedMessage = (message: string) =>
   /permission|not authorized|not authorised|access denied/i.test(message);
 
-const isSessionExpiredMessage = (message: string) =>
+export const isSessionExpiredMessage = (message: string) =>
   /session|token|jwt|expired|invalid|login/i.test(message) &&
   !isPermissionDeniedMessage(message);
+
+export const isPermissionDeniedError = (error: any): boolean => {
+  if (!error) return false;
+  const status = error.response?.status;
+  const message = error.response?.data?.message || error.message || "";
+  
+  if (status === 403) return true;
+  if (status === 401 && !isSessionExpiredMessage(message)) return true;
+  if (isPermissionDeniedMessage(message)) return true;
+  return false;
+};
 
 api.interceptors.request.use((config) => {
   const token = customCookies.get("PLUTO_EVENT_ADMIN_TOKEN");
@@ -73,8 +83,20 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (status === 401 || status === 403) {
-      showErrorToast(message);
+    if (status === 401 || status === 403 || isPermissionDeniedError(error)) {
+      const isGetMethod = (error.config?.method || "get").toLowerCase() === "get";
+      const forceToast =
+        error.config?.headers?.["x-show-error-toast"] === "true" ||
+        error.config?.headers?.["x-show-error-toast"] === true;
+      const skipToast =
+        error.config?.headers?.["x-skip-error-toast"] === "true" ||
+        error.config?.headers?.["x-skip-error-toast"] === true;
+
+      // Data fetching (GET) requests do not show error toasts by default (since inline table/card UI handles it).
+      // Action requests (POST, PUT, DELETE, etc.) do show error toasts unless explicitly skipped.
+      if (!skipToast && (!isGetMethod || forceToast)) {
+        showErrorToast(message);
+      }
       return Promise.reject(error);
     }
 

@@ -21,6 +21,7 @@ import { showErrorToast } from "@/lib/utils/toast";
 import { formatDateTime } from "@/lib/utils/date";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { isPermissionDeniedError } from "@/lib/utils/api";
 
 interface AdminTableUser {
   id: string;
@@ -69,12 +70,19 @@ const UserManagement: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data, isLoading: loading } = useQuery({
+  const { data, isLoading: loading, error } = useQuery({
     queryKey: ["adminUsers", activeSearchTerm, page, itemsPerPage],
     queryFn: async () => {
-      const response = activeSearchTerm
-        ? await SearchAdminUsers(activeSearchTerm, page - 1, itemsPerPage)
-        : await GetAdminUsers(page - 1, itemsPerPage);
+      let response;
+      if (activeSearchTerm) {
+        try {
+          response = await SearchAdminUsers(activeSearchTerm, page - 1, itemsPerPage);
+        } catch (_err) {
+          response = await GetAdminUsers(page - 1, itemsPerPage);
+        }
+      } else {
+        response = await GetAdminUsers(page - 1, itemsPerPage);
+      }
 
       const mappedUsers: AdminTableUser[] = response.content.map((c: any) => {
         const displayName =
@@ -553,6 +561,7 @@ const UserManagement: React.FC = () => {
           }}
           renderActions={renderActions}
           loading={loading}
+          isUnauthorized={isPermissionDeniedError(error)}
         />
       </div>
 

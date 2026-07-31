@@ -134,16 +134,21 @@ export const PlanSearch = async (
 ): Promise<PlanListResponse> => {
   const { data } = await api.get("/api/v1/plans/search", {
     params: { text, pageNo, pageSize },
+    headers: { "x-show-error-toast": "true" },
   });
   return PlanListResponseSchema.parse(data);
 };
 
 export const PlanActivate = async (id: string): Promise<{ message: string }> => {
-  const { data } = await api.get(`/api/v1/plans/${id}/activate`);
+  const { data } = await api.get(`/api/v1/plans/${id}/activate`, {
+    headers: { "x-show-error-toast": "true" },
+  });
   return data;
 };
 
 export const PlanDeactivate = async (id: string): Promise<{ message: string }> => {
-  const { data } = await api.get(`/api/v1/plans/${id}/deactivate`);
+  const { data } = await api.get(`/api/v1/plans/${id}/deactivate`, {
+    headers: { "x-show-error-toast": "true" },
+  });
   return data;
 };

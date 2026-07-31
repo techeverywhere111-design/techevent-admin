@@ -50,12 +50,15 @@ export const SearchEventCategory = async (
 ) => {
   const { data } = await api.get(`/api/v1/event-categories/search`, {
     params: { text, pageNo, pageSize },
+    headers: { "x-show-error-toast": "true" },
   });
   return EventCategoryListResponseSchema.parse(data);
 };
 
 export const GetTotalEvents = async (): Promise<TotalCountResponse> => {
-  const { data } = await api.get("/api/v1/events/total-events");
+  const { data } = await api.get("/api/v1/events/total-events", {
+    headers: { "x-skip-error-toast": "true" },
+  });
   return TotalCountResponseSchema.parse(data);
 };
 
@@ -65,6 +68,7 @@ export const GetTotalCreatedEvents = async (
 ): Promise<TotalCountResponse> => {
   const { data } = await api.get("/api/v1/events/total-created-events", {
     params: { startTime, endTime },
+    headers: { "x-skip-error-toast": "true" },
   });
   return TotalCountResponseSchema.parse(data);
 };
@@ -75,6 +79,7 @@ export const GetEventTypeBreakdown = async (
 ): Promise<FeatureBreakdownResponse> => {
   const { data } = await api.get("/api/v1/events/physical-vs-hybrid-vs-virtual", {
     params: { startTime, endTime },
+    headers: { "x-skip-error-toast": "true" },
   });
   return FeatureBreakdownResponseSchema.parse(data);
 };

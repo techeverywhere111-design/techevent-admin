@@ -15,6 +15,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
 import { formatDateTime } from "@/lib/utils/date";
+import { isPermissionDeniedError } from "@/lib/utils/api";
 
 interface Client {
   id: string;
@@ -39,12 +40,22 @@ const ClientManagement: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data, isLoading: loading } = useQuery({
+  const { data, isLoading: loading, error } = useQuery({
     queryKey: ["clients", activeSearchTerm, page, itemsPerPage],
     queryFn: async () => {
-      const response = activeSearchTerm
-        ? await SearchAccountUsers(activeSearchTerm, page - 1, itemsPerPage)
-        : await GetAccountUsers(page - 1, itemsPerPage);
+      let response;
+      if (activeSearchTerm) {
+        try {
+          response = await SearchAccountUsers(activeSearchTerm, page - 1, itemsPerPage);
+        } catch (_err) {
+          response = await GetAccountUsers(page - 1, itemsPerPage);
+        }
+      } else {
+        response = await GetAccountUsers(page - 1, itemsPerPage);
+      }
+
+
+
 
       const mappedClients: Client[] = response.content.map((c) => {
         const displayName = c.name?.trim() || `${c.firstName || ""} ${c.lastName || ""}`.trim();
@@ -309,6 +320,7 @@ const ClientManagement: React.FC = () => {
           }}
           renderActions={renderActions}
           loading={loading}
+          isUnauthorized={isPermissionDeniedError(error)}
         />
       </div>
 

@@ -13,6 +13,7 @@ import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
 import { formatDateTime } from "@/lib/utils/date";
+import { isPermissionDeniedError } from "@/lib/utils/api";
 
 interface PromoCode {
   id: string;
@@ -63,12 +64,22 @@ const PromoCode: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const queryClient = useQueryClient();
 
-  const { data, isLoading: loading } = useQuery({
+  const { data, isLoading: loading, error } = useQuery({
     queryKey: ["promoCodes", activeSearchTerm, page, itemsPerPage],
     queryFn: async () => {
-      const response = activeSearchTerm
-        ? await SearchPromoCodes(activeSearchTerm, page - 1, itemsPerPage)
-        : await GetPromoCodes(page - 1, itemsPerPage);
+      let response;
+      if (activeSearchTerm) {
+        try {
+          response = await SearchPromoCodes(activeSearchTerm, page - 1, itemsPerPage);
+        } catch (_err) {
+          response = await GetPromoCodes(page - 1, itemsPerPage);
+        }
+      } else {
+        response = await GetPromoCodes(page - 1, itemsPerPage);
+      }
+
+
+
       return { promoCodes: response.content, totalElements: response.totalElements };
     },
   });
@@ -466,6 +477,7 @@ const PromoCode: React.FC = () => {
           }}
           renderActions={renderActions}
           loading={loading}
+          isUnauthorized={isPermissionDeniedError(error)}
         />
       </div>
 

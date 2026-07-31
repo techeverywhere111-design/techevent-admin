@@ -17,6 +17,8 @@ import { type FeatureBreakdownResponse } from "@/lib/schemas";
 import { type ChartData } from "@/types/chart";
 import SkeletonLoader from "@/components/ui/SkeletonLoader";
 import CustomShapeBarChart from "@/components/ui/CustomShapeBarChart";
+import { isPermissionDeniedError } from "@/lib/utils/api";
+import { ShieldX } from "lucide-react";
 
 const PLAN_COLORS = ["#84cc16", "#ec4899", "#3b82f6", "#f59e0b", "#8b5cf6"];
 const TOP_ENQUIRY_CATEGORY_COUNT = 5;
@@ -61,27 +63,27 @@ export default function Dashboard() {
     };
   }, []);
 
-  const { data: totalAccountsData, isLoading: totalAccountsLoading } = useQuery({
+  const { data: totalAccountsData, isLoading: totalAccountsLoading, error: totalAccountsError } = useQuery({
     queryKey: ["totalCreatedAccounts", startTime, endTime],
     queryFn: () => GetTotalCreatedAccounts(startTime, endTime),
   });
 
-  const { data: totalEventsData, isLoading: totalEventsLoading } = useQuery({
+  const { data: totalEventsData, isLoading: totalEventsLoading, error: totalEventsError } = useQuery({
     queryKey: ["totalCreatedEvents", startTime, endTime],
     queryFn: () => GetTotalCreatedEvents(startTime, endTime),
   });
 
-  const { data: planStatsData, isLoading: planStatsLoading } = useQuery({
+  const { data: planStatsData, isLoading: planStatsLoading, error: planStatsError } = useQuery({
     queryKey: ["accountPlanStatistics"],
     queryFn: GetAccountPlanStatistics,
   });
 
-  const { data: featureUsageData, isLoading: featureUsageLoading } = useQuery({
+  const { data: featureUsageData, isLoading: featureUsageLoading, error: featureUsageError } = useQuery({
     queryKey: ["featureUsageBreakdown", startTime, endTime],
     queryFn: () => GetFeatureUsageBreakdown(startTime, endTime),
   });
 
-  const { data: topEnquiryCategories = [], isLoading: topEnquiryCategoriesLoading } = useQuery({
+  const { data: topEnquiryCategories = [], isLoading: topEnquiryCategoriesLoading, error: topEnquiryCategoriesError } = useQuery({
     queryKey: ["topEnquiryCategories", TOP_ENQUIRY_CATEGORY_COUNT, startTime, endTime],
     queryFn: () =>
       GetTopEnquiryCategories(TOP_ENQUIRY_CATEGORY_COUNT, startTime, endTime),
@@ -148,6 +150,7 @@ export default function Dashboard() {
           data={mapBreakdownToChartData(planStatsData, DEFAULT_PLAN_DATA)}
           colors={PLAN_COLORS}
           loading={planStatsLoading}
+          isUnauthorized={isPermissionDeniedError(planStatsError)}
         />
 
         {/* Bar Chart */}
@@ -157,6 +160,13 @@ export default function Dashboard() {
           </h3>
           {featureUsageLoading ? (
             <SkeletonLoader height="h-[250px]" />
+          ) : isPermissionDeniedError(featureUsageError) ? (
+            <div className="flex flex-col items-center justify-center h-[250px] text-center p-4">
+              <ShieldX size={32} className="text-red-500 mb-2" />
+              <p className="text-xs font-medium text-red-500">
+                This user is not authorized to view this
+              </p>
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={chartData} layout="vertical">
@@ -180,7 +190,10 @@ export default function Dashboard() {
             No enquiries were recorded in this period.
           </div>
         ) : (
-          <CustomShapeBarChart data={topEnquiryCategoryChartData} />
+          <CustomShapeBarChart
+            data={topEnquiryCategoryChartData}
+            isUnauthorized={isPermissionDeniedError(topEnquiryCategoriesError)}
+          />
         )}
       </div>
     </div>

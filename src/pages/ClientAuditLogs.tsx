@@ -10,6 +10,7 @@ import {
 } from "@/lib/api/AuditLogEndpoint";
 import { useQuery } from "@tanstack/react-query";
 import { formatDateTime } from "@/lib/utils/date";
+import { isPermissionDeniedError } from "@/lib/utils/api";
 
 const toLocalDatetimeString = (d: Date): string => {
   const pad = (n: number) => n.toString().padStart(2, "0");
@@ -50,7 +51,7 @@ const AuditLogs: React.FC = () => {
 
   const isValidRange = activeFilters.startTime < activeFilters.endTime;
 
-  const { data, isLoading: loading } = useQuery({
+  const { data, isLoading: loading, error } = useQuery({
     queryKey: [
       "auditLogs",
       "filter",
@@ -280,6 +281,7 @@ const AuditLogs: React.FC = () => {
             setPage(1);
           }}
           loading={loading}
+          isUnauthorized={isPermissionDeniedError(error)}
         />
       </div>
     </div>

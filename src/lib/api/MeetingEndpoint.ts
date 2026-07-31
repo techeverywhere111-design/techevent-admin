@@ -27,7 +27,9 @@ export const GetClientDailyEventCreation = async (
 };
 
 export const GetTotalMeetings = async (): Promise<TotalCountResponse> => {
-  const { data } = await api.get("/api/v1/meetings/total-meetings");
+  const { data } = await api.get("/api/v1/meetings/total-meetings", {
+    headers: { "x-skip-error-toast": "true" },
+  });
   return TotalCountResponseSchema.parse(data);
 };
 

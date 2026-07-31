@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { type ChartData } from "@/types/chart";
 import SkeletonLoader from "@/components/ui/SkeletonLoader";
+import { ShieldX } from "lucide-react";
 
 interface BarChartCardProps {
   title: string;
@@ -19,6 +20,7 @@ interface BarChartCardProps {
   xKey: string;
   barKey: string;
   loading: boolean;
+  isUnauthorized?: boolean;
   barSize?: number;
   colors?: string[];
   xAxisLabel?: string;
@@ -32,6 +34,7 @@ const BarChartCard: React.FC<BarChartCardProps> = ({
   xKey,
   barKey,
   loading,
+  isUnauthorized = false,
   barSize = 50,
   colors = [],
   xAxisLabel = "",
@@ -46,6 +49,13 @@ const BarChartCard: React.FC<BarChartCardProps> = ({
 
       {loading ? (
         <SkeletonLoader height="h-[200px] sm:h-[250px] lg:h-[300px]" />
+      ) : isUnauthorized ? (
+        <div className="flex flex-col items-center justify-center h-[250px] text-center p-4">
+          <ShieldX size={32} className="text-red-500 mb-2" />
+          <p className="text-xs font-medium text-red-500">
+            This user is not authorized to view this
+          </p>
+        </div>
       ) : (
         <>
           <ResponsiveContainer width="100%" height={250}>

@@ -20,6 +20,7 @@ export const SearchPermissions = async (
 ) => {
   const { data } = await api.get("/api/v1/permissions/search", {
     params: { text, pageNo, pageSize },
+    headers: { "x-show-error-toast": "true" },
   });
   return PermissionListResponseSchema.parse(data);
 };

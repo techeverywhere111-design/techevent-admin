@@ -43,6 +43,7 @@ export const GetCoreFeatureBreakdown = async (
 ): Promise<FeatureBreakdownResponse> => {
   const { data } = await api.get("/api/v1/audit-logs/breakdown/core", {
     params: { startTime, endTime },
+    headers: { "x-skip-error-toast": "true" },
   });
   return FeatureBreakdownResponseSchema.parse(data);
 };
@@ -53,6 +54,7 @@ export const GetFeatureUsageBreakdown = async (
 ): Promise<FeatureBreakdownResponse> => {
   const { data } = await api.get("/api/v1/audit-logs/breakdown", {
     params: { startTime, endTime },
+    headers: { "x-skip-error-toast": "true" },
   });
   return FeatureBreakdownResponseSchema.parse(data);
 };

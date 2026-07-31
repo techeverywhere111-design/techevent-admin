@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, ShieldX } from "lucide-react";
 import AppLoader from "./AppLoader";
 
 export interface Column {
@@ -17,6 +17,7 @@ export interface TableProps {
   onPageChange?: (page: number) => void;
   onPerPageChange?: (perPage: number) => void;
   loading?: boolean;
+  isUnauthorized?: boolean;
 }
 
 const ActionDropdown: React.FC<{
@@ -84,6 +85,7 @@ const Table: React.FC<TableProps> = ({
   onPageChange,
   onPerPageChange,
   loading = false,
+  isUnauthorized = false,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -181,6 +183,18 @@ const Table: React.FC<TableProps> = ({
                   className="py-12"
                 >
                   <AppLoader fullScreen={false} />
+                </td>
+              </tr>
+            ) : isUnauthorized ? (
+              <tr>
+                <td
+                  colSpan={columns.length + (renderActions ? 1 : 0)}
+                  className="py-12 text-center"
+                >
+                  <div className="flex flex-col items-center justify-center gap-2 text-red-500 font-medium">
+                    <ShieldX size={32} />
+                    <span>This user is not authorized to view this table</span>
+                  </div>
                 </td>
               </tr>
             ) : currentData.length === 0 ? (

@@ -106,9 +106,8 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
 
   const isSuperAdmin = user?.roleType === "SUPER_ADMIN";
 
-  const hasPermission = (permission?: PermissionRequirement): boolean => {
-    if (!permission || isSuperAdmin) return true;
-    return hasPermissionRequirement(permissions, permission);
+  const hasPermission = (_permission?: PermissionRequirement): boolean => {
+    return true;
   };
 
   const isPathActive = (path?: string, activePaths: string[] = []) =>

@@ -45,7 +45,10 @@ export const SearchPromoCodes = async (
 ): Promise<PromoCodeResponse> => {
   const { data } = await api.get(
     "/api/v1/promo-codes/search",
-    { params: { text, pageNo, pageSize } }
+    {
+      params: { text, pageNo, pageSize },
+      headers: { "x-show-error-toast": "true" },
+    }
   );
   return PromoCodeListResponseSchema.parse(data);
 };
@@ -84,7 +87,8 @@ export const MarkAsSettled = async (
   registrationLogId: string
 ): Promise<{ message: string }> => {
   const { data } = await api.get<{ message: string }>(
-    `/api/v1/promo-codes/${registrationLogId}/mark-as-settled`
+    `/api/v1/promo-codes/${registrationLogId}/mark-as-settled`,
+    { headers: { "x-show-error-toast": "true" } }
   );
   return data;
 };
@@ -93,7 +97,8 @@ export const MarkAsNotSettled = async (
   registrationLogId: string
 ): Promise<{ message: string }> => {
   const { data } = await api.get<{ message: string }>(
-    `/api/v1/promo-codes/${registrationLogId}/mark-as-not-settled`
+    `/api/v1/promo-codes/${registrationLogId}/mark-as-not-settled`,
+    { headers: { "x-show-error-toast": "true" } }
   );
   return data;
 };
@@ -106,7 +111,10 @@ export const SearchPromoCodeRegistrationLogs = async (
 ): Promise<PromoCodeRegistrationLogsResponse> => {
   const { data } = await api.get(
     "/api/v1/promo-codes/logs/search",
-    { params: { text, code, pageNo, pageSize } }
+    {
+      params: { text, code, pageNo, pageSize },
+      headers: { "x-show-error-toast": "true" },
+    }
   );
   return PromoRegistrationLogListResponseSchema.parse(data);
 };

@@ -104,12 +104,16 @@ export const DeletePendingAdminUser = async (id: string) => {
 };
 
 export const ActivateAdminUser = async (id: string) => {
-  const { data } = await api.get(`/api/v1/admin-users/${id}/activate`);
+  const { data } = await api.get(`/api/v1/admin-users/${id}/activate`, {
+    headers: { "x-show-error-toast": "true" },
+  });
   return MessageResponseSchema.parse(data);
 };
 
 export const DeactivateAdminUser = async (id: string) => {
-  const { data } = await api.get(`/api/v1/admin-users/${id}/deactivate`);
+  const { data } = await api.get(`/api/v1/admin-users/${id}/deactivate`, {
+    headers: { "x-show-error-toast": "true" },
+  });
   return MessageResponseSchema.parse(data);
 };
 
@@ -120,6 +124,7 @@ export const SearchAdminUsers = async (
 ) => {
   const { data } = await api.get("/api/v1/admin-users/search", {
     params: { text, pageNo, pageSize },
+    headers: { "x-show-error-toast": "true" },
   });
   return AdminUserListResponseSchema.parse(data);
 };

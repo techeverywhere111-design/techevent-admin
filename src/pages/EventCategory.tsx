@@ -13,6 +13,7 @@ import {
 import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
 import { formatDateTime } from "@/lib/utils/date";
+import { isPermissionDeniedError } from "@/lib/utils/api";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
@@ -40,12 +41,22 @@ const EventCategory: React.FC = () => {
 
   const queryClient = useQueryClient();
 
-  const { data, isLoading: loading } = useQuery({
+  const { data, isLoading: loading, error } = useQuery({
     queryKey: ["eventCategories", activeSearchTerm, page, itemsPerPage],
     queryFn: async () => {
-      const response = activeSearchTerm
-        ? await SearchEventCategory(activeSearchTerm, page - 1, itemsPerPage)
-        : await GetEventCategories(page - 1, itemsPerPage);
+      let response;
+      if (activeSearchTerm) {
+        try {
+          response = await SearchEventCategory(activeSearchTerm, page - 1, itemsPerPage);
+        } catch (_err) {
+          response = await GetEventCategories(page - 1, itemsPerPage);
+        }
+      } else {
+        response = await GetEventCategories(page - 1, itemsPerPage);
+      }
+
+
+
 
       const items = response?.content || [];
       const total = response?.totalElements || 0;
@@ -318,6 +329,7 @@ const EventCategory: React.FC = () => {
           onPageChange={handlePageChange}
           onPerPageChange={handlePerPageChange}
           loading={loading}
+          isUnauthorized={isPermissionDeniedError(error)}
           renderActions={renderActions}
         />
       </div>

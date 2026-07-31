@@ -6,8 +6,9 @@ import { GetPermissions } from "@/lib/api/PermissionEndpoint";
 import { ROLE_OPTIONS, type RoleType, type Permission } from "@/lib/schemas";
 import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
-import { Search, X, ChevronRight, ChevronLeft, Shield, Loader2 } from "lucide-react";
+import { Search, X, ChevronRight, ChevronLeft, Shield, ShieldX, Loader2 } from "lucide-react";
 import AppLoader from "@/components/ui/AppLoader";
+import { isPermissionDeniedError } from "@/lib/utils/api";
 
 const ROLE_LABELS: Record<RoleType, string> = {
   SUPER_ADMIN: "Super Admin",
@@ -24,13 +25,13 @@ const Roles: React.FC = () => {
 
   const queryClient = useQueryClient();
 
-  const { data: allPermissionsData, isLoading: loadingAll } = useQuery({
+  const { data: allPermissionsData, isLoading: loadingAll, error: errorAll } = useQuery({
     queryKey: ["permissions", "all"],
     queryFn: () => GetPermissions(0, 500),
   });
 
   // Fetch permissions for selected role
-  const { data: rolePermissions, isLoading: loadingRole } = useQuery({
+  const { data: rolePermissions, isLoading: loadingRole, error: errorRole } = useQuery({
     queryKey: ["role-permissions", selectedRole],
     queryFn: () => GetRolePermissions(selectedRole),
     enabled: !!selectedRole,
@@ -44,7 +45,7 @@ const Roles: React.FC = () => {
   );
 
   const availablePermissions = useMemo(
-    () => allPermissions.filter((p) => !assignedIds.has(p.id)),
+    () => allPermissions.filter((p) => !p.isGeneral && !assignedIds.has(p.id)),
     [allPermissions, assignedIds]
   );
 
@@ -209,7 +210,17 @@ const Roles: React.FC = () => {
           ))}
         </div>
 
-        {selectedRole === "SUPER_ADMIN" ? (
+        {isPermissionDeniedError(errorAll || errorRole) ? (
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-16 text-center border border-dashed border-red-300 dark:border-red-900/40 flex flex-col items-center justify-center">
+            <ShieldX size={48} className="text-red-500 mb-3" />
+            <h2 className="text-lg font-semibold text-red-500 mb-1">
+              Access Denied
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+              This user is not authorized to view or manage role permissions.
+            </p>
+          </div>
+        ) : selectedRole === "SUPER_ADMIN" ? (
           <div className="bg-white dark:bg-gray-800 rounded-lg p-12 text-center border border-gray-200 dark:border-gray-700">
             <Shield size={48} className="mx-auto text-blue-500 mb-4" />
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">

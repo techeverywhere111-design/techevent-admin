@@ -34,7 +34,10 @@ export const SearchAccountUsers = async (
 ): Promise<AccountUsersResponse> => {
   const { data } = await api.get(
     "/api/v1/account-users/search",
-    { params: { text, pageNo, pageSize } }
+    {
+      params: { text, pageNo, pageSize },
+      headers: { "x-show-error-toast": "true" },
+    }
   );
   return AccountUserListResponseSchema.parse(data);
 };
@@ -50,22 +53,30 @@ export const GetBulkAccountUsers = async (
 };
 
 export const ActivateAccountUser = async (id: string) => {
-  const { data } = await api.get(`/api/v1/account-users/${id}/activate`);
+  const { data } = await api.get(`/api/v1/account-users/${id}/activate`, {
+    headers: { "x-show-error-toast": "true" },
+  });
   return MessageResponseSchema.parse(data);
 };
 
 export const DeactivateAccountUser = async (id: string) => {
-  const { data } = await api.get(`/api/v1/account-users/${id}/deactivate`);
+  const { data } = await api.get(`/api/v1/account-users/${id}/deactivate`, {
+    headers: { "x-show-error-toast": "true" },
+  });
   return MessageResponseSchema.parse(data);
 };
 
 export const GetTotalAccounts = async (): Promise<TotalCountResponse> => {
-  const { data } = await api.get("/api/v1/account-users/total-accounts");
+  const { data } = await api.get("/api/v1/account-users/total-accounts", {
+    headers: { "x-skip-error-toast": "true" },
+  });
   return TotalCountResponseSchema.parse(data);
 };
 
 export const GetTotalAccountUsers = async (): Promise<TotalCountResponse> => {
-  const { data } = await api.get("/api/v1/account-users/total-account-users");
+  const { data } = await api.get("/api/v1/account-users/total-account-users", {
+    headers: { "x-skip-error-toast": "true" },
+  });
   return TotalCountResponseSchema.parse(data);
 };
 
@@ -75,17 +86,22 @@ export const GetTotalCreatedAccounts = async (
 ): Promise<TotalCountResponse> => {
   const { data } = await api.get("/api/v1/account-users/total-created-accounts", {
     params: { startTime, endTime },
+    headers: { "x-skip-error-toast": "true" },
   });
   return TotalCountResponseSchema.parse(data);
 };
 
 export const GetFreeVsPaidAccounts = async (): Promise<FeatureBreakdownResponse> => {
-  const { data } = await api.get("/api/v1/account-users/free-vs-paid-accounts");
+  const { data } = await api.get("/api/v1/account-users/free-vs-paid-accounts", {
+    headers: { "x-skip-error-toast": "true" },
+  });
   return FeatureBreakdownResponseSchema.parse(data);
 };
 
 export const GetAccountPlanStatistics = async (): Promise<FeatureBreakdownResponse> => {
-  const { data } = await api.get("/api/v1/account-users/account-plan-statistics");
+  const { data } = await api.get("/api/v1/account-users/account-plan-statistics", {
+    headers: { "x-skip-error-toast": "true" },
+  });
   return FeatureBreakdownResponseSchema.parse(data);
 };
 

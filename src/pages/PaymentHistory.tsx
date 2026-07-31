@@ -16,6 +16,7 @@ import {
   SearchPlanPaymentHistories,
 } from "@/lib/api/PlanPaymentEndpoint";
 import type { PlanPaymentHistory } from "@/lib/schemas";
+import { isPermissionDeniedError } from "@/lib/utils/api";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
@@ -439,7 +440,7 @@ const PaymentHistory: React.FC = () => {
               Loading payment history...
             </p>
           </div>
-        ) : error ? (
+        ) : error && !isPermissionDeniedError(error) ? (
           <div className="py-20 text-center border border-dashed border-red-300 dark:border-red-800/50 rounded-2xl bg-white dark:bg-gray-900 p-6">
             <CreditCard className="w-12 h-12 text-red-400 mx-auto mb-4" />
             <p className="text-red-500 font-semibold text-lg">
@@ -462,6 +463,7 @@ const PaymentHistory: React.FC = () => {
             }}
             renderActions={renderActions}
             loading={isLoading}
+            isUnauthorized={isPermissionDeniedError(error)}
           />
         )}
       </div>

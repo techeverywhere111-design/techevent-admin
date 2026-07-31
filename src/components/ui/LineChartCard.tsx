@@ -10,6 +10,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import SkeletonLoader from "./SkeletonLoader";
+import { ShieldX } from "lucide-react";
 
 // ---- Types ---- //
 export interface LineChartData {
@@ -22,6 +23,7 @@ interface LineChartCardProps {
   title: string;
   data?: LineChartData[];
   loading: boolean;
+  isUnauthorized?: boolean;
   onYearChange?: (year: string) => void;
   selectedYear?: string;
   comparisonYears?: string[];
@@ -34,6 +36,7 @@ const LineChartCard: React.FC<LineChartCardProps> = ({
   title,
   data = [],
   loading,
+  isUnauthorized = false,
   onYearChange,
   selectedYear = defaultComparisonYears[0],
   comparisonYears = defaultComparisonYears,
@@ -66,6 +69,13 @@ const LineChartCard: React.FC<LineChartCardProps> = ({
 
       {loading ? (
         <SkeletonLoader height="h-64" />
+      ) : isUnauthorized ? (
+        <div className="flex flex-col items-center justify-center h-[300px] text-center p-4">
+          <ShieldX size={32} className="text-red-500 mb-2" />
+          <p className="text-xs font-medium text-red-500">
+            This user is not authorized to view this
+          </p>
+        </div>
       ) : (
         <div style={{ width: "100%", height: 300 }}>
           <ResponsiveContainer width="100%" height="100%">

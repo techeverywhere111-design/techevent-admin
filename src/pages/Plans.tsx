@@ -18,8 +18,10 @@ import {
   BarChart3,
   Check,
   Edit3,
+  ShieldX,
 } from "lucide-react";
 import AppLoader from "@/components/ui/AppLoader";
+import { isPermissionDeniedError } from "@/lib/utils/api";
 import {
   PlanGetList,
   PlanSearch,
@@ -277,20 +279,21 @@ export default function Plans() {
             <AppLoader fullScreen={false} />
           </div>
         ) : error ? (
-          <div className="py-20 text-center border border-dashed border-red-300 dark:border-red-800/50 rounded-2xl bg-white dark:bg-[#0b1739] p-6">
-            <p className="text-red-500 font-semibold text-lg">Error loading plans</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-md mx-auto font-mono whitespace-pre-wrap text-left bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
-              {error instanceof Error ? error.message : String(error)}
-              {typeof error === 'object' && 'response' in (error as any) && (
-                <>
-                  {"\n\nResponse status: "}
-                  {(error as any).response?.status}
-                  {"\nData: "}
-                  {JSON.stringify((error as any).response?.data, null, 2)}
-                </>
-              )}
-            </p>
-          </div>
+          isPermissionDeniedError(error) ? (
+            <div className="py-16 text-center border border-dashed border-red-300 dark:border-red-900/40 rounded-2xl bg-white dark:bg-[#0b1739] p-6 flex flex-col items-center justify-center">
+              <ShieldX className="w-12 h-12 text-red-500 mb-3" />
+              <p className="text-red-500 font-semibold text-lg">
+                This user is not authorized to view subscription plans
+              </p>
+            </div>
+          ) : (
+            <div className="py-20 text-center border border-dashed border-red-300 dark:border-red-800/50 rounded-2xl bg-white dark:bg-[#0b1739] p-6">
+              <p className="text-red-500 font-semibold text-lg">Error loading plans</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-md mx-auto font-mono whitespace-pre-wrap text-left bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
+                {error instanceof Error ? error.message : String(error)}
+              </p>
+            </div>
+          )
         ) : plans.length === 0 ? (
           <div className="py-20 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-[#0b1739]">
             <Gem className="w-12 h-12 text-gray-400 mx-auto mb-4" />

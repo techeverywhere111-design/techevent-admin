@@ -11,6 +11,7 @@ import { saveAs } from "file-saver";
 import { Upload } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { formatDateTime } from "@/lib/utils/date";
+import { isPermissionDeniedError } from "@/lib/utils/api";
 
 
 
@@ -22,12 +23,22 @@ const Permissions: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
 
-  const { data, isLoading: loading } = useQuery({
+  const { data, isLoading: loading, error } = useQuery({
     queryKey: ["permissions", activeSearchTerm, page, itemsPerPage],
     queryFn: async () => {
-      const response = activeSearchTerm
-        ? await SearchPermissions(activeSearchTerm, page - 1, itemsPerPage)
-        : await GetPermissions(page - 1, itemsPerPage);
+      let response;
+      if (activeSearchTerm) {
+        try {
+          response = await SearchPermissions(activeSearchTerm, page - 1, itemsPerPage);
+        } catch (_err) {
+          response = await GetPermissions(page - 1, itemsPerPage);
+        }
+      } else {
+        response = await GetPermissions(page - 1, itemsPerPage);
+      }
+
+
+
       return { permissions: response.content, totalElements: response.totalElements };
     },
   });
@@ -192,6 +203,7 @@ const Permissions: React.FC = () => {
             setPage(1);
           }}
           loading={loading}
+          isUnauthorized={isPermissionDeniedError(error)}
         />
       </div>
 

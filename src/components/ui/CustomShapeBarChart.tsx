@@ -13,6 +13,7 @@ import {
   type LabelProps,
 } from "recharts";
 import { type ChartData } from "@/types/chart";
+import { ShieldX } from "lucide-react";
 
 const CHART_COLORS = [
   "#0088FE",
@@ -26,6 +27,7 @@ const CHART_COLORS = [
 
 interface CustomShapeBarChartProps {
   data: ChartData[];
+  isUnauthorized?: boolean;
 }
 
 const getTrianglePath = (x: number, y: number, width: number, height: number) =>
@@ -61,25 +63,33 @@ const CustomColorLabel = (props: LabelProps): React.ReactElement => {
   return <Label {...props} fill={color} />;
 };
 
-const CustomShapeBarChart: React.FC<CustomShapeBarChartProps> = ({ data }) => (
-  <ResponsiveContainer width="100%" height={320}>
-    <BarChart data={data} margin={{ top: 24, right: 12, left: 0, bottom: 30 }}>
-      <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.25} />
-      <Tooltip cursor={{ fillOpacity: 0.12 }} />
-      <XAxis
-        dataKey="name"
-        interval={0}
-        tick={{ fontSize: 12 }}
-        angle={-20}
-        textAnchor="end"
-        height={70}
-      />
-      <YAxis allowDecimals={false} width="auto" />
-      <Bar dataKey="value" shape={TriangleBar} activeBar>
-        <LabelList content={CustomColorLabel} position="top" />
-      </Bar>
-    </BarChart>
-  </ResponsiveContainer>
-);
+const CustomShapeBarChart: React.FC<CustomShapeBarChartProps> = ({ data, isUnauthorized = false }) =>
+  isUnauthorized ? (
+    <div className="flex flex-col items-center justify-center h-[320px] text-center p-4">
+      <ShieldX size={32} className="text-red-500 mb-2" />
+      <p className="text-xs font-medium text-red-500">
+        This user is not authorized to view this
+      </p>
+    </div>
+  ) : (
+    <ResponsiveContainer width="100%" height={320}>
+      <BarChart data={data} margin={{ top: 24, right: 12, left: 0, bottom: 30 }}>
+        <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.25} />
+        <Tooltip cursor={{ fillOpacity: 0.12 }} />
+        <XAxis
+          dataKey="name"
+          interval={0}
+          tick={{ fontSize: 12 }}
+          angle={-20}
+          textAnchor="end"
+          height={70}
+        />
+        <YAxis allowDecimals={false} width="auto" />
+        <Bar dataKey="value" shape={TriangleBar} activeBar>
+          <LabelList content={CustomColorLabel} position="top" />
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
 
 export default CustomShapeBarChart;
