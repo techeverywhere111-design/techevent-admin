@@ -52,7 +52,6 @@ const formatEnquiryCategory = (category: string | null) => {
 };
 
 export default function Dashboard() {
-
   const { startTime, endTime } = useMemo(() => {
     const now = new Date();
     const thirtyDaysAgo = new Date(now);
@@ -63,12 +62,12 @@ export default function Dashboard() {
     };
   }, []);
 
-  const { data: totalAccountsData, isLoading: totalAccountsLoading, error: totalAccountsError } = useQuery({
+  const { data: totalAccountsData, isLoading: totalAccountsLoading } = useQuery({
     queryKey: ["totalCreatedAccounts", startTime, endTime],
     queryFn: () => GetTotalCreatedAccounts(startTime, endTime),
   });
 
-  const { data: totalEventsData, isLoading: totalEventsLoading, error: totalEventsError } = useQuery({
+  const { data: totalEventsData, isLoading: totalEventsLoading } = useQuery({
     queryKey: ["totalCreatedEvents", startTime, endTime],
     queryFn: () => GetTotalCreatedEvents(startTime, endTime),
   });
@@ -199,4 +198,3 @@ export default function Dashboard() {
     </div>
   );
 }
-

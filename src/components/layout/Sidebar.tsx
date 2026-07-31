@@ -18,10 +18,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import Logo from "@/assets/PlutoEvent_Logo.png";
-import { useAuth } from "@/context/AuthContext";
-import { usePermissionStore } from "@/store/permissionStore";
 import {
-  hasPermissionRequirement,
   ROUTE_PERMISSIONS,
   type PermissionRequirement,
 } from "@/lib/permissions";
@@ -101,10 +98,6 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
     {}
   );
-  const { user } = useAuth();
-  const permissions = usePermissionStore((s) => s.permissions);
-
-  const isSuperAdmin = user?.roleType === "SUPER_ADMIN";
 
   const hasPermission = (_permission?: PermissionRequirement): boolean => {
     return true;

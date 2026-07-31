@@ -1,10 +1,5 @@
 import { type ReactNode } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { usePermissionStore } from "@/store/permissionStore";
-import {
-  hasPermissionRequirement,
-  type PermissionRequirement,
-} from "@/lib/permissions";
+import { type PermissionRequirement } from "@/lib/permissions";
 
 interface CanProps {
   permission: PermissionRequirement;
