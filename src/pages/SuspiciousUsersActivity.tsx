@@ -169,28 +169,9 @@ const SuspiciousUsersActivity: React.FC = () => {
 
   const userColumns: Column[] = [
     {
-      key: "createdBy",
-      label: "Created By",
-      render: (v) => <span className="text-gray-600 dark:text-gray-300 font-medium">{v || "N/A"}</span>,
-    },
-    {
       key: "user",
       label: "Account User",
       render: (_, row) => renderUserCell(row.accountUserResponse),
-    },
-    {
-      key: "isActive",
-      label: "Active Status",
-      render: (_, row) => {
-        const active = row.accountUserResponse?.isActive;
-        return (
-          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-            active ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300" : "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300"
-          }`}>
-            {active ? "Active" : "Inactive"}
-          </span>
-        );
-      },
     },
     {
       key: "lastLogin",
@@ -216,7 +197,16 @@ const SuspiciousUsersActivity: React.FC = () => {
         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
           v ? "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300" : "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300"
         }`}>
-          {v ? "Blocked" : "Active"}
+          {v ? "True" : "False"}
+        </span>
+      ),
+    },
+    {
+      key: "userAgent",
+      label: "User Agent",
+      render: (v) => (
+        <span className="text-gray-500 dark:text-gray-400 text-sm">
+          {v || "N/A"}
         </span>
       ),
     },
@@ -242,11 +232,6 @@ const SuspiciousUsersActivity: React.FC = () => {
 
   const activityColumns: Column[] = [
     {
-      key: "createdBy",
-      label: "Created By",
-      render: (v) => <span className="text-gray-600 dark:text-gray-300 font-medium">{v || "N/A"}</span>,
-    },
-    {
       key: "user",
       label: "Account User",
       render: (_, row) => renderUserCell(row.accountUserResponse),
@@ -260,7 +245,7 @@ const SuspiciousUsersActivity: React.FC = () => {
           <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
             active ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300" : "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300"
           }`}>
-            {active ? "Active" : "Inactive"}
+            {active ? "True" : "False"}
           </span>
         );
       },
@@ -279,7 +264,7 @@ const SuspiciousUsersActivity: React.FC = () => {
     },
     {
       key: "actionPerformed",
-      label: "Action",
+      label: "Action Performed",
       render: (v) => <span className="text-gray-900 dark:text-gray-100 font-medium">{v}</span>,
     },
     {
@@ -304,6 +289,15 @@ const SuspiciousUsersActivity: React.FC = () => {
           </span>
         );
       },
+    },
+      {
+      key: "userAgent",
+      label: "User Agent",
+      render: (v) => (
+        <span className="text-gray-500 dark:text-gray-400 text-sm">
+          {v || "N/A"}
+        </span>
+      ),
     },
     {
       key: "createdOn",
