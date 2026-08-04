@@ -221,7 +221,7 @@ const ClientManagement: React.FC = () => {
           Payment History
         </button>
 
-        <button
+        {/* <button
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -235,7 +235,7 @@ const ClientManagement: React.FC = () => {
           }`}
         >
           {row.isActive ? "Deactivate" : "Activate"}
-        </button>
+        </button> */}
       </>
     );
   };
