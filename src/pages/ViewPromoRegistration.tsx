@@ -20,6 +20,7 @@ interface PromoCode {
   code: string;
   owner: string;
   discountPercentage: number;
+  settlementPercentage: number;
   startTime: string;
   endTime: string;
   createdOn: string;
@@ -242,7 +243,7 @@ const ViewPromoRegistration: React.FC = () => {
 
         {/* Promo Code Details Card */}
         <div className="bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-gray-800 border border-blue-100 dark:border-blue-800/50 rounded-lg p-4 sm:p-6 mb-6 shadow-sm">
-          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
             <div>
               <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1">
                 Code Name
@@ -265,6 +266,14 @@ const ViewPromoRegistration: React.FC = () => {
               </p>
               <p className="text-sm sm:text-base font-medium text-gray-900 dark:text-gray-100">
                 {promoCode.discountPercentage}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1">
+                Settlement (%)
+              </p>
+              <p className="text-sm sm:text-base font-medium text-gray-900 dark:text-gray-100">
+                {promoCode.settlementPercentage}
               </p>
             </div>
             <div>
