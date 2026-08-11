@@ -183,7 +183,14 @@ const Enquiries: React.FC = () => {
     {
       key: "subject",
       label: "Subject",
-      render: (v) => <span className="text-gray-600 dark:text-gray-300" title={v as string}>{v}</span>,
+      render: (v) => (
+        <span
+          className="block max-w-[280px] truncate text-gray-600 dark:text-gray-300"
+          title={String(v)}
+        >
+          {v}
+        </span>
+      ),
     },
     {
       key: "category",
