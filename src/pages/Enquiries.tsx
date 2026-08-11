@@ -173,12 +173,26 @@ const Enquiries: React.FC = () => {
     {
       key: "name",
       label: "Name",
-      render: (v) => <span className="text-sm text-gray-900 dark:text-gray-100 font-medium">{v}</span>,
+      render: (v) => (
+        <span
+          className="block max-w-[200px] truncate text-sm font-medium text-gray-900 dark:text-gray-100"
+          title={String(v)}
+        >
+          {v}
+        </span>
+      ),
     },
     {
       key: "email",
       label: "Email",
-      render: (v) => <span className="text-gray-600 dark:text-gray-300">{v}</span>,
+      render: (v) => (
+        <span
+          className="block max-w-[240px] truncate text-gray-600 dark:text-gray-300"
+          title={String(v)}
+        >
+          {v}
+        </span>
+      ),
     },
     {
       key: "subject",
