@@ -3,7 +3,6 @@ import {
   CreditCard,
   Download,
   Loader2,
-  CalendarClock,
 } from "lucide-react";
 import logoSrc from "@/assets/PlutoEvent_Logo.png";
 import { useQuery } from "@tanstack/react-query";
