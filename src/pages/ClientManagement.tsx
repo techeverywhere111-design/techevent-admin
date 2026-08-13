@@ -130,7 +130,7 @@ const ClientManagement: React.FC = () => {
   const handleViewProfile = (client: Client) =>
     navigate(`/client-profile?${client.id}`);
   const handlePaymentHistory = (client: Client) =>
-    navigate(`/clients/${client.id}/payments`);
+    navigate(`/clients/${client.accountId || client.id}/payments`);
 
   const handleToggleActive = () => {
     if (!pendingStatusAction) return;
