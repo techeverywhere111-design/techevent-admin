@@ -269,7 +269,9 @@ export type TotalCountResponse = z.infer<typeof TotalCountResponseSchema>;
 
 export const FeatureBreakdownColumnSchema = z.object({
   feature: z.string(),
-  totalCount: z.number(),
+  totalCount: z.number().optional().default(0),
+  totalAmount: z.number().optional().default(0),
+  currency: z.string().optional(),
 });
 
 export const FeatureBreakdownResponseSchema = z.object({

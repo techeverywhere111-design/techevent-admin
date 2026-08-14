@@ -28,8 +28,16 @@ interface LineData {
 }
 
 const mapBreakdownToChartData = (data?: FeatureBreakdownResponse, fallback: ChartData[] = []): ChartData[] => {
-  const mapped = data?.columns.map((col) => ({ name: col.feature, value: col.totalCount })) ?? [];
+  const mapped = data?.columns.map((col) => ({ name: col.feature, value: col.totalCount ?? 0 })) ?? [];
   return mapped.length > 0 ? mapped : fallback;
+};
+
+const mapPlanTypeToChartData = (data?: FeatureBreakdownResponse, fallback: ChartData[] = []): ChartData[] => {
+  if (!data?.columns?.length) return fallback;
+  return data.columns.map((col) => ({
+    name: col.feature.charAt(0).toUpperCase() + col.feature.slice(1).toLowerCase(),
+    value: col.totalAmount ?? 0,
+  }));
 };
 
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -257,7 +265,7 @@ export default function AnalyticsAndInsights() {
         />
         <PieChartCard
           title="Revenue Spread Across Subscription Plans"
-          data={mapBreakdownToChartData(planTypeData, DEFAULT_PLAN_TYPE)}
+          data={mapPlanTypeToChartData(planTypeData, DEFAULT_PLAN_TYPE)}
           colors={["#f43f5e", "#10b981", "#3b82f6", "#f59e0b"]}
           loading={planTypeLoading}
           isUnauthorized={isPermissionDeniedError(planTypeError)}

@@ -20,7 +20,8 @@ import { isPermissionDeniedError } from "@/lib/utils/api";
 interface Client {
   id: string;
   accountId: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string | null | undefined;
   planType: "Personal" | "Business";
   isActive: boolean;
@@ -57,21 +58,17 @@ const ClientManagement: React.FC = () => {
 
 
 
-      const mappedClients: Client[] = response.content.map((c) => {
-        const displayName = c.name?.trim() || `${c.firstName || ""} ${c.lastName || ""}`.trim();
-
-        const planType: "Personal" | "Business" = c.name ? "Business" : "Personal";
-        return {
-          id: c.id,
-          accountId: c.accountId,
-          name: displayName,
-          email: c.email,
-          planType,
-          isActive: c.isActive ?? true,
-          dateJoined: c.createdOn,
-          avatar: c.imageUrl,
-        };
-      });
+      const mappedClients: Client[] = response.content.map((c) => ({
+        id: c.id,
+        accountId: c.accountId,
+        firstName: c.firstName?.trim() || "",
+        lastName: c.lastName?.trim() || "",
+        email: c.email,
+        planType: (c.name ? "Business" : "Personal") as "Personal" | "Business",
+        isActive: c.isActive ?? true,
+        dateJoined: c.createdOn,
+        avatar: c.imageUrl,
+      }));
 
       return { clients: mappedClients, totalElements: response.totalElements };
     },
@@ -145,21 +142,28 @@ const ClientManagement: React.FC = () => {
 
   const columns: Column[] = [
     {
-      key: "name",
-      label: "Name",
-      render: (value, _row: Client) => (
+      key: "firstName",
+      label: "First Name",
+      render: (value, row: Client) => (
         <div className="flex items-center gap-3">
           <div
             className={`w-8 h-8 rounded-full ${getAvatarColor(
-              value
+              value || row.email || ""
             )} flex items-center justify-center`}
           >
             <User size={18} className="text-white" />
           </div>
           <span className="text-sm text-gray-900 dark:text-gray-100">
-            {value}
+            {value || "—"}
           </span>
         </div>
+      ),
+    },
+    {
+      key: "lastName",
+      label: "Last Name",
+      render: (v) => (
+        <span className="text-sm text-gray-900 dark:text-gray-100">{v || "—"}</span>
       ),
     },
     {
@@ -244,7 +248,8 @@ const ClientManagement: React.FC = () => {
     if (clients.length === 0) return;
 
     const exportData = clients.map((c) => ({
-      Name: c.name,
+      "First Name": c.firstName,
+      "Last Name": c.lastName,
       Email: c.email,
       "Plan Type": c.planType,
       Status: c.isActive ? "Active" : "Inactive",
@@ -366,7 +371,7 @@ const ClientManagement: React.FC = () => {
 
               <div className="mt-6 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-3">
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {pendingStatusAction.name}
+                  {[pendingStatusAction.firstName, pendingStatusAction.lastName].filter(Boolean).join(" ") || pendingStatusAction.email}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 break-all">
                   {pendingStatusAction.email}
