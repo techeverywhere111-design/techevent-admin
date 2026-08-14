@@ -92,7 +92,7 @@ const UserManagement: React.FC = () => {
         email: c.email,
         roleType: c.roleType,
         isPendingUser: c.isPendingUser,
-        isActive: c.isActive ?? true,
+        isActive: c.status ? c.status.toUpperCase() === "ACTIVE" : Boolean(c.isActive),
         dateJoined: c.createdOn,
         avatar: null,
       }));
@@ -217,10 +217,10 @@ const UserManagement: React.FC = () => {
       label: "Status",
       render: (_v, row: AdminTableUser) => {
         const label = row.isPendingUser
-          ? "Invite Pending"
+          ? "INVITE PENDING"
           : row.isActive
-            ? "Active"
-            : "Inactive";
+            ? "ACTIVE"
+            : "INACTIVE";
         return (
           <span
             className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
@@ -377,10 +377,10 @@ const UserManagement: React.FC = () => {
       Email: c.email,
       "Role Type": c.roleType,
       Status: c.isPendingUser
-        ? "Invite Pending"
+        ? "INVITE PENDING"
         : c.isActive
-          ? "Active"
-          : "Inactive",
+          ? "ACTIVE"
+          : "INACTIVE",
       "Date Joined": formatDateTime(c.dateJoined),
     }));
 

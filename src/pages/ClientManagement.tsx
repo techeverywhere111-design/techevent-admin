@@ -65,7 +65,7 @@ const ClientManagement: React.FC = () => {
         lastName: c.lastName?.trim() || "",
         email: c.email,
         planType: (c.name ? "Business" : "Personal") as "Personal" | "Business",
-        isActive: c.isActive ?? true,
+        isActive: c.status ? c.status.toUpperCase() === "ACTIVE" : (c.isActive ?? true),
         dateJoined: c.createdOn,
         avatar: c.imageUrl,
       }));
@@ -185,7 +185,7 @@ const ClientManagement: React.FC = () => {
               : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
           }`}
         >
-          {v ? "Active" : "Inactive"}
+          {v ? "ACTIVE" : "INACTIVE"}
         </span>
       ),
     },
@@ -252,7 +252,7 @@ const ClientManagement: React.FC = () => {
       "Last Name": c.lastName,
       Email: c.email,
       "Plan Type": c.planType,
-      Status: c.isActive ? "Active" : "Inactive",
+      Status: c.isActive ? "ACTIVE" : "INACTIVE",
       "Date Joined": formatDateTime(c.dateJoined),
     }));
 
