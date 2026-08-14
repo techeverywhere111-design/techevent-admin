@@ -61,7 +61,7 @@ const ClientManagement: React.FC = () => {
       const mappedClients: Client[] = response.content.map((c) => ({
         id: c.id,
         accountId: c.accountId,
-        firstName: c.firstName?.trim() || "",
+        firstName: c.name?.trim() || c.firstName?.trim() || "",
         lastName: c.lastName?.trim() || "",
         email: c.email,
         planType: (c.name ? "Business" : "Personal") as "Personal" | "Business",
