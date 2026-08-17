@@ -5,7 +5,7 @@ import {
   Loader2,
 } from "lucide-react";
 import logoSrc from "@/assets/PlutoEvent_Logo.png";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { jsPDF } from "jspdf";
 import Table, { type Column } from "@/components/ui/Table";
 import { GetPlanPaymentHistories } from "@/lib/api/PlanPaymentEndpoint";
@@ -41,9 +41,27 @@ const formatPlanAmount = (
   }).format(safeAmount);
 };
 
+const ordinal = (n: number) => {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+};
+
 const formatDate = (value?: string | null) => {
   if (!value) return "N/A";
-  return new Date(value).toLocaleString();
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "N/A";
+  const day = ordinal(d.getDate());
+  const month = d.toLocaleString("en-US", { month: "long" });
+  const year = d.getFullYear();
+  const time = d
+    .toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .toLowerCase();
+  return `${day} of ${month}, ${year} ${time}`;
 };
 
 const PaymentHistory: React.FC = () => {
@@ -59,6 +77,7 @@ const PaymentHistory: React.FC = () => {
         totalElements: response.totalElements ?? 0,
       };
     },
+    placeholderData: keepPreviousData,
   });
 
   const paymentHistories = data?.paymentHistories ?? [];
@@ -97,13 +116,6 @@ const PaymentHistory: React.FC = () => {
     const marginL = 14;
     const marginR = 14;
     const contentW = pageW - marginL - marginR;
-
-    // ── Helper: ordinal date suffix ──────────────────────────────────────────
-    const ordinal = (n: number) => {
-      const s = ["th", "st", "nd", "rd"];
-      const v = n % 100;
-      return n + (s[(v - 20) % 10] || s[v] || s[0]);
-    };
 
     const formatReceiptDate = (dateStr?: string | null) => {
       if (!dateStr) return "N/A";
@@ -281,7 +293,11 @@ const PaymentHistory: React.FC = () => {
     doc.setFillColor(13, 27, 42);
     doc.rect(0, 0, pageW, 22, "F");
 
+    let pdfFinalized = false;
     const finalizePdf = (logoDataUrl: string | null) => {
+      if (pdfFinalized) return;
+      pdfFinalized = true;
+
       if (logoDataUrl) {
         try {
           doc.addImage(logoDataUrl, "PNG", marginL, 6, 38, 10);
@@ -421,15 +437,6 @@ const PaymentHistory: React.FC = () => {
         ),
       },
       {
-        key: "currency",
-        label: "Currency",
-        render: (value) => (
-          <span className="text-gray-700 dark:text-gray-200 font-medium">
-            {value || "N/A"}
-          </span>
-        ),
-      },
-      {
         key: "createdOn",
         label: "Date",
         render: (value) => (
@@ -478,7 +485,7 @@ const PaymentHistory: React.FC = () => {
           </button>
         </div>
 
-        {isLoading ? (
+        {isLoading && !data ? (
           <div className="py-20 flex flex-col items-center justify-center">
             <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
             <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
@@ -501,13 +508,14 @@ const PaymentHistory: React.FC = () => {
             data={paymentHistories}
             totalCount={totalCount}
             itemsPerPage={itemsPerPage}
+            currentPage={page}
             onPageChange={(pageNumber) => setPage(pageNumber)}
             onPerPageChange={(newSize) => {
               setItemsPerPage(newSize);
               setPage(1);
             }}
             renderActions={renderActions}
-            loading={isLoading}
+            loading={isLoading && !data}
             isUnauthorized={isPermissionDeniedError(error)}
           />
         )}

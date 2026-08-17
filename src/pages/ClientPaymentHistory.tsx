@@ -6,7 +6,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { jsPDF } from "jspdf";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -43,14 +43,27 @@ const formatPlanAmount = (
   }).format(safeAmount);
 };
 
+const ordinal = (n: number) => {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+};
+
 const formatDate = (value?: string | null) => {
   if (!value) return "N/A";
   const d = new Date(value);
   if (isNaN(d.getTime())) return "N/A";
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const yyyy = d.getFullYear();
-  return `${dd} - ${mm} - ${yyyy}`;
+  const day = ordinal(d.getDate());
+  const month = d.toLocaleString("en-US", { month: "long" });
+  const year = d.getFullYear();
+  const time = d
+    .toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .toLowerCase();
+  return `${day} of ${month}, ${year} ${time}`;
 };
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -98,6 +111,7 @@ const ClientPaymentHistory: React.FC = () => {
         totalElements: response.totalElements ?? 0,
       };
     },
+    placeholderData: keepPreviousData,
     enabled: !!targetAccountId,
   });
 
@@ -328,6 +342,13 @@ const ClientPaymentHistory: React.FC = () => {
       doc.save(`Receipt_${log.id || "Subscription"}.pdf`);
     };
 
+    let pdfFinalized = false;
+    const safeFinalizePdf = (logoDataUrl: string | null) => {
+      if (pdfFinalized) return;
+      pdfFinalized = true;
+      finalizePdf(logoDataUrl);
+    };
+
     const logoImg = new Image();
     logoImg.src = logoSrc;
     const canvas = document.createElement("canvas");
@@ -337,14 +358,14 @@ const ClientPaymentHistory: React.FC = () => {
       canvas.width = logoImg.naturalWidth;
       canvas.height = logoImg.naturalHeight;
       ctx.drawImage(logoImg, 0, 0);
-      try { finalizePdf(canvas.toDataURL("image/png")); } catch (_) { finalizePdf(null); }
+      try { safeFinalizePdf(canvas.toDataURL("image/png")); } catch (_) { safeFinalizePdf(null); }
     };
-    logoImg.onerror = () => finalizePdf(null);
+    logoImg.onerror = () => safeFinalizePdf(null);
     if (logoImg.complete) {
       canvas.width = logoImg.naturalWidth || 1;
       canvas.height = logoImg.naturalHeight || 1;
       ctx.drawImage(logoImg, 0, 0);
-      try { finalizePdf(canvas.toDataURL("image/png")); } catch (_) { finalizePdf(null); }
+      try { safeFinalizePdf(canvas.toDataURL("image/png")); } catch (_) { safeFinalizePdf(null); }
     }
   };
 
@@ -439,7 +460,7 @@ const ClientPaymentHistory: React.FC = () => {
         </p>
 
         {/* Table */}
-        {isLoading ? (
+        {isLoading && !data ? (
           <div className="py-20 flex flex-col items-center justify-center">
             <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
             <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
@@ -462,13 +483,14 @@ const ClientPaymentHistory: React.FC = () => {
             data={paymentHistories}
             totalCount={totalCount}
             itemsPerPage={itemsPerPage}
+            currentPage={page}
             onPageChange={(p) => setPage(p)}
             onPerPageChange={(newSize) => {
               setItemsPerPage(newSize);
               setPage(1);
             }}
             renderActions={renderActions}
-            loading={isLoading}
+            loading={isLoading && !data}
             isUnauthorized={isPermissionDeniedError(error)}
           />
         )}

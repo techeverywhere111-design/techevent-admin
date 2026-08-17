@@ -13,6 +13,7 @@ export interface TableProps {
   data: any[];
   totalCount?: number;
   itemsPerPage?: number;
+  currentPage?: number;
   renderActions?: (row: any) => React.ReactNode;
   onPageChange?: (page: number) => void;
   onPerPageChange?: (perPage: number) => void;
@@ -81,13 +82,22 @@ const Table: React.FC<TableProps> = ({
   data,
   totalCount,
   itemsPerPage = 10,
+  currentPage: propCurrentPage,
   renderActions,
   onPageChange,
   onPerPageChange,
   loading = false,
   isUnauthorized = false,
 }) => {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [internalPage, setInternalPage] = useState(propCurrentPage ?? 1);
+
+  useEffect(() => {
+    if (propCurrentPage !== undefined) {
+      setInternalPage(propCurrentPage);
+    }
+  }, [propCurrentPage]);
+
+  const currentPage = propCurrentPage !== undefined ? propCurrentPage : internalPage;
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [perPage, setPerPage] = useState(itemsPerPage);
 
@@ -113,14 +123,14 @@ const Table: React.FC<TableProps> = ({
 
   const handlePageChange = (page: number) => {
     if (page !== currentPage) {
-      setCurrentPage(page);
+      setInternalPage(page);
       onPageChange?.(page);
     }
   };
 
   const handlePerPageChange = (newPerPage: number) => {
     setPerPage(newPerPage);
-    setCurrentPage(1); // Reset to first page when changing items per page
+    setInternalPage(1); // Reset to first page when changing items per page
     onPerPageChange?.(newPerPage); // Call parent callback
     onPageChange?.(1);
   };
