@@ -96,8 +96,7 @@ const SuspiciousUsersActivity: React.FC = () => {
           "Created By": u.createdBy || "N/A",
           "User Name": name || "N/A",
           "User Email": userDetails?.email || "N/A",
-          "User Active Status": userDetails?.isActive ? "Active" : "Inactive",
-          "Last Login": formatDateTime(userDetails?.lastLogin),
+
           "Occurrences": u.numberOfOccurrences,
           "Blocked Status": u.isBlocked ? "Blocked" : "Active",
           "Created On": formatDateTime(u.createdOn),
@@ -119,8 +118,7 @@ const SuspiciousUsersActivity: React.FC = () => {
           "Created By": a.createdBy || "N/A",
           "User Name": name || "N/A",
           "User Email": userDetails?.email || "N/A",
-          "User Active Status": userDetails?.isActive ? "Active" : "Inactive",
-          "Last Login": formatDateTime(userDetails?.lastLogin),
+
           "Action Performed": a.actionPerformed || "N/A",
           "Endpoint": a.endpoint || "N/A",
           "Method": a.method || "N/A",
@@ -173,18 +171,7 @@ const SuspiciousUsersActivity: React.FC = () => {
       label: "Account User",
       render: (_, row) => renderUserCell(row.accountUserResponse),
     },
-    {
-      key: "lastLogin",
-      label: "Last Login",
-      render: (_, row) => {
-        const lastLogin = row.accountUserResponse?.lastLogin;
-        return (
-          <span className="text-gray-500 dark:text-gray-400 text-sm">
-            {formatDateTime(lastLogin)}
-          </span>
-        );
-      },
-    },
+
     {
       key: "numberOfOccurrences",
       label: "Occurrences",
@@ -236,32 +223,7 @@ const SuspiciousUsersActivity: React.FC = () => {
       label: "Account User",
       render: (_, row) => renderUserCell(row.accountUserResponse),
     },
-    {
-      key: "isActive",
-      label: "Active Status",
-      render: (_, row) => {
-        const active = row.accountUserResponse?.isActive;
-        return (
-          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-            active ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300" : "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300"
-          }`}>
-            {active ? "True" : "False"}
-          </span>
-        );
-      },
-    },
-    {
-      key: "lastLogin",
-      label: "Last Login",
-      render: (_, row) => {
-        const lastLogin = row.accountUserResponse?.lastLogin;
-        return (
-          <span className="text-gray-500 dark:text-gray-400 text-sm">
-            {formatDateTime(lastLogin)}
-          </span>
-        );
-      },
-    },
+
     {
       key: "actionPerformed",
       label: "Action Performed",
