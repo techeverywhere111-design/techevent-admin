@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import Table, { type Column } from "@/components/ui/Table";
-import { Search, Upload, X } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { GetSuspiciousUsers, GetSuspiciousActivities } from "@/lib/api/SuspiciousUsersEndpoint";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -15,8 +15,7 @@ interface SelectedImageState {
 
 const SuspiciousUsersActivity: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"users" | "activities">( "users");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeSearchTerm, setActiveSearchTerm] = useState("");
+
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedImage, setSelectedImage] = useState<SelectedImageState | null>(null);
@@ -33,56 +32,12 @@ const SuspiciousUsersActivity: React.FC = () => {
     enabled: activeTab === "activities",
   });
 
-  const handleSearch = () => {
-    setActiveSearchTerm(searchTerm);
-    setPage(1);
-  };
-
-  const handleClear = () => {
-    setSearchTerm("");
-    setActiveSearchTerm("");
-    setPage(1);
-  };
-
-  const users = useMemo(() => {
-    const rawContent = usersData?.content || [];
-    if (!activeSearchTerm) return rawContent;
-    const term = activeSearchTerm.toLowerCase();
-    return rawContent.filter((u) => {
-      const name = `${u.accountUserResponse?.firstName || ""} ${u.accountUserResponse?.lastName || ""}`.trim() || u.accountUserResponse?.name || "";
-      const email = u.accountUserResponse?.email || "";
-      const createdBy = u.createdBy || "";
-      return (
-        name.toLowerCase().includes(term) ||
-        email.toLowerCase().includes(term) ||
-        createdBy.toLowerCase().includes(term)
-      );
-    });
-  }, [usersData, activeSearchTerm]);
-
-  const activities = useMemo(() => {
-    const rawContent = activitiesData?.content || [];
-    if (!activeSearchTerm) return rawContent;
-    const term = activeSearchTerm.toLowerCase();
-    return rawContent.filter((a) => {
-      const name = `${a.accountUserResponse?.firstName || ""} ${a.accountUserResponse?.lastName || ""}`.trim() || a.accountUserResponse?.name || "";
-      const email = a.accountUserResponse?.email || "";
-      const createdBy = a.createdBy || "";
-      const action = a.actionPerformed || "";
-      const endpoint = a.endpoint || "";
-      return (
-        name.toLowerCase().includes(term) ||
-        email.toLowerCase().includes(term) ||
-        createdBy.toLowerCase().includes(term) ||
-        action.toLowerCase().includes(term) ||
-        endpoint.toLowerCase().includes(term)
-      );
-    });
-  }, [activitiesData, activeSearchTerm]);
+  const users = usersData?.content || [];
+  const activities = activitiesData?.content || [];
 
   const totalCount = activeTab === "users"
-    ? (activeSearchTerm ? users.length : usersData?.totalElements || 0)
-    : (activeSearchTerm ? activities.length : activitiesData?.totalElements || 0);
+    ? (usersData?.totalElements || 0)
+    : (activitiesData?.totalElements || 0);
 
   const loading = activeTab === "users" ? loadingUsers : loadingActivities;
 
@@ -292,8 +247,6 @@ const SuspiciousUsersActivity: React.FC = () => {
               onClick={() => {
                 setActiveTab(tab.id as "users" | "activities");
                 setPage(1);
-                setSearchTerm("");
-                setActiveSearchTerm("");
               }}
               className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 activeTab === tab.id
@@ -307,34 +260,7 @@ const SuspiciousUsersActivity: React.FC = () => {
         </div>
 
         {/* Actions Bar */}
-        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex gap-2 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-64">
-              <input
-                type="text"
-                placeholder={activeTab === "users" ? "Search users..." : "Search activities..."}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {searchTerm && (
-                <button
-                  onClick={handleClear}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500"
-                >
-                  <X size={16} />
-                </button>
-              )}
-            </div>
-            <button
-              onClick={handleSearch}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              <Search size={20} />
-            </button>
-          </div>
-
+        <div className="mb-6 flex justify-end">
           <button
             onClick={handleExport}
             disabled={activeTab === "users" ? users.length === 0 : activities.length === 0}
