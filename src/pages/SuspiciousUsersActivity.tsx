@@ -48,12 +48,11 @@ const SuspiciousUsersActivity: React.FC = () => {
         const userDetails = u.accountUserResponse;
         const name = userDetails ? `${userDetails.firstName || ""} ${userDetails.lastName || ""}`.trim() || userDetails.name : "N/A";
         return {
-          "Created By": u.createdBy || "N/A",
-          "User Name": name || "N/A",
+          "Account User": name || "N/A",
           "User Email": userDetails?.email || "N/A",
-
           "Occurrences": u.numberOfOccurrences,
           "Blocked Status": u.isBlocked ? "Blocked" : "Active",
+          "User Agent": u.userAgent || "N/A",
           "Created On": formatDateTime(u.createdOn),
           "Updated On": formatDateTime(u.updatedOn),
         };
@@ -70,13 +69,12 @@ const SuspiciousUsersActivity: React.FC = () => {
         const userDetails = a.accountUserResponse;
         const name = userDetails ? `${userDetails.firstName || ""} ${userDetails.lastName || ""}`.trim() || userDetails.name : "N/A";
         return {
-          "Created By": a.createdBy || "N/A",
-          "User Name": name || "N/A",
+          "Account User": name || "N/A",
           "User Email": userDetails?.email || "N/A",
-
           "Action Performed": a.actionPerformed || "N/A",
           "Endpoint": a.endpoint || "N/A",
           "Method": a.method || "N/A",
+          "User Agent": a.userAgent || "N/A",
           "Created On": formatDateTime(a.createdOn),
         };
       });
