@@ -41,6 +41,8 @@ type ModalMode = "create" | "renew";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
+const getTodayDate = () => new Date().toISOString().split("T")[0];
+
 const PromoCode: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
@@ -282,6 +284,7 @@ const PromoCode: React.FC = () => {
     if (field === "code") {
       value = value.replace(/[^a-zA-Z0-9]/g, "");
     }
+    if ((field === "code" || field === "owner") && value.length > 30) return;
     setPromoForm((prev) => ({ ...prev, [field]: value }));
     setPromoErrors((prev) => ({ ...prev, [field]: "" }));
   };
@@ -293,7 +296,11 @@ const PromoCode: React.FC = () => {
       if (!promoForm.code.trim()) errors.code = "Code name is required";
       else if (!/^[a-zA-Z0-9]+$/.test(promoForm.code))
         errors.code = "Code name can only contain letters and numbers";
+      else if (promoForm.code.length > 30)
+        errors.code = "Code name must be 30 characters or less";
       if (!promoForm.owner.trim()) errors.owner = "Owner is required";
+      else if (promoForm.owner.length > 30)
+        errors.owner = "Owner name must be 30 characters or less";
     }
 
     if (!promoForm.settlementPercentage.trim())
@@ -314,8 +321,12 @@ const PromoCode: React.FC = () => {
     )
       errors.discountPercentage = "Must be a number between 0 and 100";
     if (!promoForm.startDate) errors.startDate = "Start date is required";
+    else if (promoForm.startDate < getTodayDate())
+      errors.startDate = "Start date cannot be in the past";
     if (!promoForm.startTime) errors.startTime = "Start time is required";
     if (!promoForm.endDate) errors.endDate = "End date is required";
+    else if (promoForm.endDate < getTodayDate())
+      errors.endDate = "End date cannot be in the past";
     if (!promoForm.endTime) errors.endTime = "End time is required";
 
     if (
@@ -525,6 +536,7 @@ const PromoCode: React.FC = () => {
                     value={promoForm.code}
                     onChange={(e) => handlePromoChange("code", e.target.value)}
                     disabled={isRenewMode}
+                    maxLength={30}
                     pattern="[A-Za-z0-9]+"
                     title="Code name can only contain letters and numbers"
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
@@ -535,6 +547,9 @@ const PromoCode: React.FC = () => {
                         : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
                     }`}
                   />
+                  {!isRenewMode && (
+                    <p className="text-xs text-gray-400 mt-1">{promoForm.code.length}/30</p>
+                  )}
                   {promoErrors.code && !isRenewMode && (
                     <p className="text-red-500 text-sm mt-1">
                       {promoErrors.code}
@@ -552,6 +567,7 @@ const PromoCode: React.FC = () => {
                     value={promoForm.owner}
                     onChange={(e) => handlePromoChange("owner", e.target.value)}
                     disabled={isRenewMode}
+                    maxLength={30}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
                       isRenewMode
                         ? "opacity-50 cursor-not-allowed"
@@ -560,6 +576,9 @@ const PromoCode: React.FC = () => {
                         : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
                     }`}
                   />
+                  {!isRenewMode && (
+                    <p className="text-xs text-gray-400 mt-1">{promoForm.owner.length}/30</p>
+                  )}
                   {promoErrors.owner && !isRenewMode && (
                     <p className="text-red-500 text-sm mt-1">
                       {promoErrors.owner}
@@ -638,6 +657,7 @@ const PromoCode: React.FC = () => {
                       type="date"
                       placeholder="DD/MM/YYYY"
                       value={promoForm.startDate}
+                      min={getTodayDate()}
                       onChange={(e) =>
                         handlePromoChange("startDate", e.target.value)
                       }
@@ -685,6 +705,7 @@ const PromoCode: React.FC = () => {
                       type="date"
                       placeholder="DD/MM/YYYY"
                       value={promoForm.endDate}
+                      min={promoForm.startDate || getTodayDate()}
                       onChange={(e) =>
                         handlePromoChange("endDate", e.target.value)
                       }
