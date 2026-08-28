@@ -430,7 +430,7 @@ const PromoCode: React.FC = () => {
         </div>
 
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-          <div className="flex w-full min-w-0 gap-2 sm:w-auto sm:flex-1">
+          <div className="flex w-full min-w-0 items-center gap-2 sm:w-auto sm:flex-1">
             <div className="relative min-w-0 flex-1 sm:max-w-64">
               <input
                 type="text"
@@ -438,7 +438,7 @@ const PromoCode: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => handleSearchInputChange(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-2 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 sm:w-64"
+                className="w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-2 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 sm:w-64"
               />
               {searchTerm && (
                 <button
@@ -539,13 +539,12 @@ const PromoCode: React.FC = () => {
                     maxLength={30}
                     pattern="[A-Za-z0-9]+"
                     title="Code name can only contain letters and numbers"
-                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                      isRenewMode
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${isRenewMode
                         ? "opacity-50 cursor-not-allowed"
                         : promoErrors.code
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-                    }`}
+                          ? "border-red-500 focus:ring-red-500"
+                          : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
+                      }`}
                   />
                   {!isRenewMode && (
                     <p className="text-xs text-gray-400 mt-1">{promoForm.code.length}/30</p>
@@ -568,13 +567,12 @@ const PromoCode: React.FC = () => {
                     onChange={(e) => handlePromoChange("owner", e.target.value)}
                     disabled={isRenewMode}
                     maxLength={30}
-                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                      isRenewMode
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${isRenewMode
                         ? "opacity-50 cursor-not-allowed"
                         : promoErrors.owner
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-                    }`}
+                          ? "border-red-500 focus:ring-red-500"
+                          : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
+                      }`}
                   />
                   {!isRenewMode && (
                     <p className="text-xs text-gray-400 mt-1">{promoForm.owner.length}/30</p>
@@ -602,11 +600,10 @@ const PromoCode: React.FC = () => {
                     min="0"
                     max="100"
                     step="0.01"
-                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                      promoErrors.discountPercentage
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${promoErrors.discountPercentage
                         ? "border-red-500 focus:ring-red-500"
                         : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-                    }`}
+                      }`}
                   />
                   {promoErrors.discountPercentage && (
                     <p className="text-red-500 text-sm mt-1">
@@ -629,11 +626,10 @@ const PromoCode: React.FC = () => {
                     min="0"
                     max="100"
                     step="0.01"
-                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                      promoErrors.settlementPercentage
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${promoErrors.settlementPercentage
                         ? "border-red-500 focus:ring-red-500"
                         : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-                    }`}
+                      }`}
                   />
                   {promoErrors.settlementPercentage && (
                     <p className="text-red-500 text-sm mt-1">
@@ -661,11 +657,10 @@ const PromoCode: React.FC = () => {
                       onChange={(e) =>
                         handlePromoChange("startDate", e.target.value)
                       }
-                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                        promoErrors.startDate
+                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${promoErrors.startDate
                           ? "border-red-500 focus:ring-red-500"
                           : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-                      }`}
+                        }`}
                     />
                     <div className="flex gap-2">
                       <input
@@ -674,11 +669,10 @@ const PromoCode: React.FC = () => {
                         onChange={(e) =>
                           handlePromoChange("startTime", e.target.value)
                         }
-                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                          promoErrors.startTime
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${promoErrors.startTime
                             ? "border-red-500 focus:ring-red-500"
                             : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-                        }`}
+                          }`}
                       />
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
@@ -709,11 +703,10 @@ const PromoCode: React.FC = () => {
                       onChange={(e) =>
                         handlePromoChange("endDate", e.target.value)
                       }
-                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                        promoErrors.endDate
+                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${promoErrors.endDate
                           ? "border-red-500 focus:ring-red-500"
                           : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-                      }`}
+                        }`}
                     />
                     <div className="flex gap-2">
                       <input
@@ -722,11 +715,10 @@ const PromoCode: React.FC = () => {
                         onChange={(e) =>
                           handlePromoChange("endTime", e.target.value)
                         }
-                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                          promoErrors.endTime
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${promoErrors.endTime
                             ? "border-red-500 focus:ring-red-500"
                             : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
-                        }`}
+                          }`}
                       />
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
@@ -758,8 +750,8 @@ const PromoCode: React.FC = () => {
                       ? "Renewing..."
                       : "Creating..."
                     : isRenewMode
-                    ? "Renew"
-                    : "Create"}
+                      ? "Renew"
+                      : "Create"}
                 </button>
               </div>
             </form>
