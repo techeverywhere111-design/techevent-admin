@@ -34,10 +34,15 @@ const mapBreakdownToChartData = (data?: FeatureBreakdownResponse, fallback: Char
 
 const mapPlanTypeToChartData = (data?: FeatureBreakdownResponse, fallback: ChartData[] = []): ChartData[] => {
   if (!data?.columns?.length) return fallback;
-  return data.columns.map((col) => ({
-    name: col.feature.charAt(0).toUpperCase() + col.feature.slice(1).toLowerCase(),
-    value: col.totalAmount ?? 0,
-  }));
+  return data.columns.map((col) => {
+    const planName = col.feature.charAt(0).toUpperCase() + col.feature.slice(1).toLowerCase();
+    const currency = col.currency?.toUpperCase();
+
+    return {
+      name: currency ? `${planName} (${currency})` : planName,
+      value: col.totalAmount ?? 0,
+    };
+  });
 };
 
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -74,8 +79,10 @@ const DEFAULT_CORE_FEATURES: ChartData[] = [
 ];
 
 const DEFAULT_PLAN_TYPE: ChartData[] = [
-  { name: "Personal", value: 0 },
-  { name: "Business", value: 0 },
+  { name: "Business (NGN)", value: 0 },
+  { name: "Business (USD)", value: 0 },
+  { name: "Personal (USD)", value: 0 },
+  { name: "Personal (NGN)", value: 0 },
 ];
 
 const DEFAULT_ACCOUNTS_PER_PLAN: ChartData[] = [
