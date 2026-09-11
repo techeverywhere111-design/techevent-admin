@@ -23,8 +23,10 @@ interface Stat {
 
 interface LineData {
   month: string;
-  currentYear: number;
-  lastYear: number;
+  currentYearNGN: number;
+  currentYearUSD: number;
+  lastYearNGN: number;
+  lastYearUSD: number;
 }
 
 const mapBreakdownToChartData = (data?: FeatureBreakdownResponse, fallback: ChartData[] = []): ChartData[] => {
@@ -176,29 +178,32 @@ export default function AnalyticsAndInsights() {
   const lineData = useMemo(() => {
     const result: LineData[] = MONTH_LABELS.map(m => ({
       month: m,
-      currentYear: 0,
-      lastYear: 0
+      currentYearNGN: 0,
+      currentYearUSD: 0,
+      lastYearNGN: 0,
+      lastYearUSD: 0,
     }));
 
     if (!yearOnYearData || yearOnYearData.length < 2) {
       return result;
     }
 
-    const currentYearCols = yearOnYearData[0]?.columns ?? [];
-    currentYearCols.forEach(col => {
-      const idx = getMonthIndex(col.feature);
-      if (idx >= 0 && idx < 12) {
-        result[idx].currentYear = col.totalCount;
-      }
-    });
+    const mapCols = (cols: typeof yearOnYearData[0]["columns"], ngnKey: keyof LineData, usdKey: keyof LineData) => {
+      cols.forEach(col => {
+        const idx = getMonthIndex(col.feature);
+        if (idx >= 0 && idx < 12) {
+          const currency = col.currency?.toUpperCase();
+          if (currency === "USD") {
+            (result[idx][usdKey] as number) += col.totalAmount;
+          } else {
+            (result[idx][ngnKey] as number) += col.totalAmount;
+          }
+        }
+      });
+    };
 
-    const lastYearCols = yearOnYearData[1]?.columns ?? [];
-    lastYearCols.forEach(col => {
-      const idx = getMonthIndex(col.feature);
-      if (idx >= 0 && idx < 12) {
-        result[idx].lastYear = col.totalCount;
-      }
-    });
+    mapCols(yearOnYearData[0]?.columns ?? [], "currentYearNGN", "currentYearUSD");
+    mapCols(yearOnYearData[1]?.columns ?? [], "lastYearNGN", "lastYearUSD");
 
     return result;
   }, [yearOnYearData]);

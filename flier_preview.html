@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Come As You Are - Event Flier</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&family=Cinzel:wght@700;900&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #0b0c10;
+      color: #ffffff;
+      font-family: 'Outfit', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .flier-container {
+      width: 100%;
+      max-width: 500px;
+      aspect-ratio: 4 / 5;
+      background: linear-gradient(180deg, #0d0614 0%, #1a0b00 40%, #ff5722 100%);
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(255, 87, 34, 0.3), 0 0 100px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 40px 30px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .background-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 30%, rgba(255, 140, 0, 0.35), transparent 70%),
+                  radial-gradient(circle at 50% 80%, rgba(255, 87, 34, 0.4), transparent 60%);
+      pointer-events: none;
+    }
+
+    .rays {
+      position: absolute;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200%;
+      height: 100%;
+      background: conic-gradient(from 180deg at 50% 0%, transparent 0deg, rgba(255, 255, 255, 0.08) 15deg, transparent 30deg, rgba(255, 255, 255, 0.05) 60deg, transparent 90deg);
+      pointer-events: none;
+    }
+
+    .header {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .alpha-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 87, 34, 0.15);
+      border: 1px solid rgba(255, 140, 0, 0.4);
+      padding: 8px 18px;
+      border-radius: 30px;
+      backdrop-filter: blur(10px);
+    }
+
+    .alpha-symbol {
+      font-size: 24px;
+      font-weight: 900;
+      color: #ff6d00;
+      font-family: 'Cinzel', serif;
+    }
+
+    .brand-name {
+      font-size: 13px;
+      letter-spacing: 3px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #ff9100;
+    }
+
+    .main-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      margin: auto 0;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 10px;
+    }
+
+    .title {
+      font-size: 48px;
+      font-weight: 900;
+      line-height: 1;
+      text-transform: uppercase;
+      background: linear-gradient(180deg, #ffffff 0%, #ffe0b2 60%, #ffab40 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      letter-spacing: -1px;
+    }
+
+    .tagline {
+      font-size: 16px;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.9);
+      margin-top: 15px;
+      font-style: italic;
+    }
+
+    .footer-details {
+      position: relative;
+      z-index: 2;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .detail-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #ff9100;
+      font-weight: 700;
+    }
+
+    .detail-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .divider {
+      width: 1px;
+      height: 30px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="flier-container">
+    <div class="background-overlay"></div>
+    <div class="rays"></div>
+
+    <div class="header">
+      <div class="alpha-logo">
+        <span class="alpha-symbol">&#905;</span>
+        <span class="brand-name">Alpha Service</span>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="subtitle">You Are Invited</div>
+      <h1 class="title">Come As<br>You Are</h1>
+      <p class="tagline">An atmosphere of grace, acceptance, and transformation.</p>
+    </div>
+
+    <div class="footer-details">
+      <div class="detail-item">
+        <span class="detail-label">Date</span>
+        <span class="detail-value">30th May, 2026</span>
+      </div>
+      <div class="divider"></div>
+      <div class="detail-item">
+        <span class="detail-label">Time</span>
+        <span class="detail-value">8:00 AM</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

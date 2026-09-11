@@ -12,11 +12,12 @@ import {
 import SkeletonLoader from "./SkeletonLoader";
 import { ShieldX } from "lucide-react";
 
-// ---- Types ---- //
 export interface LineChartData {
   month: string;
-  currentYear: number;
-  lastYear: number;
+  currentYearNGN: number;
+  currentYearUSD: number;
+  lastYearNGN: number;
+  lastYearUSD: number;
 }
 
 interface LineChartCardProps {
@@ -31,6 +32,14 @@ interface LineChartCardProps {
 
 const currentYearValue = new Date().getFullYear();
 const defaultComparisonYears = Array.from({ length: 5 }, (_, i) => (currentYearValue - 1 - i).toString());
+
+const formatYAxisValue = (value: number): string => {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(0)}K`;
+  return value.toString();
+};
+
+
 
 const LineChartCard: React.FC<LineChartCardProps> = ({
   title,
@@ -77,11 +86,11 @@ const LineChartCard: React.FC<LineChartCardProps> = ({
           </p>
         </div>
       ) : (
-        <div style={{ width: "100%", height: 300 }}>
+        <div style={{ width: "100%", height: 340 }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={data}
-              margin={{ top: 40, right: 20, left: 0, bottom: 10 }}
+              margin={{ top: 40, right: 20, left: 10, bottom: 10 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -90,39 +99,64 @@ const LineChartCard: React.FC<LineChartCardProps> = ({
               />
               <XAxis
                 dataKey="month"
-                tick={{ fill: "#9ca3af" }}
+                tick={{ fill: "#9ca3af", fontSize: 12 }}
                 stroke="#6b7280"
               />
-              <YAxis tick={{ fill: "#9ca3af" }} stroke="#6b7280" />
+              <YAxis
+                tick={{ fill: "#9ca3af", fontSize: 11 }}
+                stroke="#6b7280"
+                tickFormatter={formatYAxisValue}
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#1f2937",
                   border: "1px solid #374151",
                   color: "#f3f4f6",
+                  borderRadius: "8px",
+                  fontSize: "12px",
                 }}
                 itemStyle={{ color: "#f3f4f6" }}
                 cursor={{ stroke: "rgba(255,255,255,0.1)" }}
+                formatter={(value: unknown) => typeof value === "number" ? value.toLocaleString() : String(value ?? "")}
               />
               <Legend
                 verticalAlign="top"
                 align="center"
-                height={36}
-                wrapperStyle={{ color: "#d1d5db" }}
+                height={46}
+                wrapperStyle={{ color: "#d1d5db", fontSize: "12px" }}
               />
               <Line
                 type="monotone"
-                dataKey="currentYear"
-                name="Current Year"
+                dataKey="currentYearNGN"
+                name={`${currentYearValue} (NGN)`}
                 stroke="#22c55e"
                 strokeWidth={2}
                 dot
               />
               <Line
                 type="monotone"
-                dataKey="lastYear"
-                name="Year Comparison"
+                dataKey="currentYearUSD"
+                name={`${currentYearValue} (USD)`}
+                stroke="#10b981"
+                strokeWidth={2}
+                strokeDasharray="6 3"
+                dot
+              />
+              <Line
+                type="monotone"
+                dataKey="lastYearNGN"
+                name={`${selectedYear} (NGN)`}
                 stroke="#ef4444"
                 strokeWidth={2}
+                dot
+              />
+              <Line
+                type="monotone"
+                dataKey="lastYearUSD"
+                name={`${selectedYear} (USD)`}
+                stroke="#f97316"
+                strokeWidth={2}
+                strokeDasharray="6 3"
                 dot
               />
             </LineChart>
