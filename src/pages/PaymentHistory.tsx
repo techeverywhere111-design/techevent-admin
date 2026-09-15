@@ -358,8 +358,7 @@ const PaymentHistory: React.FC = () => {
         key: "createdOn",
         label: "Date",
         render: (value) => (
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-            <CalendarClock size={14} />
+          <div className=" text-gray-600 dark:text-gray-300">
             <span>{formatDate(value)}</span>
           </div>
         ),
