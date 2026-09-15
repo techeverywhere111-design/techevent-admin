@@ -70,7 +70,7 @@ const navItems: NavItem[] = [
     permission: ROUTE_PERMISSIONS.analytics,
   },
   { name: "Plans", path: "/plans", activePaths: ["/plans", "/plan-creation"], icon: Gem, permission: ROUTE_PERMISSIONS.plans },
-  { name: "Enquires", path: "/enquiries", icon: ShieldQuestionMark, permission: ROUTE_PERMISSIONS.enquiries },
+  { name: "Enquiries", path: "/enquiries", icon: ShieldQuestionMark, permission: ROUTE_PERMISSIONS.enquiries },
   { name: "User Management", path: "/user-management", icon: ShieldUser, permission: ROUTE_PERMISSIONS.adminUsers },
   {
     name: "Discount Management",
