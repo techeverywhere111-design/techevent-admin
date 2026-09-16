@@ -23,13 +23,28 @@ interface Stat {
 
 interface LineData {
   month: string;
-  currentYear: number;
-  lastYear: number;
+  currentYearNGN: number;
+  currentYearUSD: number;
+  lastYearNGN: number;
+  lastYearUSD: number;
 }
 
 const mapBreakdownToChartData = (data?: FeatureBreakdownResponse, fallback: ChartData[] = []): ChartData[] => {
-  const mapped = data?.columns.map((col) => ({ name: col.feature, value: col.totalCount })) ?? [];
+  const mapped = data?.columns.map((col) => ({ name: col.feature, value: col.totalCount ?? 0 })) ?? [];
   return mapped.length > 0 ? mapped : fallback;
+};
+
+const mapPlanTypeToChartData = (data?: FeatureBreakdownResponse, fallback: ChartData[] = []): ChartData[] => {
+  if (!data?.columns?.length) return fallback;
+  return data.columns.map((col) => {
+    const planName = col.feature.charAt(0).toUpperCase() + col.feature.slice(1).toLowerCase();
+    const currency = col.currency?.toUpperCase();
+
+    return {
+      name: currency ? `${planName} (${currency})` : planName,
+      value: col.totalAmount ?? 0,
+    };
+  });
 };
 
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -66,8 +81,10 @@ const DEFAULT_CORE_FEATURES: ChartData[] = [
 ];
 
 const DEFAULT_PLAN_TYPE: ChartData[] = [
-  { name: "Personal", value: 0 },
-  { name: "Business", value: 0 },
+  { name: "Business (NGN)", value: 0 },
+  { name: "Business (USD)", value: 0 },
+  { name: "Personal (USD)", value: 0 },
+  { name: "Personal (NGN)", value: 0 },
 ];
 
 const DEFAULT_ACCOUNTS_PER_PLAN: ChartData[] = [
@@ -161,29 +178,32 @@ export default function AnalyticsAndInsights() {
   const lineData = useMemo(() => {
     const result: LineData[] = MONTH_LABELS.map(m => ({
       month: m,
-      currentYear: 0,
-      lastYear: 0
+      currentYearNGN: 0,
+      currentYearUSD: 0,
+      lastYearNGN: 0,
+      lastYearUSD: 0,
     }));
 
     if (!yearOnYearData || yearOnYearData.length < 2) {
       return result;
     }
 
-    const currentYearCols = yearOnYearData[0]?.columns ?? [];
-    currentYearCols.forEach(col => {
-      const idx = getMonthIndex(col.feature);
-      if (idx >= 0 && idx < 12) {
-        result[idx].currentYear = col.totalCount;
-      }
-    });
+    const mapCols = (cols: typeof yearOnYearData[0]["columns"], ngnKey: keyof LineData, usdKey: keyof LineData) => {
+      cols.forEach(col => {
+        const idx = getMonthIndex(col.feature);
+        if (idx >= 0 && idx < 12) {
+          const currency = col.currency?.toUpperCase();
+          if (currency === "USD") {
+            (result[idx][usdKey] as number) += col.totalAmount;
+          } else {
+            (result[idx][ngnKey] as number) += col.totalAmount;
+          }
+        }
+      });
+    };
 
-    const lastYearCols = yearOnYearData[1]?.columns ?? [];
-    lastYearCols.forEach(col => {
-      const idx = getMonthIndex(col.feature);
-      if (idx >= 0 && idx < 12) {
-        result[idx].lastYear = col.totalCount;
-      }
-    });
+    mapCols(yearOnYearData[0]?.columns ?? [], "currentYearNGN", "currentYearUSD");
+    mapCols(yearOnYearData[1]?.columns ?? [], "lastYearNGN", "lastYearUSD");
 
     return result;
   }, [yearOnYearData]);
@@ -257,7 +277,7 @@ export default function AnalyticsAndInsights() {
         />
         <PieChartCard
           title="Revenue Spread Across Subscription Plans"
-          data={mapBreakdownToChartData(planTypeData, DEFAULT_PLAN_TYPE)}
+          data={mapPlanTypeToChartData(planTypeData, DEFAULT_PLAN_TYPE)}
           colors={["#f43f5e", "#10b981", "#3b82f6", "#f59e0b"]}
           loading={planTypeLoading}
           isUnauthorized={isPermissionDeniedError(planTypeError)}

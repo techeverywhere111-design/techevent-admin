@@ -13,6 +13,7 @@ export const AdminUserSchema = z.object({
   lastName: z.string().nullable().optional(),
   isPendingUser: z.boolean(),
   isActive: z.boolean().nullable().optional(),
+  status: z.string().nullable().optional(),
   roleType: RoleTypeEnum,
   lastLogin: z.string().nullable().optional(),
   createdOn: z.string(),
@@ -33,6 +34,7 @@ export const AccountUserSchema = z.object({
   createdOn: z.string(),
   lastLogin: z.string().nullable().optional(),
   isActive: z.boolean().nullable().optional(),
+  status: z.string().nullable().optional(),
 });
 
 export type AccountUser = z.infer<typeof AccountUserSchema>;
@@ -269,7 +271,9 @@ export type TotalCountResponse = z.infer<typeof TotalCountResponseSchema>;
 
 export const FeatureBreakdownColumnSchema = z.object({
   feature: z.string(),
-  totalCount: z.number(),
+  totalCount: z.number().optional().default(0),
+  totalAmount: z.number().optional().default(0),
+  currency: z.string().optional(),
 });
 
 export const FeatureBreakdownResponseSchema = z.object({

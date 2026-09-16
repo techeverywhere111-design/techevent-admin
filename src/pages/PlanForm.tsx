@@ -261,6 +261,10 @@ export default function CreatePlanRedesign() {
       setNameError("Plan name is required");
       return false;
     }
+    if (planName.trim().length > 30) {
+      setNameError("Plan name must not exceed 30 characters");
+      return false;
+    }
     setNameError("");
     return true;
   };
@@ -428,6 +432,7 @@ export default function CreatePlanRedesign() {
                 type="text"
                 placeholder="Enter plan name"
                 value={planName}
+                maxLength={30}
                 onChange={(e) => setPlanName(e.target.value)}
                 className={`w-full bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 rounded-lg p-3 text-sm outline-none border focus:ring-2 focus:ring-blue-500/20 ${
                   nameError

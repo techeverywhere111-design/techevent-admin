@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState } from "react";
 import Table, { type Column } from "@/components/ui/Table";
-import { Search, Upload, X } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { GetSuspiciousUsers, GetSuspiciousActivities } from "@/lib/api/SuspiciousUsersEndpoint";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -15,8 +16,7 @@ interface SelectedImageState {
 
 const SuspiciousUsersActivity: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"users" | "activities">( "users");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeSearchTerm, setActiveSearchTerm] = useState("");
+
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedImage, setSelectedImage] = useState<SelectedImageState | null>(null);
@@ -33,56 +33,12 @@ const SuspiciousUsersActivity: React.FC = () => {
     enabled: activeTab === "activities",
   });
 
-  const handleSearch = () => {
-    setActiveSearchTerm(searchTerm);
-    setPage(1);
-  };
-
-  const handleClear = () => {
-    setSearchTerm("");
-    setActiveSearchTerm("");
-    setPage(1);
-  };
-
-  const users = useMemo(() => {
-    const rawContent = usersData?.content || [];
-    if (!activeSearchTerm) return rawContent;
-    const term = activeSearchTerm.toLowerCase();
-    return rawContent.filter((u) => {
-      const name = `${u.accountUserResponse?.firstName || ""} ${u.accountUserResponse?.lastName || ""}`.trim() || u.accountUserResponse?.name || "";
-      const email = u.accountUserResponse?.email || "";
-      const createdBy = u.createdBy || "";
-      return (
-        name.toLowerCase().includes(term) ||
-        email.toLowerCase().includes(term) ||
-        createdBy.toLowerCase().includes(term)
-      );
-    });
-  }, [usersData, activeSearchTerm]);
-
-  const activities = useMemo(() => {
-    const rawContent = activitiesData?.content || [];
-    if (!activeSearchTerm) return rawContent;
-    const term = activeSearchTerm.toLowerCase();
-    return rawContent.filter((a) => {
-      const name = `${a.accountUserResponse?.firstName || ""} ${a.accountUserResponse?.lastName || ""}`.trim() || a.accountUserResponse?.name || "";
-      const email = a.accountUserResponse?.email || "";
-      const createdBy = a.createdBy || "";
-      const action = a.actionPerformed || "";
-      const endpoint = a.endpoint || "";
-      return (
-        name.toLowerCase().includes(term) ||
-        email.toLowerCase().includes(term) ||
-        createdBy.toLowerCase().includes(term) ||
-        action.toLowerCase().includes(term) ||
-        endpoint.toLowerCase().includes(term)
-      );
-    });
-  }, [activitiesData, activeSearchTerm]);
+  const users = usersData?.content || [];
+  const activities = activitiesData?.content || [];
 
   const totalCount = activeTab === "users"
-    ? (activeSearchTerm ? users.length : usersData?.totalElements || 0)
-    : (activeSearchTerm ? activities.length : activitiesData?.totalElements || 0);
+    ? (usersData?.totalElements || 0)
+    : (activitiesData?.totalElements || 0);
 
   const loading = activeTab === "users" ? loadingUsers : loadingActivities;
 
@@ -91,15 +47,13 @@ const SuspiciousUsersActivity: React.FC = () => {
       if (users.length === 0) return;
       const exportData = users.map((u) => {
         const userDetails = u.accountUserResponse;
-        const name = userDetails ? `${userDetails.firstName || ""} ${userDetails.lastName || ""}`.trim() || userDetails.name : "N/A";
+        const name = userDetails ? `${userDetails.firstName || ""} ${userDetails.lastName || ""}`.trim() || u.accountId : "N/A";
         return {
-          "Created By": u.createdBy || "N/A",
-          "User Name": name || "N/A",
+          "Account User": name || "N/A",
           "User Email": userDetails?.email || "N/A",
-          "User Active Status": userDetails?.isActive ? "Active" : "Inactive",
-          "Last Login": formatDateTime(userDetails?.lastLogin),
           "Occurrences": u.numberOfOccurrences,
           "Blocked Status": u.isBlocked ? "Blocked" : "Active",
+          "User Agent": u.userAgent || "N/A",
           "Created On": formatDateTime(u.createdOn),
           "Updated On": formatDateTime(u.updatedOn),
         };
@@ -116,14 +70,12 @@ const SuspiciousUsersActivity: React.FC = () => {
         const userDetails = a.accountUserResponse;
         const name = userDetails ? `${userDetails.firstName || ""} ${userDetails.lastName || ""}`.trim() || userDetails.name : "N/A";
         return {
-          "Created By": a.createdBy || "N/A",
-          "User Name": name || "N/A",
+          "Account User": name || "N/A",
           "User Email": userDetails?.email || "N/A",
-          "User Active Status": userDetails?.isActive ? "Active" : "Inactive",
-          "Last Login": formatDateTime(userDetails?.lastLogin),
           "Action Performed": a.actionPerformed || "N/A",
           "Endpoint": a.endpoint || "N/A",
           "Method": a.method || "N/A",
+          "User Agent": a.userAgent || "N/A",
           "Created On": formatDateTime(a.createdOn),
         };
       });
@@ -171,20 +123,9 @@ const SuspiciousUsersActivity: React.FC = () => {
     {
       key: "user",
       label: "Account User",
-      render: (_, row) => renderUserCell(row.accountUserResponse),
+      render: (_, row) => row.accountId === "External User" ? row.accountId : renderUserCell(row.accountUserResponse),
     },
-    {
-      key: "lastLogin",
-      label: "Last Login",
-      render: (_, row) => {
-        const lastLogin = row.accountUserResponse?.lastLogin;
-        return (
-          <span className="text-gray-500 dark:text-gray-400 text-sm">
-            {formatDateTime(lastLogin)}
-          </span>
-        );
-      },
-    },
+
     {
       key: "numberOfOccurrences",
       label: "Occurrences",
@@ -236,32 +177,7 @@ const SuspiciousUsersActivity: React.FC = () => {
       label: "Account User",
       render: (_, row) => renderUserCell(row.accountUserResponse),
     },
-    {
-      key: "isActive",
-      label: "Active Status",
-      render: (_, row) => {
-        const active = row.accountUserResponse?.isActive;
-        return (
-          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-            active ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300" : "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300"
-          }`}>
-            {active ? "True" : "False"}
-          </span>
-        );
-      },
-    },
-    {
-      key: "lastLogin",
-      label: "Last Login",
-      render: (_, row) => {
-        const lastLogin = row.accountUserResponse?.lastLogin;
-        return (
-          <span className="text-gray-500 dark:text-gray-400 text-sm">
-            {formatDateTime(lastLogin)}
-          </span>
-        );
-      },
-    },
+
     {
       key: "actionPerformed",
       label: "Action Performed",
@@ -330,8 +246,6 @@ const SuspiciousUsersActivity: React.FC = () => {
               onClick={() => {
                 setActiveTab(tab.id as "users" | "activities");
                 setPage(1);
-                setSearchTerm("");
-                setActiveSearchTerm("");
               }}
               className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 activeTab === tab.id
@@ -345,34 +259,7 @@ const SuspiciousUsersActivity: React.FC = () => {
         </div>
 
         {/* Actions Bar */}
-        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex gap-2 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-64">
-              <input
-                type="text"
-                placeholder={activeTab === "users" ? "Search users..." : "Search activities..."}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {searchTerm && (
-                <button
-                  onClick={handleClear}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500"
-                >
-                  <X size={16} />
-                </button>
-              )}
-            </div>
-            <button
-              onClick={handleSearch}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              <Search size={20} />
-            </button>
-          </div>
-
+        <div className="mb-6 flex justify-end">
           <button
             onClick={handleExport}
             disabled={activeTab === "users" ? users.length === 0 : activities.length === 0}

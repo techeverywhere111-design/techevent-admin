@@ -16,18 +16,6 @@ export const GetPlanPaymentHistories = async (
   return PlanPaymentHistoryListResponseSchema.parse(data);
 };
 
-export const SearchPlanPaymentHistories = async (
-  text: string,
-  pageNo: number,
-  pageSize: number
-): Promise<PlanPaymentHistoryListResponse> => {
-  const { data } = await api.get("/api/v1/plan-payment-histories/search", {
-    params: { text, pageNo, pageSize },
-    headers: { "x-show-error-toast": "true" },
-  });
-  return PlanPaymentHistoryListResponseSchema.parse(data);
-};
-
 export const GetPlanTypeBreakdown = async (
   startTime: string,
   endTime: string
@@ -50,3 +38,14 @@ export const GetPlanSubscriptionYearOnYear = async (
   return FeatureBreakdownResponseSchema.array().parse(data);
 };
 
+export const GetClientPlanPaymentHistories = async (
+  accountId: string,
+  pageNo: number,
+  pageSize: number
+): Promise<PlanPaymentHistoryListResponse> => {
+  const { data } = await api.get(
+    `/api/v1/plan-payment-histories/${accountId}/client`,
+    { params: { pageNo, pageSize } }
+  );
+  return PlanPaymentHistoryListResponseSchema.parse(data);
+};

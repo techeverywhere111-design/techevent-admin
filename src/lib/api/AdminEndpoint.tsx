@@ -154,3 +154,34 @@ export const UpdateAdminUser = async (
   const { data } = await api.put(`/api/v1/admin-users/${userId}`, payload);
   return AdminUserSchema.parse(data);
 };
+
+export interface UpdateSelfAdminUserPayload {
+  firstName: string;
+  lastName: string;
+}
+
+export const UpdateSelfAdminUser = async (
+  payload: UpdateSelfAdminUserPayload
+): Promise<AdminUserResponse> => {
+  const { data } = await api.put("/api/v1/admin-users", payload, {
+    headers: { "x-show-error-toast": "true" },
+  });
+  return AdminUserSchema.parse(data);
+};
+
+export interface ChangeAdminPasswordPayload {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export const ChangeAdminPassword = async (
+  payload: ChangeAdminPasswordPayload
+) => {
+  const { data } = await api.post(
+    "/api/v1/admin-users/change-password",
+    payload,
+    { headers: { "x-show-error-toast": "true" } }
+  );
+  return MessageResponseSchema.parse(data);
+};

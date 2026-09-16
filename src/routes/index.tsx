@@ -23,6 +23,7 @@ const PaymentHistory = lazy(() => import("@/pages/PaymentHistory"));
 const ClientManagement = lazy(() => import("@/pages/ClientManagement"));
 const ClientProfile = lazy(() => import("@/pages/ClientProfile"));
 const AuditLogs = lazy(() => import("@/pages/ClientAuditLogs"));
+const ClientPaymentHistory = lazy(() => import("@/pages/ClientPaymentHistory"));
 const EventCategory = lazy(() => import("@/pages/EventCategory"));
 const UserManagement = lazy(() => import("@/pages/UserManagement"));
 const UserProfile = lazy(() => import("@/pages/UserProfile"));
@@ -125,6 +126,14 @@ export const router = createBrowserRouter([
             element: (
               <PermissionGuard requires={ROUTE_PERMISSIONS.clientProfile}>
                 <ClientProfile />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "clients/:accountId/payments",
+            element: (
+              <PermissionGuard requires={ROUTE_PERMISSIONS.clients}>
+                <ClientPaymentHistory />
               </PermissionGuard>
             ),
           },
