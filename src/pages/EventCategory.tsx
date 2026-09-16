@@ -16,6 +16,7 @@ import { formatDateTime } from "@/lib/utils/date";
 import { isPermissionDeniedError } from "@/lib/utils/api";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface EventCategory {
   id: string;
@@ -23,8 +24,6 @@ interface EventCategory {
   description?: string | null;
   createdOn: string;
 }
-
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const EventCategory: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
@@ -54,9 +53,6 @@ const EventCategory: React.FC = () => {
       } else {
         response = await GetEventCategories(page - 1, itemsPerPage);
       }
-
-
-
 
       const items = response?.content || [];
       const total = response?.totalElements || 0;
@@ -270,7 +266,7 @@ const EventCategory: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-5">
       <div className="mx-auto w-full min-w-0 max-w-7xl">
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
             Event Categories
           </h1>
         </div>

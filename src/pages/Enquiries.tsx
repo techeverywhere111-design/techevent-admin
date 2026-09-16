@@ -297,7 +297,7 @@ const Enquiries: React.FC = () => {
     <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 dark:bg-gray-900 sm:p-5">
       <div className="w-full min-w-0">
         <div className="flex items-center gap-3 mb-6">
-          <h1 className="text-xl sm:text-2xl font-semibold text-[#1F2937] dark:text-white">
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
             Enquiries
           </h1>
           <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full text-xs sm:text-sm font-medium">
