@@ -154,7 +154,7 @@ const ClientProfile: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-5 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-6">
           Clients Management
         </h1>
 

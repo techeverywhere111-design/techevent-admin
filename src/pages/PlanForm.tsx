@@ -406,7 +406,7 @@ export default function CreatePlanRedesign() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </button>
-          <h1 className="text-xl font-semibold text-gray-800 dark:text-white">
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
             {editing ? "Edit Plan" : "Create Plan"}
           </h1>
         </div>

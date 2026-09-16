@@ -14,6 +14,7 @@ import { toast } from "react-toastify";
 import { showErrorToast } from "@/lib/utils/toast";
 import { formatDateTime } from "@/lib/utils/date";
 import { isPermissionDeniedError } from "@/lib/utils/api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface PromoCode {
   id: string;
@@ -36,8 +37,6 @@ interface RegistrationLog {
   settledDate: string;
   createdOn: string;
 }
-
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const ViewPromoRegistration: React.FC = () => {
   const location = useLocation();
@@ -69,9 +68,6 @@ const ViewPromoRegistration: React.FC = () => {
       } else {
         response = await GetPromoCodeRegistrationLogs(promoCode.code, page - 1, itemsPerPage);
       }
-
-
-
         
       return { registrations: response.content, totalElements: response.totalElements };
     },
@@ -223,8 +219,8 @@ const ViewPromoRegistration: React.FC = () => {
     <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 transition-colors duration-300 dark:bg-gray-900 sm:p-5">
       <div className="mx-auto w-full min-w-0 max-w-full">
         <div>
-          <h1 className="text-xl mb-6 sm:text-2xl font-semibold text-gray-900 dark:text-white">
-            Enquiries
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+            Promo Code
           </h1>
         </div>
         <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">

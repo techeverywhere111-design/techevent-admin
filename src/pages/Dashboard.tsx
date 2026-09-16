@@ -109,8 +109,14 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 sm:p-5 space-y-5">
-      <h1 className="text-xl font-semibold mb-4">Welcome back!</h1>
-      <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
+      <div>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+          Welcome back!
+        </p>
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
+          Dashboard
+        </h1>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid md:grid-cols-2 gap-4">
