@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useMemo, useState } from "react";
 import {
   CreditCard,
@@ -376,20 +378,20 @@ const PaymentHistory: React.FC = () => {
     () => [
       {
         key: "accountOwnerResponse",
-        label: "Customer",
+        label: "Customer's Email",
         render: (_, row: PlanPaymentHistory) => {
           const owner = row.accountOwnerResponse;
           console.log("owner", owner);
-          const name =
-            owner?.name ||
-            `${owner?.firstName ?? ""} ${owner?.lastName ?? ""}`.trim() ||
-            "Unknown User";
+          // const name =
+          //   owner?.name ||
+          //   `${owner?.firstName ?? ""} ${owner?.lastName ?? ""}`.trim() ||
+          //   "Unknown User";
           return (
             <div className="flex flex-col">
-              <span className="font-semibold text-gray-900 dark:text-white">
+              {/* <span className="font-semibold text-gray-900 dark:text-white">
                 {name}
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              </span> */}
+              <span className="font-semibold text-gray-900 dark:text-white">
                 {owner?.email || row.email || "N/A"}
               </span>
             </div>
