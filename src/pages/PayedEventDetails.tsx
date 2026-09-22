@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, Clock, Copy, Building } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock, Building } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
 import { GetEventPaymentRequestsByEventId } from "@/lib/api/EventPaymentEndpoint";
 import type { EventPaymentRequest } from "@/lib/schemas";
 import { formatCurrency } from "@/lib/utils/currency";
@@ -49,10 +48,6 @@ const PayedEventDetails: React.FC = () => {
     );
   }
 
-  const handleCopy = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(`${label} copied to clipboard`);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-5 transition-colors duration-300">
@@ -149,19 +144,9 @@ const PayedEventDetails: React.FC = () => {
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
               Account Number
             </p>
-            <div className="flex items-center gap-2">
-              <span className="font-mono font-bold text-base text-gray-900 dark:text-white">
-                {request.accountNumber || "N/A"}
-              </span>
-              <button
-                onClick={() =>
-                  handleCopy(request.accountNumber, "Account number")
-                }
-                className="text-gray-400 hover:text-blue-600 transition"
-              >
-                <Copy size={14} />
-              </button>
-            </div>
+            <p className="font-mono font-bold text-base text-gray-900 dark:text-white">
+              {request.accountNumber || "N/A"}
+            </p>
           </div>
         </div>
 
