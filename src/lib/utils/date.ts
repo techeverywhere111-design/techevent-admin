@@ -10,30 +10,37 @@ const getOrdinalSuffix = (day: number): string => {
 
 const monthFormatter = new Intl.DateTimeFormat("en-US", { month: "long" });
 
-const timeFormatter = new Intl.DateTimeFormat("en-US", {
-  hour: "numeric",
-  minute: "2-digit",
-  hour12: true,
-});
-
-const getPart = (parts: Intl.DateTimeFormatPart[], type: string) =>
-  parts.find((part) => part.type === type)?.value ?? "";
 
 /** Formats dates as "19th of August, 2026 11:59 pm" throughout the admin app. */
 export const formatDateTime = (
-  value: string | Date | null | undefined,
+  value: string | number | Date | null | undefined,
   fallback = "N/A"
 ) => {
-  if (!value) return fallback;
+  if (value === null || value === undefined || value === "") return fallback;
 
-  const date = value instanceof Date ? value : new Date(value);
+  let parsed: string | number | Date = value;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (/^\d+$/.test(trimmed)) {
+      parsed = Number(trimmed);
+    } else if (trimmed.includes(" ") && !trimmed.includes("T")) {
+      parsed = trimmed.replace(" ", "T");
+    }
+  }
+
+  const date = parsed instanceof Date ? parsed : new Date(parsed);
   if (Number.isNaN(date.getTime())) return fallback;
 
   const day = date.getDate();
   const month = monthFormatter.format(date);
   const year = date.getFullYear();
-  const timeParts = timeFormatter.formatToParts(date);
-  const time = `${getPart(timeParts, "hour")}:${getPart(timeParts, "minute")} ${getPart(timeParts, "dayPeriod").toLowerCase()}`;
+  const time = date
+    .toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .toLowerCase();
 
   return `${day}${getOrdinalSuffix(day)} of ${month}, ${year} ${time}`;
 };
