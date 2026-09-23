@@ -89,11 +89,7 @@ const PaymentHistory: React.FC = () => {
     if (paymentHistories.length === 0) return;
 
     const exportData = paymentHistories.map((item) => ({
-      "User Name":
-        item.accountOwnerResponse?.name ||
-        `${item.accountOwnerResponse?.firstName ?? ""} ${item.accountOwnerResponse?.lastName ?? ""}`.trim() ||
-        "N/A",
-      Email: item.email || item.accountOwnerResponse?.email || "N/A",
+      "Customer's Email": item.email || item.accountOwnerResponse?.email || "N/A",
       "Plan Name": item.planResponse?.name || "N/A",
       "Plan Type": item.planResponse?.type || "N/A",
       "Plan Amount": formatPlanAmount(item.planAmount, item.currency),
