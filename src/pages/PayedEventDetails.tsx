@@ -7,7 +7,7 @@ import type { EventPaymentRequest } from "@/lib/schemas";
 import { formatCurrency } from "@/lib/utils/currency";
 import { formatDateTime } from "@/lib/utils/date";
 import AppLoader from "@/components/ui/AppLoader";
-import { SettlementModal } from "@/components/payed-events";
+import { SettlementModal, ReceiptViewer } from "@/components/payed-events";
 
 const PayedEventDetails: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -183,14 +183,12 @@ const PayedEventDetails: React.FC = () => {
           )}
         </div>
 
-        {request.receipt && (
+        {(request.isSettled || request.receipt) && (
           <div className="bg-[#F3F7FA] dark:bg-gray-800 p-6 rounded-xl min-w-0 overflow-hidden">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 font-medium">
-              Receipt / Settlement Notes
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 font-medium">
+              Receipt / Settlement Information
             </p>
-            <p className="text-gray-900 dark:text-white font-medium leading-relaxed whitespace-pre-wrap break-all">
-              {request.receipt}
-            </p>
+            <ReceiptViewer receipt={request.receipt} />
           </div>
         )}
       </div>
