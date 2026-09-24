@@ -2,6 +2,18 @@ import axios from "axios";
 import api from "@/lib/utils/api";
 import { showErrorToast } from "@/lib/utils/toast";
 
+export interface MediaResponse {
+  id: string;
+  accountId: string;
+  name: string;
+  displayName: string;
+  type: string;
+  publicId: string;
+  size: number;
+  displayUrl: string;
+  createdOn: string;
+}
+
 export const handleError = (err: any) => {
   console.error("Media error:", err);
   const message =
@@ -15,6 +27,8 @@ export const handleError = (err: any) => {
 export const extractMediaUrl = (data: any): string => {
   if (typeof data === "string") return data;
   if (!data) return "";
+  if (typeof data.displayUrl === "string") return data.displayUrl;
+  if (typeof data.data?.displayUrl === "string") return data.data.displayUrl;
   if (typeof data.url === "string") return data.url;
   if (typeof data.secure_url === "string") return data.secure_url;
   if (typeof data.data?.url === "string") return data.data.url;
@@ -31,7 +45,7 @@ export const UploadMedia = async (
   file: File,
   accountId: string,
   onProgress?: (percent: number) => void
-): Promise<any> => {
+): Promise<MediaResponse> => {
   if (!file || !(file instanceof File)) {
     throw new Error("Invalid file object");
   }
@@ -42,7 +56,7 @@ export const UploadMedia = async (
   const type = file.type || "application/octet-stream";
   const size = file.size;
 
-  const url = `/media?type=${encodeURIComponent(type)}&size=${size}&accountId=${encodeURIComponent(accountId)}`;
+  const url = `/api/v1/media?type=${encodeURIComponent(type)}&size=${size}&accountId=${encodeURIComponent(accountId)}`;
 
   try {
     const response = await api.post(url, formData, {
@@ -71,7 +85,7 @@ export const UploadLargeMedia = async (
   file: File,
   accountId: string,
   onProgress?: (percent: number) => void
-): Promise<any> => {
+): Promise<MediaResponse> => {
   if (!file || !(file instanceof File)) {
     throw new Error("Invalid file object");
   }
@@ -82,7 +96,7 @@ export const UploadLargeMedia = async (
   const type = file.type || "application/octet-stream";
   const size = file.size;
 
-  const url = `/media/large?type=${encodeURIComponent(type)}&size=${size}&accountId=${encodeURIComponent(accountId)}`;
+  const url = `/api/v1/media/large?type=${encodeURIComponent(type)}&size=${size}&accountId=${encodeURIComponent(accountId)}`;
 
   try {
     const response = await api.post(url, formData, {
@@ -112,7 +126,7 @@ export const DownloadMedia = async (
   onProgress?: (progressEvent: any) => void,
   signal?: AbortSignal
 ): Promise<Blob> => {
-  const url = `/media/download?fileName=${encodeURIComponent(fileName)}`;
+  const url = `/api/v1/media/download?fileName=${encodeURIComponent(fileName)}`;
 
   try {
     const response = await api.get(url, {
@@ -138,9 +152,31 @@ export const DownloadMedia = async (
   }
 };
 
-export const GetMediaDetails = async (publicId: string): Promise<any> => {
+export const DownloadMediaUsingDisplayUrl = async (
+  displayUrl: string,
+  signal?: AbortSignal
+): Promise<string> => {
+  const url = `/api/v1/media/download/display-url?displayUrl=${encodeURIComponent(displayUrl)}`;
+
+  try {
+    const response = await api.get(url, { signal });
+    return response.data;
+  } catch (error: any) {
+    if (
+      error.name === "CanceledError" ||
+      error.name === "AbortError" ||
+      axios.isCancel(error)
+    ) {
+      throw error;
+    }
+    handleError(error);
+    throw error;
+  }
+};
+
+export const GetMediaDetails = async (publicId: string): Promise<MediaResponse> => {
   const cleanPid = publicId ? String(publicId).trim().replace(/ /g, "+") : "";
-  const url = `/media/details?pid=${cleanPid}`;
+  const url = `/api/v1/media/details?pid=${cleanPid}`;
 
   try {
     const response = await api.get(url);
@@ -151,9 +187,9 @@ export const GetMediaDetails = async (publicId: string): Promise<any> => {
   }
 };
 
-export const DeleteMedia = async (id: string): Promise<any> => {
+export const DeleteMedia = async (id: string): Promise<{ message: string }> => {
   try {
-    const response = await api.delete(`/media/${id}`);
+    const response = await api.delete(`/api/v1/media/${id}`);
     return response.data;
   } catch (error) {
     handleError(error);

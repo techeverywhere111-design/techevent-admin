@@ -24,6 +24,7 @@ export const SettlementModal: React.FC<SettlementModalProps> = ({
 }) => {
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadedReceiptUrlRef = useRef<string | null>(null);
 
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -69,6 +70,7 @@ export const SettlementModal: React.FC<SettlementModalProps> = ({
     setUploadProgress(0);
     setIsUploading(false);
     setError("");
+    uploadedReceiptUrlRef.current = null;
     onClose();
   };
 
@@ -86,6 +88,7 @@ export const SettlementModal: React.FC<SettlementModalProps> = ({
     setPreviewUrl(URL.createObjectURL(file));
     setError("");
     setUploadProgress(0);
+    uploadedReceiptUrlRef.current = null;
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -133,24 +136,33 @@ export const SettlementModal: React.FC<SettlementModalProps> = ({
     try {
       setIsUploading(true);
       setError("");
-      setUploadProgress(0);
 
-      const targetAccountId =
-        request.accountId || user?.id || request.eventId || "admin";
-
-      const uploadResponse = await UploadMedia(
-        receiptFile,
-        targetAccountId,
-        (progress) => {
-          setUploadProgress(progress);
-        }
-      );
-
-      const receiptUrl = extractMediaUrl(uploadResponse);
+      let receiptUrl = uploadedReceiptUrlRef.current;
 
       if (!receiptUrl) {
-        throw new Error("Could not extract receipt URL from upload response.");
+        setUploadProgress(0);
+
+        const targetAccountId =
+          request.accountId || user?.id || request.eventId || "admin";
+
+        const uploadResponse = await UploadMedia(
+          receiptFile,
+          targetAccountId,
+          (progress) => {
+            setUploadProgress(progress);
+          }
+        );
+
+        receiptUrl = extractMediaUrl(uploadResponse);
+
+        if (!receiptUrl) {
+          throw new Error("Could not extract receipt URL from upload response.");
+        }
+
+        uploadedReceiptUrlRef.current = receiptUrl;
       }
+
+      setIsUploading(false);
 
       markSettledMutation.mutate({
         id: request.id,

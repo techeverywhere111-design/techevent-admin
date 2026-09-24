@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Banknote, Loader2 } from "lucide-react";
+import { Banknote } from "lucide-react";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import Table from "@/components/ui/Table";
 import { GetEventPaymentRequests } from "@/lib/api/EventPaymentEndpoint";
 import type { EventPaymentRequest } from "@/lib/schemas";
 import { isPermissionDeniedError } from "@/lib/utils/api";
+import AppLoader from "@/components/ui/AppLoader";
 import {
   PayedEventsHeader,
   PayedEventsFilterBar,
@@ -26,7 +27,7 @@ const PayedEvents: React.FC = () => {
   const queryClient = useQueryClient();
   const columns = usePayedEventsColumns(isSettled);
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, isFetching, isPlaceholderData, error, refetch } = useQuery({
     queryKey: ["event-payment-requests", isSettled, page, itemsPerPage],
     queryFn: async () => {
       const response = await GetEventPaymentRequests(
@@ -56,6 +57,8 @@ const PayedEvents: React.FC = () => {
     });
   };
 
+  const showLoader = isLoading || (isFetching && isPlaceholderData);
+
   return (
     <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 transition-colors duration-300 dark:bg-gray-900 sm:p-5">
       <div className="w-full min-w-0 max-w-7xl mx-auto">
@@ -67,13 +70,8 @@ const PayedEvents: React.FC = () => {
           onExport={() => exportPayedEventsToExcel(paymentRequests, isSettled)}
         />
 
-        {isLoading && !data ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-            <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-              Loading payment requests...
-            </p>
-          </div>
+        {showLoader ? (
+          <AppLoader fullScreen={false} />
         ) : error && !isPermissionDeniedError(error) ? (
           <div className="rounded-2xl border border-dashed border-red-300 bg-white p-8 text-center dark:border-red-900/50 dark:bg-gray-800">
             <Banknote className="mx-auto mb-3 h-10 w-10 text-red-400" />
@@ -109,7 +107,7 @@ const PayedEvents: React.FC = () => {
                 onMarkAsSettled={setSelectedForSettlement}
               />
             )}
-            loading={isLoading && !data}
+            loading={false}
             isUnauthorized={isPermissionDeniedError(error)}
           />
         )}

@@ -61,15 +61,6 @@ export const usePayedEventsColumns = (isSettled: boolean): Column[] => {
           </span>
         ),
       },
-      {
-        key: "createdOn",
-        label: "Date | Time",
-        render: (val) => (
-          <span className="text-xs text-gray-600 dark:text-gray-300">
-            {formatDateTime(val)}
-          </span>
-        ),
-      },
       ...(isSettled
         ? [
             {
@@ -83,6 +74,15 @@ export const usePayedEventsColumns = (isSettled: boolean): Column[] => {
             },
           ]
         : []),
+      {
+        key: "createdOn",
+        label: "Date | Time",
+        render: (val) => (
+          <span className="text-xs text-gray-600 dark:text-gray-300">
+            {formatDateTime(val)}
+          </span>
+        ),
+      },
     ],
     [isSettled]
   );
