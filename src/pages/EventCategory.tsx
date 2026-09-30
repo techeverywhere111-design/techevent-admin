@@ -16,6 +16,7 @@ import { formatDateTime } from "@/lib/utils/date";
 import { isPermissionDeniedError } from "@/lib/utils/api";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface EventCategory {
   id: string;
@@ -24,7 +25,10 @@ interface EventCategory {
   createdOn: string;
 }
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+const getWordCount = (str: string) => {
+  const trimmed = str.trim();
+  return trimmed ? trimmed.split(/\s+/).length : 0;
+};
 
 const EventCategory: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
@@ -54,9 +58,6 @@ const EventCategory: React.FC = () => {
       } else {
         response = await GetEventCategories(page - 1, itemsPerPage);
       }
-
-
-
 
       const items = response?.content || [];
       const total = response?.totalElements || 0;
@@ -115,6 +116,8 @@ const EventCategory: React.FC = () => {
 
     if (!newCategory.name.trim()) {
       newErrors.name = "Please enter a category title.";
+    } else if (newCategory.name.trim().length > 50) {
+      newErrors.name = "Category title cannot exceed 50 characters.";
     }
 
     setErrors(newErrors);
@@ -270,7 +273,7 @@ const EventCategory: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 p-4 sm:p-5">
       <div className="mx-auto w-full min-w-0 max-w-7xl">
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
             Event Categories
           </h1>
         </div>
@@ -373,6 +376,7 @@ const EventCategory: React.FC = () => {
                   type="text"
                   placeholder="Enter category title"
                   value={newCategory.name}
+                  maxLength={50}
                   onChange={(e) =>
                     setNewCategory({ ...newCategory, name: e.target.value })
                   }
@@ -382,9 +386,26 @@ const EventCategory: React.FC = () => {
                       : "border-gray-300 dark:border-gray-700 focus:ring-blue-500"
                   }`}
                 />
-                {errors.name && (
-                  <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-                )}
+                <div className="flex items-center justify-between mt-1.5 text-xs">
+                  {errors.name ? (
+                    <p className="text-red-500 text-sm">{errors.name}</p>
+                  ) : (
+                    <span className="text-gray-400 dark:text-gray-500">
+                      {getWordCount(newCategory.name)} {getWordCount(newCategory.name) === 1 ? "word" : "words"}
+                    </span>
+                  )}
+                  <span
+                    className={`font-medium ${
+                      newCategory.name.length >= 50
+                        ? "text-red-500"
+                        : newCategory.name.length >= 45
+                        ? "text-amber-500"
+                        : "text-gray-400 dark:text-gray-500"
+                    }`}
+                  >
+                    {newCategory.name.length}/50 characters
+                  </span>
+                </div>
               </div>
 
               <div>
@@ -403,6 +424,12 @@ const EventCategory: React.FC = () => {
                   }
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-none"
                 />
+                <div className="flex justify-end mt-1 text-xs text-gray-400 dark:text-gray-500">
+                  <span>
+                    {getWordCount(newCategory.description || "")}{" "}
+                    {getWordCount(newCategory.description || "") === 1 ? "word" : "words"}
+                  </span>
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-4">

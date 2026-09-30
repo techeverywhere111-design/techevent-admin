@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import Table, { type Column } from "@/components/ui/Table";
 import { Upload, X } from "lucide-react";
@@ -46,7 +47,7 @@ const SuspiciousUsersActivity: React.FC = () => {
       if (users.length === 0) return;
       const exportData = users.map((u) => {
         const userDetails = u.accountUserResponse;
-        const name = userDetails ? `${userDetails.firstName || ""} ${userDetails.lastName || ""}`.trim() || userDetails.name : "N/A";
+        const name = userDetails ? `${userDetails.firstName || ""} ${userDetails.lastName || ""}`.trim() || u.accountId : "N/A";
         return {
           "Account User": name || "N/A",
           "User Email": userDetails?.email || "N/A",
@@ -122,7 +123,7 @@ const SuspiciousUsersActivity: React.FC = () => {
     {
       key: "user",
       label: "Account User",
-      render: (_, row) => renderUserCell(row.accountUserResponse),
+      render: (_, row) => row.accountId === "External User" ? row.accountId : renderUserCell(row.accountUserResponse),
     },
 
     {
@@ -233,7 +234,7 @@ const SuspiciousUsersActivity: React.FC = () => {
   return (
     <div className="min-h-full w-full min-w-0 bg-gray-50 p-4 dark:bg-gray-900 sm:p-5">
       <div className="w-full min-w-0">
-        <h1 className="text-xl sm:text-2xl font-semibold text-[#1F2937] dark:text-white mb-6">
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-6">
           Suspicious Users & Activity
         </h1>
 

@@ -14,7 +14,9 @@ import {
   ShieldQuestionMark,
   Percent,
   Shield,
-  UserRoundCog, ClipboardPenLine
+  UserRoundCog,
+  ClipboardPenLine,
+  Banknote,
 } from "lucide-react";
 import { useState } from "react";
 import Logo from "@/assets/PlutoEvent_Logo.png";
@@ -63,6 +65,7 @@ const navItems: NavItem[] = [
     subItems: [{ name: "Category", path: "/event-category", permission: ROUTE_PERMISSIONS.eventCategories }],
   },
   { name: "Payment History", path: "/payments", icon: CreditCard, permission: ROUTE_PERMISSIONS.paymentHistory },
+  { name: "Payed Events", path: "/payed-events", icon: Banknote, permission: ROUTE_PERMISSIONS.payedEvents },
   {
     name: "Analytics and Insight",
     path: "/analytics-and-insight",

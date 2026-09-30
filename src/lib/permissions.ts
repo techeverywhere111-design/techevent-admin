@@ -153,4 +153,10 @@ export const ROUTE_PERMISSIONS = {
       get("/api/v1/suspicious-users/activities"),
     ],
   },
+  payedEvents: {
+    anyOf: [
+      get("/api/v1/event-payment-requests"),
+      get("/api/v1/event-payment-requests/{eventId}"),
+    ],
+  },
 } satisfies Record<string, PermissionRequirement>;

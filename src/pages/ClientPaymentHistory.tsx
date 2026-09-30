@@ -423,7 +423,7 @@ const ClientPaymentHistory: React.FC = () => {
       <div className="max-w-7xl mx-auto">
 
         {/* Page title */}
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-6">
           Client Management
         </h1>
 

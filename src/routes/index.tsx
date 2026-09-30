@@ -20,6 +20,8 @@ const AnalyticsAndInsights = lazy(() => import("@/pages/AnalyticsAndInsight"));
 const Plans = lazy(() => import("@/pages/Plans"));
 const PlanForm = lazy(() => import("@/pages/PlanForm"));
 const PaymentHistory = lazy(() => import("@/pages/PaymentHistory"));
+const PayedEvents = lazy(() => import("@/pages/PayedEvents"));
+const PayedEventDetails = lazy(() => import("@/pages/PayedEventDetails"));
 const ClientManagement = lazy(() => import("@/pages/ClientManagement"));
 const ClientProfile = lazy(() => import("@/pages/ClientProfile"));
 const AuditLogs = lazy(() => import("@/pages/ClientAuditLogs"));
@@ -85,6 +87,22 @@ export const router = createBrowserRouter([
             element: (
               <PermissionGuard requires={ROUTE_PERMISSIONS.paymentHistory}>
                 <PaymentHistory />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "payed-events",
+            element: (
+              <PermissionGuard requires={ROUTE_PERMISSIONS.payedEvents}>
+                <PayedEvents />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "payed-events/:eventId",
+            element: (
+              <PermissionGuard requires={ROUTE_PERMISSIONS.payedEvents}>
+                <PayedEventDetails />
               </PermissionGuard>
             ),
           },

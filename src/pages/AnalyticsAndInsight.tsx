@@ -243,9 +243,9 @@ export default function AnalyticsAndInsights() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-5 text-gray-800 dark:text-gray-100 transition-colors duration-300">
-      <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-6">
+      <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-6">
         Analytics and Insight
-      </h2>
+      </h1>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

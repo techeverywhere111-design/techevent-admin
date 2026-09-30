@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useMemo, useState } from "react";
 import {
   CreditCard,
@@ -87,11 +89,7 @@ const PaymentHistory: React.FC = () => {
     if (paymentHistories.length === 0) return;
 
     const exportData = paymentHistories.map((item) => ({
-      "User Name":
-        item.accountOwnerResponse?.name ||
-        `${item.accountOwnerResponse?.firstName ?? ""} ${item.accountOwnerResponse?.lastName ?? ""}`.trim() ||
-        "N/A",
-      Email: item.email || item.accountOwnerResponse?.email || "N/A",
+      "Customer's Email": item.email || item.accountOwnerResponse?.email || "N/A",
       "Plan Name": item.planResponse?.name || "N/A",
       "Plan Type": item.planResponse?.type || "N/A",
       "Plan Amount": formatPlanAmount(item.planAmount, item.currency),
@@ -376,19 +374,20 @@ const PaymentHistory: React.FC = () => {
     () => [
       {
         key: "accountOwnerResponse",
-        label: "Customer",
+        label: "Customer's Email",
         render: (_, row: PlanPaymentHistory) => {
           const owner = row.accountOwnerResponse;
-          const name =
-            owner?.name ||
-            `${owner?.firstName ?? ""} ${owner?.lastName ?? ""}`.trim() ||
-            "Unknown User";
+          console.log("owner", owner);
+          // const name =
+          //   owner?.name ||
+          //   `${owner?.firstName ?? ""} ${owner?.lastName ?? ""}`.trim() ||
+          //   "Unknown User";
           return (
             <div className="flex flex-col">
-              <span className="font-semibold text-gray-900 dark:text-white">
+              {/* <span className="font-semibold text-gray-900 dark:text-white">
                 {name}
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              </span> */}
+              <span className="font-semibold text-gray-900 dark:text-white">
                 {owner?.email || row.email || "N/A"}
               </span>
             </div>
@@ -440,7 +439,7 @@ const PaymentHistory: React.FC = () => {
         key: "createdOn",
         label: "Date",
         render: (value) => (
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+          <div className=" text-gray-600 dark:text-gray-300">
             <span>{formatDate(value)}</span>
           </div>
         ),
@@ -468,7 +467,7 @@ const PaymentHistory: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
               Payment History
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">

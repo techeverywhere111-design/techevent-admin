@@ -329,3 +329,32 @@ export const SuspiciousActivityListResponseSchema = PaginationSchema.extend({
 
 export type SuspiciousActivityListResponse = z.infer<typeof SuspiciousActivityListResponseSchema>;
 
+// Event Payment Request Schemas
+export const EventPaymentRequestSchema = z.object({
+  id: z.string(),
+  eventId: z.string(),
+  eventName: z.string().nullish(),
+  accountId: z.string().nullish(),
+  amount: z.number().nullish().default(0),
+  accountNumber: z.string().nullish().default(""),
+  accountName: z.string().nullish().default(""),
+  bank: z.string().nullish().default(""),
+  currency: z.string().nullish().default("NGN"),
+  isSettled: z.boolean().nullish().default(false),
+  settledBy: z.string().nullish(),
+  settledByName: z.string().nullish(),
+  receipt: z.string().nullish(),
+  createdOn: z.string(),
+  updatedOn: z.string().nullish(),
+});
+
+export type EventPaymentRequest = z.infer<typeof EventPaymentRequestSchema>;
+
+export const EventPaymentRequestListResponseSchema = PaginationSchema.extend({
+  content: z.array(EventPaymentRequestSchema),
+});
+
+export type EventPaymentRequestListResponse = z.infer<
+  typeof EventPaymentRequestListResponseSchema
+>;
+
