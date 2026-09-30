@@ -8,6 +8,7 @@ import Logo from "@/assets/PlutoEvent_Logo.png";
 import { AdminUserLogin, type AdminUserLoginPayload } from "@/lib/api/AdminEndpoint";
 import Cookies from "js-cookie";
 import { showErrorToast } from "@/lib/utils/toast";
+import { PLUTO_EVENT_ADMIN_TOKEN, PLUTO_EVENT_ADMIN_USER } from "@/constants";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -15,8 +16,8 @@ const Login: React.FC = () => {
 
   // Clear any existing expired sessions when landing on Login
   React.useEffect(() => {
-    Cookies.remove("PLUTO_EVENT_ADMIN_TOKEN", { path: "/" });
-    Cookies.remove("PLUTO_EVENT_ADMIN_USER", { path: "/" });
+    Cookies.remove(PLUTO_EVENT_ADMIN_TOKEN, { path: "/" });
+    Cookies.remove(PLUTO_EVENT_ADMIN_USER, { path: "/" });
   }, []);
 
   const [formData, setFormData] = useState<AdminUserLoginPayload>({

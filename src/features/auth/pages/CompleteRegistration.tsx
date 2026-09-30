@@ -7,6 +7,7 @@ import Cookies from "js-cookie";
 import Logo from "@/assets/PlutoEvent_Logo.png";
 import { CompleteAdminInvite, GetAdmin } from "@/lib/api/AdminEndpoint";
 import { showErrorToast } from "@/lib/utils/toast";
+import { PLUTO_EVENT_ADMIN_TOKEN, PLUTO_EVENT_ADMIN_USER } from "@/constants";
 
 type PageState = "form" | "success" | "error";
 
@@ -60,8 +61,8 @@ const CompleteRegistration: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
 
-    Cookies.remove("PLUTO_EVENT_ADMIN_TOKEN", { path: "/" });
-    Cookies.remove("PLUTO_EVENT_ADMIN_USER", { path: "/" });
+    Cookies.remove(PLUTO_EVENT_ADMIN_TOKEN, { path: "/" });
+    Cookies.remove(PLUTO_EVENT_ADMIN_USER, { path: "/" });
 
     if (!inviteId) {
       setErrorMessage("No invitation reference found. Please use the invite link from your email.");

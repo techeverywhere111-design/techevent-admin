@@ -7,6 +7,11 @@ import {
 } from "react";
 import Cookies from "js-cookie";
 import { type AdminUserLoginResponse } from "@/lib/api/AdminEndpoint";
+import {
+  PLUTO_EVENT_ADMIN_TOKEN,
+  PLUTO_EVENT_ADMIN_USER,
+  COOKIE_CONFIG,
+} from "@/constants";
 
 interface AuthContextType {
   user: AdminUserLoginResponse | null;
@@ -21,24 +26,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = Cookies.get("PLUTO_EVENT_ADMIN_USER");
+    const storedUser = Cookies.get(PLUTO_EVENT_ADMIN_USER);
     if (storedUser) setUser(JSON.parse(storedUser));
     setLoading(false);
   }, []);
 
   const login = (userData: AdminUserLoginResponse) => {
     setUser(userData);
-    Cookies.set("PLUTO_EVENT_ADMIN_USER", JSON.stringify(userData), {
-      expires: 7,
-      secure: window.location.protocol === "https:",
-      sameSite: "Strict",
-    });
+    Cookies.set(PLUTO_EVENT_ADMIN_USER, JSON.stringify(userData), COOKIE_CONFIG);
   };
 
   const logout = () => {
     setUser(null);
-    Cookies.remove("PLUTO_EVENT_ADMIN_USER");
-    Cookies.remove("PLUTO_EVENT_ADMIN_TOKEN");
+    Cookies.remove(PLUTO_EVENT_ADMIN_USER);
+    Cookies.remove(PLUTO_EVENT_ADMIN_TOKEN);
   };
 
   if (loading) return null;

@@ -1,6 +1,12 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 import { showErrorToast } from "@/lib/utils/toast";
+import {
+  API_BASE_URL,
+  COOKIE_CONFIG,
+  PLUTO_EVENT_ADMIN_TOKEN,
+  PLUTO_EVENT_ADMIN_USER,
+} from "@/constants";
 
 const customCookies = Cookies.withConverter({
   write: (value) => value,
@@ -8,17 +14,12 @@ const customCookies = Cookies.withConverter({
 });
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
   timeout: 15_000,
 });
 
-const cookieConfig = {
-  expires: 7,
-  secure: window.location.protocol === "https:",
-  sameSite: "Strict" as const,
-  path: "/",
-};
+const cookieConfig = COOKIE_CONFIG;
 
 export const isPermissionDeniedMessage = (message: string) =>
   /permission|not authorized|not authorised|access denied/i.test(message);
@@ -39,7 +40,7 @@ export const isPermissionDeniedError = (error: any): boolean => {
 };
 
 api.interceptors.request.use((config) => {
-  const token = customCookies.get("PLUTO_EVENT_ADMIN_TOKEN");
+  const token = customCookies.get(PLUTO_EVENT_ADMIN_TOKEN);
   if (token && config.headers) {
     config.headers["x-token-ch"] = token;
   }
@@ -50,7 +51,7 @@ api.interceptors.response.use(
   (response) => {
     const token = response.headers["x-token-ch"];
     if (token) {
-      customCookies.set("PLUTO_EVENT_ADMIN_TOKEN", token, cookieConfig);
+      customCookies.set(PLUTO_EVENT_ADMIN_TOKEN, token, cookieConfig);
     }
     return response;
   },
@@ -69,8 +70,8 @@ api.interceptors.response.use(
     }
 
     if (status === 401 && isSessionExpiredMessage(message)) {
-      customCookies.remove("PLUTO_EVENT_ADMIN_TOKEN", { path: "/" });
-      customCookies.remove("PLUTO_EVENT_ADMIN_USER", { path: "/" });
+      customCookies.remove(PLUTO_EVENT_ADMIN_TOKEN, { path: "/" });
+      customCookies.remove(PLUTO_EVENT_ADMIN_USER, { path: "/" });
 
       showErrorToast(message || "Session expired. Please login again.", {
         toastId: "session-expired",
