@@ -24,7 +24,7 @@ const PaidEventDetails: React.FC = () => {
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const itemsPerPage = 10;
   const [selectedForSettlement, setSelectedForSettlement] =
     useState<EventPaymentRequest | null>(null);
   const [expandedReceiptId, setExpandedReceiptId] = useState<string | null>(null);
