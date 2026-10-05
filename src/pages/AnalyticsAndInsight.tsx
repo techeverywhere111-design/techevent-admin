@@ -264,7 +264,7 @@ export default function AnalyticsAndInsights() {
         <PieChartCard
           title="Free vs Paid Accounts"
           data={mapBreakdownToChartData(freeVsPaidData, DEFAULT_FREE_VS_PAID)}
-          colors={["#3b82f6", "#60a5fa"]}
+          colors={["#3b82f6", "#10b981"]}
           loading={freeVsPaidLoading}
           isUnauthorized={isPermissionDeniedError(freeVsPaidError)}
         />

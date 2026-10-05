@@ -65,7 +65,7 @@ const navItems: NavItem[] = [
     subItems: [{ name: "Category", path: "/event-category", permission: ROUTE_PERMISSIONS.eventCategories }],
   },
   { name: "Payment History", path: "/payments", icon: CreditCard, permission: ROUTE_PERMISSIONS.paymentHistory },
-  { name: "Payed Events", path: "/payed-events", icon: Banknote, permission: ROUTE_PERMISSIONS.payedEvents },
+  { name: "Paid Events", path: "/paid-events", activePaths: ["/paid-events", "/payed-events"], icon: Banknote, permission: ROUTE_PERMISSIONS.paidEvents },
   {
     name: "Analytics and Insight",
     path: "/analytics-and-insight",

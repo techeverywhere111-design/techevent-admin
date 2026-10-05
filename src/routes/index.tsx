@@ -20,8 +20,8 @@ const AnalyticsAndInsights = lazy(() => import("@/pages/AnalyticsAndInsight"));
 const Plans = lazy(() => import("@/pages/Plans"));
 const PlanForm = lazy(() => import("@/pages/PlanForm"));
 const PaymentHistory = lazy(() => import("@/pages/PaymentHistory"));
-const PayedEvents = lazy(() => import("@/pages/PayedEvents"));
-const PayedEventDetails = lazy(() => import("@/pages/PayedEventDetails"));
+const PaidEvents = lazy(() => import("@/pages/PaidEvents"));
+const PaidEventDetails = lazy(() => import("@/pages/PaidEventDetails"));
 const ClientManagement = lazy(() => import("@/pages/ClientManagement"));
 const ClientProfile = lazy(() => import("@/pages/ClientProfile"));
 const AuditLogs = lazy(() => import("@/pages/ClientAuditLogs"));
@@ -91,18 +91,34 @@ export const router = createBrowserRouter([
             ),
           },
           {
+            path: "paid-events",
+            element: (
+              <PermissionGuard requires={ROUTE_PERMISSIONS.paidEvents}>
+                <PaidEvents />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "paid-events/:eventId",
+            element: (
+              <PermissionGuard requires={ROUTE_PERMISSIONS.paidEvents}>
+                <PaidEventDetails />
+              </PermissionGuard>
+            ),
+          },
+          {
             path: "payed-events",
             element: (
-              <PermissionGuard requires={ROUTE_PERMISSIONS.payedEvents}>
-                <PayedEvents />
+              <PermissionGuard requires={ROUTE_PERMISSIONS.paidEvents}>
+                <PaidEvents />
               </PermissionGuard>
             ),
           },
           {
             path: "payed-events/:eventId",
             element: (
-              <PermissionGuard requires={ROUTE_PERMISSIONS.payedEvents}>
-                <PayedEventDetails />
+              <PermissionGuard requires={ROUTE_PERMISSIONS.paidEvents}>
+                <PaidEventDetails />
               </PermissionGuard>
             ),
           },
