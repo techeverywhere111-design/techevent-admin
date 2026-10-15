@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { CircleUserRound } from "lucide-react";
 import { formatDateTime } from "@/lib/utils/date";
 
@@ -12,7 +12,6 @@ export interface ClientInfoProps {
   profileImage?: string | null;
 }
 
-
 const ClientProfileCard: React.FC<ClientInfoProps> = ({
   firstName,
   lastName,
@@ -22,15 +21,22 @@ const ClientProfileCard: React.FC<ClientInfoProps> = ({
   dateJoined,
   profileImage,
 }) => {
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [profileImage]);
+
   return (
     <div className="bg-blue-50 dark:bg-gray-800 rounded-lg p-4 sm:p-6 mb-6 transition-colors duration-300">
       <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
         <div className="w-36 h-36 sm:w-40 sm:h-40 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0 mx-auto sm:mx-0">
-          {profileImage ? (
+          {profileImage && !imageError ? (
             <img
               src={profileImage}
               alt="Profile"
               className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
             />
           ) : (
             <CircleUserRound className="w-full h-full text-gray-400 p-8" />

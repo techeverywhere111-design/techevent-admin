@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Table, { type Column } from "@/components/ui/Table";
 import { User, Search, Download, X } from "lucide-react";
@@ -28,6 +28,47 @@ interface Client {
   dateJoined: string;
   avatar: string | null | undefined;
 }
+
+interface ClientAvatarProps {
+  imageUrl?: string | null;
+  name: string;
+  email?: string | null;
+  getAvatarColor: (name: string) => string;
+}
+
+const ClientAvatar: React.FC<ClientAvatarProps> = ({
+  imageUrl,
+  name,
+  email,
+  getAvatarColor,
+}) => {
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setHasError(false);
+  }, [imageUrl]);
+
+  if (imageUrl && !hasError) {
+    return (
+      <img
+        src={imageUrl}
+        alt={name || "Client"}
+        onError={() => setHasError(true)}
+        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`w-8 h-8 rounded-full ${getAvatarColor(
+        name || email || ""
+      )} flex items-center justify-center flex-shrink-0`}
+    >
+      <User size={18} className="text-white" />
+    </div>
+  );
+};
 
 
 const ClientManagement: React.FC = () => {
@@ -67,7 +108,7 @@ const ClientManagement: React.FC = () => {
         planType: (c.name ? "Business" : "Personal") as "Personal" | "Business",
         isActive: c.status ? c.status.toUpperCase() === "ACTIVE" : (c.isActive ?? true),
         dateJoined: c.createdOn,
-        avatar: c.imageUrl,
+        avatar: c.imageUrl?.trim() || null,
       }));
 
       return { clients: mappedClients, totalElements: response.totalElements };
@@ -125,7 +166,7 @@ const ClientManagement: React.FC = () => {
   };
 
   const handleViewProfile = (client: Client) =>
-    navigate(`/client-profile?${client.id}`);
+    navigate(`/client-profile?${client.id}`, { state: { client } });
   const handlePaymentHistory = (client: Client) =>
     navigate(`/clients/${client.accountId || client.id}/payments`);
 
@@ -146,13 +187,12 @@ const ClientManagement: React.FC = () => {
       label: "First Name",
       render: (value, row: Client) => (
         <div className="flex items-center gap-3">
-          <div
-            className={`w-8 h-8 rounded-full ${getAvatarColor(
-              value || row.email || ""
-            )} flex items-center justify-center`}
-          >
-            <User size={18} className="text-white" />
-          </div>
+          <ClientAvatar
+            imageUrl={row.avatar}
+            name={value || ""}
+            email={row.email}
+            getAvatarColor={getAvatarColor}
+          />
           <span className="text-sm text-gray-900 dark:text-gray-100">
             {value || "—"}
           </span>

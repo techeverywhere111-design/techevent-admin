@@ -141,14 +141,16 @@ const ClientProfile: React.FC = () => {
     );
   }
 
+  const clientFromState = (location.state as any)?.client;
+
   const profileData = {
-    firstName: accountUser.firstName,
-    lastName: accountUser.lastName,
-    name: accountUser.name,
-    email: accountUser.email,
-    planType: "Personal",
-    dateJoined: accountUser.createdOn,
-    profileImage: accountUser.imageUrl,
+    firstName: accountUser.firstName ?? clientFromState?.firstName,
+    lastName: accountUser.lastName ?? clientFromState?.lastName,
+    name: accountUser.name ?? (clientFromState?.planType === "Business" ? clientFromState?.firstName : null),
+    email: accountUser.email ?? clientFromState?.email,
+    planType: accountUser.name || clientFromState?.planType === "Business" ? "Business" : "Personal",
+    dateJoined: accountUser.createdOn ?? clientFromState?.dateJoined,
+    profileImage: accountUser.imageUrl || clientFromState?.avatar || null,
   };
 
   return (
