@@ -51,7 +51,12 @@ const navItems: NavItem[] = [
     icon: Users,
     subItems: [
       { name: "All Clients", path: "/client-management", permission: ROUTE_PERMISSIONS.clients },
-
+      {
+        name: "Users Without Plan",
+        path: "/client-management/users-without-plan",
+        activePaths: ["/client-management/users-without-plan", "/users-without-plan"],
+        permission: ROUTE_PERMISSIONS.usersWithoutPlan,
+      },
     ],
   },
   {
@@ -160,7 +165,7 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
             );
 
             if (subItems) {
-              const isDropdownOpen = openDropdowns[name];
+              const isDropdownOpen = openDropdowns[name] ?? isSubItemActive;
 
               return (
                 <div key={name}>

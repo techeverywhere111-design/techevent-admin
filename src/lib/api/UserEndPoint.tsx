@@ -27,6 +27,19 @@ export const GetAccountUsers = async (
   return AccountUserListResponseSchema.parse(data);
 };
 
+export const GetUsersWithoutPlan = async (
+  pageNo: number,
+  pageSize: number
+): Promise<AccountUsersResponse> => {
+  const { data } = await api.get(
+    "/api/v1/account-users/users-without-plan",
+    {
+      params: { pageNo, pageSize },
+    }
+  );
+  return AccountUserListResponseSchema.parse(data);
+};
+
 export const SearchAccountUsers = async (
   text: string,
   pageNo: number,

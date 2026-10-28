@@ -107,6 +107,7 @@ export const ROUTE_PERMISSIONS = {
   clients: {
     anyOf: [get("/api/v1/account-users"), get("/api/v1/account-users/search")],
   },
+  usersWithoutPlan: get("/api/v1/account-users/users-without-plan"),
   clientProfile: post("/api/v1/account-users/bulk-ids"),
   auditLogs: get("/api/v1/audit-logs/filter"),
   eventCategories: {

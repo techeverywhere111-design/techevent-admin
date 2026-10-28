@@ -28,7 +28,7 @@ export const AccountUserSchema = z.object({
   firstName: z.string().nullable().optional(),
   lastName: z.string().nullable().optional(),
   name: z.string().nullable().optional(),
-  email: z.string().email().nullable().optional(),
+  email: z.string().nullable().optional(),
   imageId: z.string().nullable().optional(),
   imageUrl: z.string().nullable().optional(),
   createdOn: z.string(),

@@ -23,6 +23,7 @@ const PaymentHistory = lazy(() => import("@/pages/PaymentHistory"));
 const PaidEvents = lazy(() => import("@/pages/PaidEvents"));
 const PaidEventDetails = lazy(() => import("@/pages/PaidEventDetails"));
 const ClientManagement = lazy(() => import("@/pages/ClientManagement"));
+const UsersWithoutPlan = lazy(() => import("@/pages/UsersWithoutPlan"));
 const ClientProfile = lazy(() => import("@/pages/ClientProfile"));
 const AuditLogs = lazy(() => import("@/pages/ClientAuditLogs"));
 const ClientPaymentHistory = lazy(() => import("@/pages/ClientPaymentHistory"));
@@ -152,6 +153,22 @@ export const router = createBrowserRouter([
             element: (
               <PermissionGuard requires={ROUTE_PERMISSIONS.clients}>
                 <ClientManagement />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "client-management/users-without-plan",
+            element: (
+              <PermissionGuard requires={ROUTE_PERMISSIONS.usersWithoutPlan}>
+                <UsersWithoutPlan />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: "users-without-plan",
+            element: (
+              <PermissionGuard requires={ROUTE_PERMISSIONS.usersWithoutPlan}>
+                <UsersWithoutPlan />
               </PermissionGuard>
             ),
           },
